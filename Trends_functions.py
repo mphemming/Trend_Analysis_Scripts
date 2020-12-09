@@ -17,7 +17,7 @@ import pyhomogeneity as hg
 # multiple regression
 from sklearn import linear_model
 import scipy as sp
-# Import functions from script
+from statsmodels.tsa.stattools import kpss
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -67,7 +67,6 @@ def datevec(TIME):
 
 # -----------------------------------------------------------------------------------------------
 # Bin data daily
-
 
 
 def bin_daily(start_yr,end_yr,TIME,TEMP):
@@ -120,28 +119,115 @@ def bin_daily(start_yr,end_yr,TIME,TEMP):
 # De-season data
 
 
-def deseason(TIME_bin):
+def deseason(TIME,TEMP,clim):
 
     # get climatology grid
     clim_grid = range(0,365)
-    # get day of year
-    TIME_doy = datevec(TIME_bin)
-
+    # get year days
+    _,_,_,_,yday_bin = datevec(np.array(TIME))
+    # de-season temperatures
     
-    clim19 = NRSPHB_clim.TEMP_AVE[:,2] # climatology at 20m
-    
-    
-    Tbin_deseason = [None] * len(tbin_doy)
-    for n in range(len(tbin_doy)):
-        if tbin_doy[n]-1 < 365:
-            Tbin_deseason[n] = Tbin[n] - clim19[tbin_doy[n]-1]
+    TEMP_deseason = [None] * len(yday_bin)
+    for n in range(len(yday_bin)):
+        if yday_bin[n]-1 < 365:
+            TEMP_deseason[n] = TEMP[n] - clim[yday_bin[n]-1]
         else:
-            Tbin_deseason[n] = np.nan
+            TEMP_deseason[n] = np.nan
     
     # plot climatology
-    # plt.scatter(tbin_doy,Tbin)
-    # plt.plot(clim_grid,clim19,color='r')
-    # plt.show()
+    plt.scatter(yday_bin,TEMP)
+    plt.plot(clim_grid,clim,color='r')
+    plt.show()
+    # plot de-seasoned TEMP 
+    # plt.scatter(yday_bin,TEMP_deseason)
+    
+    return TEMP_deseason
 
 
+# -----------------------------------------------------------------------------------------------
+# Bin data annually
+
+
+def bin_annually(start_yr,end_yr,TIME,TEMP):
+
+    # Create time grids
+    base = dt.datetime(start_yr, 6, 1)
+    time_grid_ann = np.array([base + dt.timedelta(days=i*365.25) for i in range(0,68)])
+    base = dt.datetime(start_yr, 1, 1)
+    time_grid_ann_lower = np.array([base + dt.timedelta(days=i*365.25) for i in range(0,68)])
+    base = dt.datetime(start_yr, 1, 1)
+    time_grid_ann_upper = np.array([base + dt.timedelta(days=i*365.25) for i in range(0,68)])
+    
+    t_grid_ann = []; # convert to datetime
+    t_grid_ann_lower = []; # convert to datetime
+    t_grid_ann_upper = []; # convert to datetime
+    
+    for n in range(len(time_grid_ann)):
+        t_grid_ann.append(np.datetime64(time_grid_ann[n]))
+        t_grid_ann_lower.append(np.datetime64(time_grid_ann_lower[n]))
+        t_grid_ann_upper.append(np.datetime64(time_grid_ann_upper[n]))
+    
+    # flag time grid past end year date
+    t_grid_ann = np.array(t_grid_ann)
+    t_grid_ann_lower = np.array(t_grid_ann_lower)
+    t_grid_ann_upper = np.array(t_grid_ann_upper)
+    
+    c = np.where(t_grid_ann <= np.datetime64(dt.datetime(end_yr,12,31)))
+    t_grid_ann = t_grid_ann[c]
+    c = np.where(t_grid_ann_lower <= np.datetime64(dt.datetime(end_yr,12,30)))
+    t_grid_ann_lower = t_grid_ann_lower[c]    
+    c = np.where(t_grid_ann_upper <= np.datetime64(dt.datetime(end_yr+1,1,1)))
+    t_grid_ann_upper = t_grid_ann_upper[c]    
+    
+    # get months and years of TEMP
+    yrs,mns,_,_,_ = datevec(np.array(TIME))
+    # get unique years
+    un_yrs = np.unique(yrs)
+    
+    # binning
+    Tbin_ann = []
+    tbin_ann = []
+    for n_bin in range(len(un_yrs)):
+            c = yrs == un_yrs[n_bin]
+            T_in_bin = []
+            t_in_bin = []
+            m_in_bin = []
+            yr_in_bin = []
+            for n in range(len(c)):
+                if c[n] and np.isnan(TEMP[n]) == False:
+                    T_in_bin.append(TEMP[n])
+                    t_in_bin.append(TIME[n])
+                    m_in_bin.append(mns[n])
+                    yr_in_bin.append(yrs[n])
+            # bin only if there are data from 6 or more months       
+            if len(np.unique(m_in_bin)) > 6:
+                Tbin_ann.append(np.nanmean(T_in_bin))
+                tbin_ann.append(dt.datetime(int(un_yrs[n_bin]),6,1))    
+            else:
+                Tbin_ann.append(np.nan)
+                tbin_ann.append(dt.datetime(int(un_yrs[n_bin]),6,1))   
+    
+    return tbin_ann, Tbin_ann
+
+# -----------------------------------------------------------------------------------------------
+# KPSS test
+
+def kpss_test(series, **kw):   
+    
+    # reference
+    # https://www.machinelearningplus.com/time-series/kpss-test-for-stationarity/
+    # remove NaNs from series
+    series = np.array(series)
+    series = series[np.where(np.logical_not(np.isnan(series)))]
+    
+    statistic, p_value, n_lags, critical_values = kpss(series, **kw)
+    
+    # Format Output
+    print(f'KPSS Statistic: {statistic}')
+    print(f'p-value: {p_value}')
+    print(f'num lags: {n_lags}')
+    print('Critial Values:')
+    for key, value in critical_values.items():
+        print(f'   {key} : {value}')
+    print(f'Result: The series is {"not " if p_value < 0.05 else ""}stationary')
 
