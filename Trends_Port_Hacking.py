@@ -134,6 +134,9 @@ TF.kpss_test(Tbin_deseason)
 # %% -----------------------------------------------------------------------------------------------
 # Innovative trend analysis
 
+# 1:1 line (no trend line)
+line = np.arange(start=-1.5, stop=2.5, step=0.1)
+
 # separate the period into two
 T1 = np.array(np.sort(Tbin_ann[0:33]))
 T2 = np.array(np.sort(Tbin_ann[33:-2]))
@@ -148,36 +151,52 @@ T2_t = tb[T2_indices]
 # get 'low' mean slope
 cl = [(T1 < -0.88) & (T2 < -0.5)]
 low_stats = sp.stats.linregress(T1[cl],T2[cl])
+low_line_points = np.interp(T1[cl],line,line)
 
 # get 'medium' mean slope
 cm = [(T1 > -0.88) & (T1 < -0.25) & (T2 > -0.5) & (T2 < 0.45)]
 med_stats = sp.stats.linregress(T1[cm],T2[cm])
+med_line_points = np.interp(T1[cm],line,line)
 
 # get 'high' mean slope
 ch = [(T1 >= -0.25) & (T2 >= 0.45)]
 high_stats = sp.stats.linregress(T1[ch],T2[ch])
+high_line_points = np.interp(T1[ch],line,line)
 
-# 1:1 line (no trend line)
-line = np.arange(start=-1.5, stop=2.5, step=0.1)
 # Determine trends
 #------------------------
 ll = T2[cl]
 low_res = []
 for n in range(len(ll)):
-    low_res.append(np.abs(ll[n] - (low_stats.slope*ll[n]+low_stats.intercept)))
+    low_res.append(np.abs(ll[n] - low_line_points[n]))
 #------------------------
 lm = T2[cm]
 med_res = []
 for n in range(len(lm)):
-    med_res.append(np.abs(lm[n] - (med_stats.slope*lm[n]+med_stats.intercept)))
+    med_res.append(np.abs(lm[n] - med_line_points[n]))
 #------------------------
 lh = T2[ch]
 high_res = []
 for n in range(len(lh)):
-    high_res.append(np.abs(lh[n] - (high_stats.slope*lh[n]+high_stats.intercept)))
-trend_mean_slope = np.mean([np.mean(high_res),np.mean(med_res),np.mean(low_res)])
+    high_res.append(np.abs(lh[n] - high_line_points[n]))
+    
+    
+# code from R implementation of ITA
+# https://rdrr.io/cran/trendchange/src/R/innovtrend.R    
+# See Sen 2017 Global Warming paper for steps and equations
+# trend
+trend =  ((2*(np.nanmean(T2)-np.nanmean(T1)))/66)*100 
+# Calculating slope standard deviation
+ssd = (2*np.sqrt(2))*np.nanstd(Tbin_ann)*np.sqrt(1-np.cov(T2,T1))/66/np.sqrt(66)
+# Trend indicator calculation
+D = np.nanmean((T2-T1)*10/np.nanmean(T1))
+# Confidence limits (CL) of the trend slope at 95 percent
+CLlower95 = 0 - 1.96*ssd
+CLupper95 = 0 + 1.96*ssd
+
+trend_mean = np.mean([np.mean(high_res),np.mean(med_res),np.mean(low_res)])
 # trend_century = ((1-(len(T1)+len(T2))/100) * trend_mean_slope) + trend_mean_slope 
-trend_century = (trend_mean_slope/66)*100
+trend_century = (trend_mean/66)*100
 
 a= plt.figure()
 axes = a.add_axes([0.1,0.1,0.8,0.8])
