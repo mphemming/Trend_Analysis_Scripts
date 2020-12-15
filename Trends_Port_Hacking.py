@@ -30,8 +30,9 @@ import Trends_functions as TF
 from statsmodels.tsa.stattools import kpss
 # 1D interpolation
 from scipy.interpolate import interp1d
-
-
+# wavelet analysis
+import pycwt as wavelet
+from pycwt.helpers import find
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -88,7 +89,7 @@ tbin,Tbin = TF.bin_daily(1953,2020,tsurf,Tsurf)
 # select climatology at similar depth
 climsurf = NRSPHB_clim.TEMP_AVE[:,0] # climatology at 20m
 # get de-seasoned temperatures
-Tbin_deseason = TF.deseason(tbin,Tbin,climsurf)
+Tbin_deseason = np.array(TF.deseason(tbin,Tbin,climsurf))
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -97,7 +98,8 @@ Tbin_deseason = TF.deseason(tbin,Tbin,climsurf)
 # %% -----------------------------------------------------------------------------------------------
 # Get annual averages
 
-tbin_ann,Tbin_ann = TF.bin_annually(1953,2020,tbin,Tbin_deseason)
+# Dont' need to use annual means
+# tbin_ann,Tbin_ann = TF.bin_annually(1953,2020,tbin,Tbin_deseason)
    
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -109,14 +111,14 @@ tbin_ann,Tbin_ann = TF.bin_annually(1953,2020,tbin,Tbin_deseason)
 # reg = linear_model.LinearRegression()
 # reg.fit(tbin_ann[0:-1], PDO_IND)
 
-Tbin_reg = np.array(Tbin_ann[0:-1])
-c = np.logical_not(np.isnan(Tbin_reg))
-Tbin_reg = Tbin_reg[c]
-PDO_IND_reg =  PDO_IND[c]
+# Tbin_reg = np.array(Tbin_ann[0:-1])
+# c = np.logical_not(np.isnan(Tbin_reg))
+# Tbin_reg = Tbin_reg[c]
+# PDO_IND_reg =  PDO_IND[c]
 
-PDO_result = sp.stats.linregress(PDO_IND_reg,Tbin_reg); # no real relationship
+# PDO_result = sp.stats.linregress(PDO_IND_reg,Tbin_reg); # no real relationship
 
-            
+        
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -134,84 +136,8 @@ TF.kpss_test(Tbin_deseason)
 # %% -----------------------------------------------------------------------------------------------
 # Innovative trend analysis
 
-# 1:1 line (no trend line)
-line = np.arange(start=-1.5, stop=2.5, step=0.1)
-
-# separate the period into two
-T1 = np.array(np.sort(Tbin_ann[0:33]))
-T2 = np.array(np.sort(Tbin_ann[33:-2]))
-
-T1_indices = np.argsort(Tbin_ann[0:33]) 
-tb = np.array(tbin_ann[0:33])
-T1_t = tb[T1_indices]
-T2_indices = np.argsort(Tbin_ann[33:-2]) 
-tb = np.array(tbin_ann[33:-2])
-T2_t = tb[T2_indices]
-
-# get 'low' mean slope
-cl = [(T1 < -0.88) & (T2 < -0.5)]
-low_stats = sp.stats.linregress(T1[cl],T2[cl])
-low_line_points = np.interp(T1[cl],line,line)
-
-# get 'medium' mean slope
-cm = [(T1 > -0.88) & (T1 < -0.25) & (T2 > -0.5) & (T2 < 0.45)]
-med_stats = sp.stats.linregress(T1[cm],T2[cm])
-med_line_points = np.interp(T1[cm],line,line)
-
-# get 'high' mean slope
-ch = [(T1 >= -0.25) & (T2 >= 0.45)]
-high_stats = sp.stats.linregress(T1[ch],T2[ch])
-high_line_points = np.interp(T1[ch],line,line)
-
-# Determine trends
-#------------------------
-ll = T2[cl]
-low_res = []
-for n in range(len(ll)):
-    low_res.append(np.abs(ll[n] - low_line_points[n]))
-#------------------------
-lm = T2[cm]
-med_res = []
-for n in range(len(lm)):
-    med_res.append(np.abs(lm[n] - med_line_points[n]))
-#------------------------
-lh = T2[ch]
-high_res = []
-for n in range(len(lh)):
-    high_res.append(np.abs(lh[n] - high_line_points[n]))
-    
-    
-# code from R implementation of ITA
-# https://rdrr.io/cran/trendchange/src/R/innovtrend.R    
-# See Sen 2017 Global Warming paper for steps and equations
-# trend
-trend =  ((2*(np.nanmean(T2)-np.nanmean(T1)))/66)*100 
-# Calculating slope standard deviation
-ssd = (2*np.sqrt(2))*np.nanstd(Tbin_ann)*np.sqrt(1-np.cov(T2,T1))/66/np.sqrt(66)
-# Trend indicator calculation
-D = np.nanmean((T2-T1)*10/np.nanmean(T1))
-# Confidence limits (CL) of the trend slope at 95 percent
-CLlower95 = 0 - 1.96*ssd
-CLupper95 = 0 + 1.96*ssd
-
-trend_mean = np.mean([np.mean(high_res),np.mean(med_res),np.mean(low_res)])
-# trend_century = ((1-(len(T1)+len(T2))/100) * trend_mean_slope) + trend_mean_slope 
-trend_century = (trend_mean/66)*100
-
-a= plt.figure()
-axes = a.add_axes([0.1,0.1,0.8,0.8])
-axes.scatter(T1,T2)
-axes.scatter(T1[cl],T2[cl])
-axes.scatter(T1[cm],T2[cm])
-axes.plot(T1[cl],low_stats.slope*T1[cl]+low_stats.intercept,'k')
-axes.plot(T1[cm],med_stats.slope*T1[cm]+med_stats.intercept,'k')
-axes.plot(T1[ch],high_stats.slope*T1[ch]+high_stats.intercept,'k')
-axes.set_xlim([-1.5, 2.5])
-axes.set_ylim([-1.5, 2.5])
-axes.set_xlabel('1953 - 1985')
-axes.set_ylabel('1986 - 2018')
-axes.plot(line,line,'k')
-plt.show()
+trend_change_points = 0
+ITA_stats = TF.ITA(tbin,Tbin_deseason,trend_change_points)
 
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
