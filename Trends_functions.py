@@ -64,7 +64,7 @@ def datevec(TIME):
 
     return yr, mn, dy, hr, yday
 
-
+# %% -----------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------
 # Bin data daily
 
@@ -114,7 +114,7 @@ def bin_daily(start_yr,end_yr,TIME,TEMP):
     
     return tbin, Tbin
     
-
+# %% -----------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------
 # De-season data
 
@@ -143,7 +143,7 @@ def deseason(TIME,TEMP,clim):
     
     return TEMP_deseason
 
-
+# %% -----------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------
 # Bin data annually
 
@@ -209,6 +209,7 @@ def bin_annually(start_yr,end_yr,TIME,TEMP):
     
     return tbin_ann, Tbin_ann
 
+# %% -----------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------
 # KPSS test
 
@@ -230,4 +231,193 @@ def kpss_test(series, **kw):
     for key, value in critical_values.items():
         print(f'   {key} : {value}')
     print(f'Result: The series is {"not " if p_value < 0.05 else ""}stationary')
+
+
+
+# %% ----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# ITA function
+
+def ITA(TIME,TEMP,trend_change_points):
+    
+    # 1:1 line (no trend line)
+    line = np.arange(start=-10, stop=10, step=0.1)
+    # separate the period into two equal parts
+    split_number = np.int(np.round(len(TIME)/2)-1)
+    T1 = np.array(np.sort(TEMP[0:split_number]))
+    T2 = np.array(np.sort(TEMP[split_number+1::]))
+    t1 = np.array(TIME[0:split_number])
+    t2 = np.array(TIME[split_number+1::])    
+    # sort two parts in ascending order
+    T1_indices = np.argsort(T1) 
+    T1_t = t1[T1_indices]
+    T2_indices = np.argsort(T2) 
+    T2_t = t2[T2_indices]
+    check_nans = np.squeeze(np.logical_and(\
+            [np.isfinite(T1)], [np.isfinite(T2)]))
+    T1_nonan = T1[check_nans]
+    T2_nonan = T2[check_nans]    
+    # create first plot for selecting trend points
+    a= plt.figure()
+    axes = a.add_axes([0.1,0.1,0.8,0.8])
+    axes.scatter(T1,T2)    
+    axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+                   np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+    axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+                   np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+    yrs,_,_,_,_ = datevec(T1_t)
+    T1_min_year = np.nanmin(yrs)
+    T1_max_year = np.nanmax(yrs)
+    yrs,_,_,_,_ = datevec(T2_t)
+    T2_min_year = np.nanmin(yrs)
+    T2_max_year = np.nanmax(yrs)    
+    axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
+    axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
+    axes.plot(line,line,'k') 
+    if np.size(trend_change_points) == 1:
+
+        plt.close(fig=a)
+        # get trends
+        # trend 1
+        check_low = T1_nonan <= np.float(trend_change_points)
+        low_stats = sp.stats.linregress(T1_nonan[check_low],T2_nonan[check_low])
+        low_line_points = np.interp(T1_nonan[check_low],line,line)        
+        # trend 2
+        check_high = T1_nonan > np.float(trend_change_points)
+        high_stats = sp.stats.linregress(T1_nonan[check_high],T2_nonan[check_high])
+        high_line_points = np.interp(T1_nonan[check_high],line,line)   
+        # create new plot
+        a= plt.figure()
+        axes = a.add_axes([0.1,0.1,0.8,0.8])
+        axes.scatter(T1,T2)        
+        axes.scatter(T1_nonan[check_low],T2_nonan[check_low])
+        axes.scatter((T1_nonan[check_high]),T2_nonan[check_high])
+        axes.plot(T1_nonan[check_low],low_stats.slope*T1_nonan[check_low]+low_stats.intercept,'k')
+        axes.plot(T1_nonan[check_high],high_stats.slope*T1_nonan[check_high]+high_stats.intercept,'k')
+        axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+                       np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+        axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+                       np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+        yrs,_,_,_,_ = datevec(T1_t)
+        T1_min_year = np.nanmin(yrs)
+        T1_max_year = np.nanmax(yrs)
+        yrs,_,_,_,_ = datevec(T2_t)
+        T2_min_year = np.nanmin(yrs)
+        T2_max_year = np.nanmax(yrs)    
+        axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
+        axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
+        axes.plot(line,line,'k')
+        plt.show()
+        
+        # Determine trends
+        #------------------------
+        ll = T2_nonan[check_low]
+        low_res = []
+        for n in range(len(ll)):
+            low_res.append(np.abs(ll[n] - low_line_points[n]))
+        #------------------------
+        lh = T2_nonan[check_high]
+        high_res = []
+        for n in range(len(lh)):
+            high_res.append(np.abs(lh[n] - high_line_points[n]))        
+        trend_mean = np.mean([np.mean(high_res),np.mean(low_res)])
+        trend_ave_per_century = (trend_mean/66)*100
+        
+
+    else:
+        change_point_1 = trend_change_points[0]
+        change_point_2 = trend_change_points[1]
+        plt.close(fig=a)
+        # get trends
+        # trend 1
+        check_low = T1_nonan <= np.float(change_point_1)
+        low_stats = sp.stats.linregress(T1_nonan[check_low],T2_nonan[check_low])
+        low_line_points = np.interp(T1_nonan[check_low],line,line)        
+        # trend 2
+        check_med = np.logical_and(\
+                [T1_nonan > np.float(change_point_1)], [T1_nonan <= np.float(change_point_2)])
+        check_med = np.squeeze(check_med)
+        med_stats = sp.stats.linregress(T1_nonan[check_med],T2_nonan[check_med])
+        med_line_points = np.interp(T1_nonan[check_med],line,line) 
+        # trend 3
+        check_high = T1_nonan > np.float(change_point_2)
+        high_stats = sp.stats.linregress(T1_nonan[check_high],T2_nonan[check_high])
+        high_line_points = np.interp(T1_nonan[check_high],line,line)   
+        # create new plot
+        a= plt.figure()
+        axes = a.add_axes([0.1,0.1,0.8,0.8])
+        axes.scatter(T1,T2)        
+        axes.scatter(T1_nonan[check_low],T2_nonan[check_low])
+        axes.scatter(T1_nonan[check_med],T2_nonan[check_med])
+        axes.scatter((T1_nonan[check_high]),T2_nonan[check_high])
+        axes.plot(T1_nonan[check_low],low_stats.slope*T1_nonan[check_low]+low_stats.intercept,'k')
+        axes.plot(T1_nonan[check_med],med_stats.slope*T1_nonan[check_med]+med_stats.intercept,'k')
+        axes.plot(T1_nonan[check_high],high_stats.slope*T1_nonan[check_high]+high_stats.intercept,'k')
+        axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+                       np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+        axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+                       np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+        yrs,_,_,_,_ = datevec(T1_t)
+        T1_min_year = np.nanmin(yrs)
+        T1_max_year = np.nanmax(yrs)
+        yrs,_,_,_,_ = datevec(T2_t)
+        T2_min_year = np.nanmin(yrs)
+        T2_max_year = np.nanmax(yrs)    
+        axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
+        axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
+        axes.plot(line,line,'k')
+        plt.show()
+        
+        # Determine trends
+        #------------------------
+        ll = T2_nonan[check_low]
+        low_res = []
+        for n in range(len(ll)):
+            low_res.append(np.abs(ll[n] - low_line_points[n]))
+        #------------------------
+        lm = T2_nonan[check_med]
+        med_res = []
+        for n in range(len(lm)):
+            med_res.append(np.abs(lm[n] - med_line_points[n]))
+        #------------------------
+        lh = T2_nonan[check_high]
+        high_res = []
+        for n in range(len(lh)):
+            high_res.append(np.abs(lh[n] - high_line_points[n]))
+        trend_mean = np.mean([np.mean(high_res),np.mean(med_res),np.mean(low_res)])
+        trend_ave_per_century = (trend_mean/66)*100
+        
+    # code from R implementation of ITA
+    # https://rdrr.io/cran/trendchange/src/R/innovtrend.R    
+    # See Sen 2017 Global Warming paper for steps and equations
+    # trend
+    yr_range = (T2_max_year-T1_min_year)
+    slope_sen = ((2*(np.nanmean(T2)-np.nanmean(T1)))/yr_range)
+    trend_sen = slope_sen*100 
+    # Calculating slope standard deviation
+    # covariance with NaNs
+    df = pd.DataFrame({'T1':T1,'T2':T2})
+    cov_vals = df.corr()
+    slope_std = (2*np.sqrt(2))*np.nanstd(TEMP)*np.sqrt(1-np.array(cov_vals))/yr_range/np.sqrt(yr_range)
+    slope_std = slope_std[0,1]
+    # Trend indicator calculation
+    D = np.nanmean((T2-T1)*10/np.nanmean(T1))
+    # Confidence limits (CL) of the trend slope at 95 percent
+    CLlower95 = 0 - 1.96*slope_std
+    CLupper95 = 0 + 1.96*slope_std
+    
+    # save information
+    class ITA_stats: 
+        
+        ITA_trend_ave_per_century = trend_ave_per_century
+        ITA_slope_sen = slope_sen
+        ITA_slope_std = slope_std
+        ITA_trend_sen = trend_sen
+        ITA_trend_indicator = D
+        ITA_slope_lower_conf = CLlower95
+        ITA_slope_upper_conf = CLupper95
+        
+    return ITA_stats
+
+
 
