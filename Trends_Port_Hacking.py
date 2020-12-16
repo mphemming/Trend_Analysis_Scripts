@@ -96,10 +96,10 @@ Tbin_deseason = np.array(TF.deseason(tbin,Tbin,climsurf))
 
 
 # %% -----------------------------------------------------------------------------------------------
-# Get annual averages
+# Get monthly averages
 
-# Dont' need to use annual means
-# tbin_ann,Tbin_ann = TF.bin_annually(1953,2020,tbin,Tbin_deseason)
+# Using de-seasoned timeseries
+tbin_m,Tbin_m = TF.bin_monthly(1953,2021,tbin,Tbin_deseason)
    
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -126,7 +126,7 @@ Tbin_deseason = np.array(TF.deseason(tbin,Tbin,climsurf))
 # KPSS test to check for stationarity
 # If the result = 'Not stationary', a deterministc trend / linear regression is not suitable
 
-TF.kpss_test(Tbin_deseason)
+TF.kpss_test(Tbin_m)
 
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -137,7 +137,7 @@ TF.kpss_test(Tbin_deseason)
 # Innovative trend analysis
 
 trend_change_points = 0
-ITA_stats = TF.ITA(tbin,Tbin_deseason,trend_change_points)
+ITA_stats = TF.ITA(tbin_m,Tbin_m,trend_change_points)
 
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -151,19 +151,23 @@ ITA_stats = TF.ITA(tbin,Tbin_deseason,trend_change_points)
 
 # Mann kendall tests
 
-mk_result = mk.original_test(Tbin_ann)
-mk_result_wang = mk.pre_whitening_modification_test(Tbin_ann)
-mk_trend = range(0,68)*mk_result.slope + mk_result.intercept; # Theil-Sen slope
-mk_trend_wang = range(0,68)*mk_result_wang.slope + mk_result_wang.intercept; # Theil-Sen slope
+mk_result = mk.original_test(Tbin_m)
+mk_result_wang = mk.pre_whitening_modification_test(Tbin_m)
+mk_trend = range(len(tbin_m))*mk_result.slope + mk_result.intercept; # Theil-Sen slope
+mk_trend_wang = range(len(tbin_m))*mk_result_wang.slope + mk_result_wang.intercept; # Theil-Sen slope
 
-plt.scatter(tbin_ann,Tbin_ann)
-plt.plot(tbin_ann,mk_trend,'r')
-plt.plot(tbin_ann,mk_trend_wang,'g')
+plt.scatter(tbin_m,Tbin_m)
+plt.plot(tbin_m,mk_trend,'r')
+plt.plot(tbin_m,mk_trend_wang,'g')
 plt.show()
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+# %% -----------------------------------------------------------------------------------------------
+# Ensemble EMD
+
+t, T, trend, imfs, res = TF.Ensemble_EMD(tbin_m,Tbin_m)
 
 # %% -----------------------------------------------------------------------------------------------
 # Pettitt tests
@@ -177,10 +181,10 @@ plt.show()
 #         tbin_no_nan.append(tbin[n])
 
 # pett_result = pett.pettitt_test(Tbin_no_nan)
-pett_result = hg.pettitt_test(Tbin_ann)
+pett_result = hg.pettitt_test(Tbin_m)
 
 
-trend_change_date = tbin_ann[pett_result[1]]
+trend_change_date = tbin_m[pett_result[1]]
 
 
 
