@@ -18,6 +18,8 @@ import pyhomogeneity as hg
 from sklearn import linear_model
 import scipy as sp
 from statsmodels.tsa.stattools import kpss
+# EEMD 
+from PyEMD import EMD, EEMD, Visualisation
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -44,7 +46,14 @@ def datevec(TIME):
         calendar array with last axis representing year, month, day, hour,
         minute, second, microsecond
     """
-
+    
+    # If not a datetime64, convert from dt.datetime
+    if '64' not in str(type(TIME)):
+        t = []
+        for nt in range(len(TIME)):
+            o = TIME[nt]
+            t.append(np.datetime64(o.strftime("%Y-%m-%dT%H:%M:%S")))
+        TIME = np.array(t)
     # allocate output 
     out = np.empty(TIME.shape + (7,), dtype="u4")
     # decompose calendar floors
@@ -111,6 +120,9 @@ def bin_daily(start_yr,end_yr,TIME,TEMP):
         T_med = np.median(TEMP[c])  
         tbin.append(t_grid[n_bin])
         Tbin.append(T_med)
+        
+    tbin = np.array(tbin)
+    Tbin = np.array(Tbin)
     
     return tbin, Tbin
     
@@ -209,6 +221,32 @@ def bin_annually(start_yr,end_yr,TIME,TEMP):
     
     return tbin_ann, Tbin_ann
 
+
+# %% -----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# Bin data monthly
+
+
+def bin_monthly(start_yr,end_yr,TIME,TEMP):
+    # create ranges for loop
+    yrs_range = np.arange(start_yr,end_yr+1,1)
+    mns_range = np.arange(1,13,1)
+    # get years and months from time
+    yrs,mns,_,_,_ = datevec(np.array(TIME))
+    
+
+    t_mns = []
+    T_mns = []
+    for yr in yrs_range:
+        for mn in mns_range:
+            t_mns.append(dt.datetime(yr,mn,15))
+            check_bin = np.logical_and([yrs == yr], [mns == mn])
+            T_mns.append(np.nanmean(TEMP[np.squeeze(check_bin)]))
+            
+    t_mns = np.array(t_mns); T_mns = np.array(T_mns);     
+    return t_mns, T_mns
+
+
 # %% -----------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------
 # KPSS test
@@ -247,7 +285,11 @@ def ITA(TIME,TEMP,trend_change_points):
     T1 = np.array(np.sort(TEMP[0:split_number]))
     T2 = np.array(np.sort(TEMP[split_number+1::]))
     t1 = np.array(TIME[0:split_number])
-    t2 = np.array(TIME[split_number+1::])    
+    t2 = np.array(TIME[split_number+1::])   
+    # check if segments are equal
+    if len(t1) != len(t2):
+        t2 = t2[0:-1]
+        T2 = T2[0:-1]
     # sort two parts in ascending order
     T1_indices = np.argsort(T1) 
     T1_t = t1[T1_indices]
@@ -418,6 +460,69 @@ def ITA(TIME,TEMP,trend_change_points):
         ITA_slope_upper_conf = CLupper95
         
     return ITA_stats
+
+
+# %% ----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# EEMD function
+
+def Ensemble_EMD(TIME,TEMP):
+    
+    # https://github.com/laszukdawid/PyEMD
+    # https://pyemd.readthedocs.io/en/latest/intro.html#
+    
+    # Ensemble empirical mode decomposition (EEMD) [Wu2009] is noise-assisted technique, 
+    # which is meant to be more robust than simple Empirical Mode Decomposition (EMD). The 
+    # robustness is checked by performing many decompositions on signals slightly perturbed 
+    # from their initial position. In the grand average over all IMF results the noise will 
+    # cancel each other out and the result is pure decomposition.
+    
+    # ensure is numpy array
+    TIME = np.array(TIME)
+    TEMP = np.array(TEMP)
+    # remove nans from timeseries
+    check_nans = np.isfinite(TEMP)
+    T = TEMP[check_nans]
+    t = TIME[check_nans]
+    # perform EEMD
+    eemd = EEMD(noise_width = 0.2, trials=1000) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+    eemd.eemd(T)
+    imfs, res = eemd.get_imfs_and_residue()
+    # visualise imfs
+    vis = Visualisation()
+    vis.plot_imfs(imfs=imfs, residue=res, t=t, include_residue=True)
+    # vis.plot_instant_freq(np.arange(1,len(t)+1,1), imfs=imfs)
+    vis.show()
+    # reconstruct timeseries from imfs
+    n_imfs = np.size(imfs,0)
+    for n in range(n_imfs):
+        if n == 0:
+            recon =  imfs[n,:]
+        else:
+            recon = recon + imfs[n,:]
+            
+    if n_imfs == 9:        
+        # construct trend using last 3 imfs
+        trend = imfs[n_imfs-3,:] + imfs[n_imfs-2,:] + imfs[n_imfs-1,:]
+    if n_imfs == 8:        
+        # construct trend using last 3 imfs
+        trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]    
+        
+    # create trend figure
+    plt.figure()
+    plt.plot(t,T)
+    plt.plot(t,trend,'k')
+    plt.show()
+    
+    return t, T, trend, imfs, res
+
+
+
+
+
+
+
+
 
 
 
