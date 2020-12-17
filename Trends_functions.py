@@ -20,6 +20,11 @@ import scipy as sp
 from statsmodels.tsa.stattools import kpss
 # EEMD 
 from PyEMD import EMD, EEMD, Visualisation
+# significance stuff
+from sklearn.metrics import mean_squared_error
+import signalz
+import statsmodels.api as sm
+import time
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -52,7 +57,10 @@ def datevec(TIME):
         t = []
         for nt in range(len(TIME)):
             o = TIME[nt]
-            t.append(np.datetime64(o.strftime("%Y-%m-%dT%H:%M:%S")))
+            if '64' not in str(type(o)):
+                t.append(np.datetime64(o.strftime("%Y-%m-%dT%H:%M:%S")))
+            else:
+                t.append(o)
         TIME = np.array(t)
     # allocate output 
     out = np.empty(TIME.shape + (7,), dtype="u4")
@@ -485,7 +493,7 @@ def Ensemble_EMD(TIME,TEMP):
     T = TEMP[check_nans]
     t = TIME[check_nans]
     # perform EEMD
-    eemd = EEMD(noise_width = 0.2, trials=1000) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+    eemd = EEMD(noise_width = 0.2, trials=500, parallel=True, processes=5) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
     eemd.eemd(T)
     imfs, res = eemd.get_imfs_and_residue()
     # visualise imfs
@@ -514,12 +522,152 @@ def Ensemble_EMD(TIME,TEMP):
     plt.plot(t,trend,'k')
     plt.show()
     
-    return t, T, trend, imfs, res
+    return t, T, trend, imfs, 
+
+
+# %% ----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# EEMD quicker function
+
+def Ensemble_EMD_quick(TIME,TEMP):
+    
+    # https://github.com/laszukdawid/PyEMD
+    # https://pyemd.readthedocs.io/en/latest/intro.html#
+    
+    # Ensemble empirical mode decomposition (EEMD) [Wu2009] is noise-assisted technique, 
+    # which is meant to be more robust than simple Empirical Mode Decomposition (EMD). The 
+    # robustness is checked by performing many decompositions on signals slightly perturbed 
+    # from their initial position. In the grand average over all IMF results the noise will 
+    # cancel each other out and the result is pure decomposition.
+    
+    # ASSUMES THAT DATA HAS NO NANS AND IS NUMPY ARRAY
+
+    # perform EEMD
+    eemd = EEMD(noise_width = 0.2, trials=500, parallel=True, processes=5) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+    eemd.eemd(TEMP)
+    imfs, res = eemd.get_imfs_and_residue()
+ 
+    # reconstruct timeseries from imfs
+    n_imfs = np.size(imfs,0)
+    for n in range(n_imfs):
+        if n == 0:
+            recon =  imfs[n,:]
+        else:
+            recon = recon + imfs[n,:]
+            
+    if n_imfs == 9:        
+        # construct trend using last 3 imfs
+        trend = imfs[n_imfs-3,:] + imfs[n_imfs-2,:] + imfs[n_imfs-1,:]
+    if n_imfs == 8:        
+        # construct trend using last 3 imfs
+        trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]    
+
+    return trend
 
 
 
+# %% ----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# EEMD significance function using red noise simulations
+
+def EEMD_significance(TIME,TEMP,ACF_result):
+
+    # determine leakage to get closest matching brownian noise signal to TEMP
+    tests = np.arange(0,1,0.02)
+    ACF_tests = []
+    RMSE_tests = []
+    for n in range(len(tests)):
+        x = signalz.brownian_noise(len(TEMP), leak=tests[n], start=0, std=1, source="gaussian")
+        ACF_tests.append(pd.Series(sm.tsa.acf(x, nlags=10)))
+        A = ACF_tests[n]
+        RMSE_tests.append(np.sqrt(mean_squared_error(ACF_result[0:3], A[0:3])))
+    leakage = np.float(tests[RMSE_tests == np.min(RMSE_tests)])
+    
+    # Code for checking if red noise similar
+    # x = signalz.brownian_noise(len(TEMP), leak=0.44, start=0, std=1, source="gaussian")
+    # plt.plot(ACF_result)
+    # plt.plot(pd.Series(sm.tsa.acf(x, nlags=10)))
+    # plt.show()
+
+    x_sims = []
+    trend_sims = []
+    for n in range(0,1):
+        tic = time.perf_counter()
+        print(n)
+        x_sims.append(signalz.brownian_noise(len(TEMP), leak=leakage, start=0, std=1, source="gaussian"))
+        tr = Ensemble_EMD_quick(TIME,x_sims[n])
+        trend_sims.append(tr)
+        toc = time.perf_counter()
+        print(f"{toc - tic:0.4f} seconds")
+        
+    # combine trends and calculate standard deviation of trends
+    # get standard deviation
+    std_array = []
+    for n in range(len(TEMP)):
+        array_for_stats = []
+        for nn in range(len(trend_sims)):
+            tt = trend_sims[nn]
+            array_for_stats.append(tt[n] -tt[0])
+        std_array.append(np.std(array_for_stats))
+    conf_std_limit = (std_array * (np.ones(len(std_array))*1.96))
 
 
+for n in range(len(trend_sims)):
+     tt = trend_sims[n]
+     plt.plot(TIME,tt-tt[0],'k')
+plt.plot(TIME,(std_array * (np.ones(len(std_array))*1.96)),'b')
+plt.plot(TIME,((std_array * (np.ones(len(std_array))*1.96)*-1)),'b')
+plt.plot(TIME,trend-trend[0])
+plt.show()
+
+
+
+# %% ----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# test effect of trials n on trend
+
+
+def test_trials(TIME,TEMP):
+    
+    trial_tests = np.arange(50,1000,50)
+    
+    trend_results = []
+    for n in range(len(trial_tests)):
+        print(trial_tests[n])
+        # perform EEMD
+        eemd = EEMD(noise_width = 0.2, trials=trial_tests[n], parallel=True, processes=10) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+        eemd.eemd(TEMP)
+        imfs, res = eemd.get_imfs_and_residue()
+        # get trends
+        n_imfs = np.size(imfs,0)
+        if n_imfs == 9:        
+            # construct trend using last 3 imfs
+            trend = imfs[n_imfs-3,:] + imfs[n_imfs-2,:] + imfs[n_imfs-1,:]
+        if n_imfs == 8:        
+            # construct trend using last 3 imfs
+            trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]   
+        if n_imfs == 7:        
+            # construct trend using last 3 imfs
+            trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]      
+            
+        trend_results.append(trend)
+    
+    for n in range(len(trend_results)):
+        tt = np.array(trend_results[n])
+        plt.scatter(x=trial_tests[n],y=tt[0],color='r')
+        plt.scatter(x=trial_tests[n],y=tt[300],color='b')
+        plt.scatter(x=trial_tests[n],y=tt[500],color='g')
+        plt.scatter(x=trial_tests[n],y=tt[700],color='k')
+    plt.show()   
+    
+    for n in range(len(trend_results)):
+        if n < 10:
+            plt.plot(TIME,trend_results[n],'r')
+        else:
+            plt.plot(TIME,trend_results[n],'k')
+    plt.show()      
+        
+        
 
 
 
