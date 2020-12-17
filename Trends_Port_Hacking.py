@@ -28,11 +28,19 @@ import scipy as sp
 import Trends_functions as TF
 # KPSS test
 from statsmodels.tsa.stattools import kpss
+# autocorrelation
+import statsmodels.api as sm
 # 1D interpolation
 from scipy.interpolate import interp1d
 # wavelet analysis
 import pycwt as wavelet
 from pycwt.helpers import find
+# For montecarlo simulation
+from scipy.stats import norm
+from random import seed
+from random import random
+import signalz
+
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -167,30 +175,59 @@ plt.show()
 # %% -----------------------------------------------------------------------------------------------
 # Ensemble EMD
 
+print('Running Ensemble EMD')
 t, T, trend, imfs, res = TF.Ensemble_EMD(tbin_m,Tbin_m)
 
 # %% -----------------------------------------------------------------------------------------------
 # Pettitt tests
 
-# remove NaNs from timeseries for pettitt test
-# Tbin_no_nan = []
-# tbin_no_nan = []
-# for n in range(len(Tbin)):
-#     if np.logical_not(np.isnan(Tbin[n])):
-#         Tbin_no_nan.append(Tbin[n])
-#         tbin_no_nan.append(tbin[n])
 
-# pett_result = pett.pettitt_test(Tbin_no_nan)
 pett_result = hg.pettitt_test(Tbin_m)
-
-
 trend_change_date = tbin_m[pett_result[1]]
 
 
+# %% -----------------------------------------------------------------------------------------------
+# Autocorrelation analysis
 
+ACF_result = pd.Series(sm.tsa.acf(T, nlags=10))
 
+# %% -----------------------------------------------------------------------------------------------
+# Statistical significance
+
+# run Monte Carlo simulations
+
+# test = np.random.normal(0,0.25/np.sqrt(len(T)),len(T))
+
+# sim = []
+# for x in test:
+#     sim.append(T[0]*x)
     
     
+# _,_, trend_test,_,_ = TF.Ensemble_EMD(t,test)
+
+
+# random walk simulation
+
+# seed(1)
+# random_walk = list()
+# random_walk.append(-1 if random() < 0.5 else 1)
+# for i in range(1, len(T)):
+# 	movement = -1 if random() < 0.5 else 1
+# 	value = random_walk[i-1] + movement
+# 	random_walk.append(value)
+# plt.plot(random_walk)
+# plt.show()
+
+# ACF_test = pd.Series(sm.tsa.acf(random_walk, nlags=10))
+    
+
+# https://matousc89.github.io/signalz/sources/generators/brownian_noise.html
+
+x = signalz.brownian_noise(len(T), leak=0.55, start=0, std=1, source="gaussian")
+ACF_test = pd.Series(sm.tsa.acf(x, nlags=10))
+_,_, trend_test,_,_ = TF.Ensemble_EMD(t,x)
+
+
 
 
 
