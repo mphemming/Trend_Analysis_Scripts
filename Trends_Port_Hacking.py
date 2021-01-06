@@ -70,7 +70,7 @@ del c, main_path
 # %% -----------------------------------------------------------------------------------------------
 # Select data at specific depths
 
-# 17-21 m depth
+# surface
 csurf = [(NRSPHB_agg.DEPTH >= 0) & (NRSPHB_agg.DEPTH <= 2)]
 Dsurf = np.array(NRSPHB_agg.DEPTH)
 Dsurf = Dsurf[csurf]
