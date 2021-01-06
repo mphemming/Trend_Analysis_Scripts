@@ -509,7 +509,7 @@ def Ensemble_EMD(TIME,TEMP):
         else:
             recon = recon + imfs[n,:]
             
-    if n_imfs == 9:        
+    if n_imfs >= 9:        
         # construct trend using last 3 imfs
         trend = imfs[n_imfs-3,:] + imfs[n_imfs-2,:] + imfs[n_imfs-1,:]
     if n_imfs == 8:        
@@ -555,14 +555,17 @@ def Ensemble_EMD_quick(TIME,TEMP):
         else:
             recon = recon + imfs[n,:]
             
-    if n_imfs == 9:        
+    if n_imfs >= 9:        
         # construct trend using last 3 imfs
         trend = imfs[n_imfs-3,:] + imfs[n_imfs-2,:] + imfs[n_imfs-1,:]
     if n_imfs == 8:        
         # construct trend using last 3 imfs
         trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]    
 
-    return trend
+    if 'trend' not in (locals()):
+        trend = 0
+
+    return trend, imfs
 
 
 
@@ -577,7 +580,7 @@ def EEMD_significance(TIME,TEMP,ACF_result):
     ACF_tests = []
     RMSE_tests = []
     for n in range(len(tests)):
-        x = signalz.brownian_noise(len(TEMP), leak=tests[n], start=0, std=1, source="gaussian")
+        x = signalz.brownian_noise(len(TEMP), leak=tests[n], start=0, std=0.8, source="gaussian")
         ACF_tests.append(pd.Series(sm.tsa.acf(x, nlags=10)))
         A = ACF_tests[n]
         RMSE_tests.append(np.sqrt(mean_squared_error(ACF_result[0:3], A[0:3])))
@@ -594,7 +597,7 @@ def EEMD_significance(TIME,TEMP,ACF_result):
     for n in range(0,1):
         tic = time.perf_counter()
         print(n)
-        x_sims.append(signalz.brownian_noise(len(TEMP), leak=leakage, start=0, std=1, source="gaussian"))
+        x_sims.append(signalz.brownian_noise(len(TEMP), leak=leakage, start=0, std=0.8, source="gaussian"))
         tr = Ensemble_EMD_quick(TIME,x_sims[n])
         trend_sims.append(tr)
         toc = time.perf_counter()
@@ -612,13 +615,13 @@ def EEMD_significance(TIME,TEMP,ACF_result):
     conf_std_limit = (std_array * (np.ones(len(std_array))*1.96))
 
 
-for n in range(len(trend_sims)):
-     tt = trend_sims[n]
-     plt.plot(TIME,tt-tt[0],'k')
-plt.plot(TIME,(std_array * (np.ones(len(std_array))*1.96)),'b')
-plt.plot(TIME,((std_array * (np.ones(len(std_array))*1.96)*-1)),'b')
-plt.plot(TIME,trend-trend[0])
-plt.show()
+    for n in range(len(trend_sims)):
+         tt = trend_sims[n]
+         plt.plot(TIME,tt-tt[0],'k')
+    plt.plot(TIME,(std_array * (np.ones(len(std_array))*1.96)),'b')
+    plt.plot(TIME,((std_array * (np.ones(len(std_array))*1.96)*-1)),'b')
+    plt.plot(TIME,trend-trend[0])
+    plt.show()
 
 
 
