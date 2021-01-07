@@ -37,8 +37,8 @@ import pycwt as wavelet
 from pycwt.helpers import find
 # For montecarlo simulation
 from scipy.stats import norm
-from random import seed
-from random import random
+from random import random, sample, seed
+import random
 import signalz
 from sklearn.metrics import mean_squared_error
 
@@ -196,19 +196,47 @@ for n in range(len(data)):
     d_25_chunk = np.array(d); d_25_chunk[100:200] = np.nan; d_25_chunk[600:700] = np.nan; 
     d_50_chunk = np.array(d); d_50_chunk[100:300] = np.nan; d_50_chunk[600:800] = np.nan; 
     
-    
-    TR,imfs = TF.Ensemble_EMD_quick(time,d_10)
+    #-----------------------------------------------------
+    print('10%')
+    check = np.isfinite(d_10)
+    TR,imfs = TF.Ensemble_EMD_quick(time[check],d_10[check])
     tr_10.append(np.array(TR))
-    TR,imfs = TF.Ensemble_EMD_quick(time,d_25)
+    #-----------------------------------------------------
+    print('25%')
+    check = np.isfinite(d_25)
+    TR,imfs = TF.Ensemble_EMD_quick(time[check],d_25[check])
     tr_25.append(np.array(TR))
-    TR,imfs = TF.Ensemble_EMD_quick(time,d_50)
+    #-----------------------------------------------------
+    print('50%')
+    check = np.isfinite(d_50)
+    TR,imfs = TF.Ensemble_EMD_quick(time[check],d_50[check])
     tr_50.append(np.array(TR))
-    TR,imfs = TF.Ensemble_EMD_quick(time,d_10_chunk)
+    #-----------------------------------------------------
+    print('10% chunk')
+    check = np.isfinite(d_10_chunk)
+    TR,imfs = TF.Ensemble_EMD_quick(time[check],d_10_chunk[check])
     tr_10_chunk.append(np.array(TR))
-    TR,imfs = TF.Ensemble_EMD_quick(time,d_25_chunk)
+    #-----------------------------------------------------
+    print('25% chunk')
+    check = np.isfinite(d_25_chunk)
+    TR,imfs = TF.Ensemble_EMD_quick(time[check],d_25_chunk[check])
     tr_25_chunk.append(np.array(TR))
-    TR,imfs = TF.Ensemble_EMD_quick(time,d_50_chunk)
-    tr_50_chunk.append(np.array(TR))    
+    #-----------------------------------------------------
+    print('50% chunk')
+    check = np.isfinite(d_50_chunk)
+    TR,imfs = TF.Ensemble_EMD_quick(time[check],d_50_chunk[check])
+    tr_50_chunk.append(np.array(TR))   
+    
+    
+    plt.plot(tr_10[1]-np.nanmin(tr_10[1]))
+    plt.plot(tr_25[1]-np.nanmin(tr_25[1]))
+    plt.plot(tr_50[1]-np.nanmin(tr_50[1]))
+    plt.show()
+    
+    plt.plot(tr_10_chunk[1])
+    plt.plot(tr_25_chunk[1])
+    plt.plot(tr_50_chunk[1])
+    plt.show()    
     
 
 # %% -----------------------------------------------------------------------------------------------
