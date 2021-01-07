@@ -522,7 +522,7 @@ def Ensemble_EMD(TIME,TEMP):
     plt.plot(t,trend,'k')
     plt.show()
     
-    return t, T, trend, imfs, 
+    return t, T, trend, imfs, res
 
 
 # %% ----------------------------------------------------------------------------------------------
@@ -573,7 +573,7 @@ def Ensemble_EMD_quick(TIME,TEMP):
 # -----------------------------------------------------------------------------------------------
 # EEMD significance function using red noise simulations
 
-def EEMD_significance(TIME,TEMP,ACF_result):
+def EEMD_significance(TIME,TEMP,ACF_result,numb_sims):
 
     # determine leakage to get closest matching brownian noise signal to TEMP
     tests = np.arange(0,1,0.02)
@@ -586,6 +586,17 @@ def EEMD_significance(TIME,TEMP,ACF_result):
         RMSE_tests.append(np.sqrt(mean_squared_error(ACF_result[0:3], A[0:3])))
     leakage = np.float(tests[RMSE_tests == np.min(RMSE_tests)])
     
+    # determine standard deviation closest to reality
+    real_std = np.nanstd(TEMP)
+    tests = np.arange(0.1,2,0.1)
+    std_tests = []
+    for n in range(len(tests)):
+        x = signalz.brownian_noise(len(TEMP), leak=leakage, start=0, std=tests[n], source="gaussian")
+        x_std = np.nanstd(x)
+        std_tests.append(real_std-x_std)
+    std_chosen = np.float(tests[np.abs(std_tests) == np.nanmin(np.abs(std_tests))])  
+        
+    
     # Code for checking if red noise similar
     # x = signalz.brownian_noise(len(TEMP), leak=0.44, start=0, std=1, source="gaussian")
     # plt.plot(ACF_result)
@@ -594,11 +605,12 @@ def EEMD_significance(TIME,TEMP,ACF_result):
 
     x_sims = []
     trend_sims = []
-    for n in range(0,1):
+    for n in range(0,numb_sims):
         tic = time.perf_counter()
-        print(n)
-        x_sims.append(signalz.brownian_noise(len(TEMP), leak=leakage, start=0, std=0.8, source="gaussian"))
-        tr = Ensemble_EMD_quick(TIME,x_sims[n])
+        print('Simulation: ' + str(n))
+        x_sims.append(signalz.brownian_noise(len(TEMP), leak=leakage, start=0, \
+                                             std=std_chosen, source="gaussian"))
+        tr,_ = Ensemble_EMD_quick(TIME,x_sims[n])
         trend_sims.append(tr)
         toc = time.perf_counter()
         print(f"{toc - tic:0.4f} seconds")
@@ -613,15 +625,9 @@ def EEMD_significance(TIME,TEMP,ACF_result):
             array_for_stats.append(tt[n] -tt[0])
         std_array.append(np.std(array_for_stats))
     conf_std_limit = (std_array * (np.ones(len(std_array))*1.96))
+    
+    return conf_std_limit, std_array, trend_sims, x_sims
 
-
-    for n in range(len(trend_sims)):
-         tt = trend_sims[n]
-         plt.plot(TIME,tt-tt[0],'k')
-    plt.plot(TIME,(std_array * (np.ones(len(std_array))*1.96)),'b')
-    plt.plot(TIME,((std_array * (np.ones(len(std_array))*1.96)*-1)),'b')
-    plt.plot(TIME,trend-trend[0])
-    plt.show()
 
 
 
