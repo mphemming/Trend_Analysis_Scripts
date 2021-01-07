@@ -79,6 +79,8 @@ tsurf = tsurf[csurf]
 Tsurf = np.array(NRSPHB_agg.TEMP)
 Tsurf = Tsurf[csurf]
 
+del csurf
+
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -112,23 +114,42 @@ tbin_m,Tbin_m = TF.bin_monthly(1953,2021,tbin,Tbin_deseason)
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+# %% -----------------------------------------------------------------------------------------------
+# Ensemble EMD
+print('Running Ensemble EMD')
+t, T, trend, imfs, res = TF.Ensemble_EMD(tbin_m,Tbin_m)
+
+# Autocorrelation analysis
+check = np.where(np.isnan(Tbin_m))
+ACF1 = pd.Series(sm.tsa.acf(Tbin_m[20:401], nlags=10)); # where longest streak without nans
+ACF2 = pd.Series(sm.tsa.acf(Tbin_m[671:777], nlags=10)); # where longest streak without 
+ACF_result = []
+for n in range(0,10):
+    ACF_result.append(np.nanmean([ACF1[n],ACF2[n]]))
+ACF_result = np.array(ACF_result)
+
+# significance
+conf_std_limit, std_array, trend_sims, x_sims =  TF.EEMD_significance(tbin_m,Tbin_m,ACF_result,200)
+
+# Create figure
+plt.figure(figsize=(15,8))
+for n in range(1,200):
+    tt = trend_sims[n]
+    plt.plot(tbin_m,tt-tt[0],color='grey')
+plt.plot(tbin_m,conf_std_limit,color='r')
+plt.plot(tbin_m,conf_std_limit*-1,color='r')
+plt.plot(t,trend-trend[0],color='k',linewidth=2)
+plt.xlabel('Year')
+plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
+plt.show()
+
+
 
 # %% -----------------------------------------------------------------------------------------------
-# Determine relationship and effect of climate indices 
+# Pettitt tests
 
-# reg = linear_model.LinearRegression()
-# reg.fit(tbin_ann[0:-1], PDO_IND)
-
-# Tbin_reg = np.array(Tbin_ann[0:-1])
-# c = np.logical_not(np.isnan(Tbin_reg))
-# Tbin_reg = Tbin_reg[c]
-# PDO_IND_reg =  PDO_IND[c]
-
-# PDO_result = sp.stats.linregress(PDO_IND_reg,Tbin_reg); # no real relationship
-
-        
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+pett_result = hg.pettitt_test(Tbin_m)
+trend_change_date = tbin_m[pett_result[1]]
 
 # %% -----------------------------------------------------------------------------------------------
 # KPSS test to check for stationarity
@@ -142,54 +163,35 @@ TF.kpss_test(Tbin_m)
 
 
 # %% -----------------------------------------------------------------------------------------------
-# Innovative trend analysis
-
-trend_change_points = 0
-ITA_stats = TF.ITA(tbin_m,Tbin_m,trend_change_points)
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
-# %% -----------------------------------------------------------------------------------------------
 # estimate trend with sensitivity testing
 # changing bin sizes, changing depth, changing start and end date
 
 
 # Mann kendall tests
 
-mk_result = mk.original_test(Tbin_m)
-mk_result_wang = mk.pre_whitening_modification_test(Tbin_m)
-mk_trend = range(len(tbin_m))*mk_result.slope + mk_result.intercept; # Theil-Sen slope
-mk_trend_wang = range(len(tbin_m))*mk_result_wang.slope + mk_result_wang.intercept; # Theil-Sen slope
 
-plt.scatter(tbin_m,Tbin_m)
+mk_result = mk.trend_free_pre_whitening_modification_test(Tbin_m)
+mk_trend = range(len(tbin_m))*mk_result.slope + mk_result.intercept;
+
 plt.plot(tbin_m,mk_trend,'r')
-plt.plot(tbin_m,mk_trend_wang,'g')
 plt.show()
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-# %% -----------------------------------------------------------------------------------------------
-# Ensemble EMD
-
-print('Running Ensemble EMD')
-t, T, trend, imfs, res = TF.Ensemble_EMD(tbin_m,Tbin_m)
-
-# %% -----------------------------------------------------------------------------------------------
-# Pettitt tests
-
-
-pett_result = hg.pettitt_test(Tbin_m)
-trend_change_date = tbin_m[pett_result[1]]
 
 
 # %% -----------------------------------------------------------------------------------------------
-# Autocorrelation analysis
+# Innovative trend analysis
 
-ACF_result = pd.Series(sm.tsa.acf(T, nlags=10))
+# trend_change_points = 0
+# ITA_stats = TF.ITA(tbin_m,Tbin_m,trend_change_points)
+
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
 
 # %% -----------------------------------------------------------------------------------------------
 # Statistical significance
@@ -223,9 +225,9 @@ ACF_result = pd.Series(sm.tsa.acf(T, nlags=10))
 
 # https://matousc89.github.io/signalz/sources/generators/brownian_noise.html
 
-x = signalz.brownian_noise(len(T), leak=0.55, start=0, std=1, source="gaussian")
-ACF_test = pd.Series(sm.tsa.acf(x, nlags=10))
-_,_, trend_test,_,_ = TF.Ensemble_EMD(t,x)
+# x = signalz.brownian_noise(len(T), leak=0.55, start=0, std=1, source="gaussian")
+# ACF_test = pd.Series(sm.tsa.acf(x, nlags=10))
+# _,_, trend_test,_,_ = TF.Ensemble_EMD(t,x)
 
 
 
