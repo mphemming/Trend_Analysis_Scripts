@@ -141,23 +141,34 @@ def bin_daily(start_yr,end_yr,TIME,TEMP):
 
 def deseason(TIME,TEMP,clim):
 
-    # get climatology grid
-    clim_grid = range(0,365)
-    # get year days
-    _,_,_,_,yday_bin = datevec(np.array(TIME))
-    # de-season temperatures
-    
-    TEMP_deseason = [None] * len(yday_bin)
-    for n in range(len(yday_bin)):
-        if yday_bin[n]-1 < 365:
-            TEMP_deseason[n] = TEMP[n] - clim[yday_bin[n]-1]
-        else:
-            TEMP_deseason[n] = np.nan
+    if np.size(clim) > 12:
+        # get climatology grid
+        clim_grid = range(0,365)
+        # get year days
+        _,_,_,_,yday_bin = datevec(np.array(TIME))
+        # de-season temperatures
+        TEMP_deseason = [None] * len(yday_bin)
+        for n in range(len(yday_bin)):
+            if yday_bin[n]-1 < 365:
+                TEMP_deseason[n] = TEMP[n] - clim[yday_bin[n]-1]
+            else:
+                TEMP_deseason[n] = np.nan
+    else:
+        # get climatology grid
+        clim_grid = np.arange(1,13,1)
+        # get months
+        _,m,_,_,_ = datevec(np.array(TIME))
+        # de-season temperatures
+        TEMP_deseason = [None] * len(m)
+        TEMP_deseason = np.array(TEMP_deseason)
+        for n in clim_grid:
+            check = m == n
+            TEMP_deseason[check] = TEMP[check] - clim[n-1]
     
     # plot climatology
-    plt.scatter(yday_bin,TEMP)
-    plt.plot(clim_grid,clim,color='r')
-    plt.show()
+    # plt.scatter(yday_bin,TEMP)
+    # plt.plot(clim_grid,clim,color='r')
+    # plt.show()
     # plot de-seasoned TEMP 
     # plt.scatter(yday_bin,TEMP_deseason)
     
@@ -249,7 +260,11 @@ def bin_monthly(start_yr,end_yr,TIME,TEMP):
         for mn in mns_range:
             t_mns.append(dt.datetime(yr,mn,15))
             check_bin = np.logical_and([yrs == yr], [mns == mn])
-            T_mns.append(np.nanmean(TEMP[np.squeeze(check_bin)]))
+            T = TEMP[np.squeeze(check_bin)]
+            if np.size(T) > 0:
+                T_mns.append(np.nanmean(np.float32(TEMP[np.squeeze(check_bin)])))
+            else:
+                T_mns.append(np.nan)
             
     t_mns = np.array(t_mns); T_mns = np.array(T_mns);     
     return t_mns, T_mns
@@ -277,7 +292,19 @@ def kpss_test(series, **kw):
     for key, value in critical_values.items():
         print(f'   {key} : {value}')
     print(f'Result: The series is {"not " if p_value < 0.05 else ""}stationary')
-
+    if p_value < 0.05:
+        result = 'Not Stationary'
+    else:
+        result = 'Stationary'    
+    
+    class results:
+        KPSS_statistic = statistic
+        KPSS_p_value = p_value
+        KPSS_n_lags = n_lags
+        KPSS_critical_values = critical_values
+        KPSS_result = result
+        
+    return results
 
 
 # %% ----------------------------------------------------------------------------------------------
@@ -678,8 +705,29 @@ def test_trials(TIME,TEMP):
         
         
 
+# %% ----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# Simple climatology function for IMOS mooring timeseries
 
+def calc_clim_monthly(TIME,TEMP):
+    
+    yr, mn, dy, hr, yday = datevec(TIME)
+    clim = []
+    for n_mon in np.arange(1,13,1):
+        check = mn == n_mon
+        clim.append(np.nanmean(TEMP[check]))
+    
+    return clim
 
+# %% ----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# Convert to MATLAB datenum
+
+def datetime2matlabdn(d):
+   mdn = d + dt.timedelta(days = 366)
+   frac_seconds = (d-dt.datetime(d.year,d.month,d.day,0,0,0)).seconds / (24.0 * 60.0 * 60.0)
+   frac_microseconds = d.microsecond / (24.0 * 60.0 * 60.0 * 1000000.0)
+   return mdn.toordinal() + frac_seconds + frac_microseconds
 
 
 
