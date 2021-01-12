@@ -169,7 +169,6 @@ TF.kpss_test(Tbin_m)
 
 # Mann kendall tests
 
-
 mk_result = mk.trend_free_pre_whitening_modification_test(Tbin_m)
 mk_trend = range(len(tbin_m))*mk_result.slope + mk_result.intercept;
 
