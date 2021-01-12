@@ -56,12 +56,14 @@ BMP120_agg = xr.open_dataset(main_path +
 # Select data at specific depths
 
 # code to check data distribution
-plt.hist(BMP120_agg.DEPTH, bins = np.arange(0,120,1))
-plt.xlim(left=80, right=120)
+# check = np.isfinite(BMP120_agg.TEMP) 
+# %matplotlib qt
+# plt.hist(BMP120_agg.DEPTH[check], bins = np.arange(0,120,1))
+# plt.xlim(left=0, right=120)
 
 print('Selecting data at different depths:')
 
-depths = [18.5, 27.5, 35, 42.5, 50.5, 58.5, 67, 75, 83.5, 91.5, 99.5, 107.5]
+depths = [18.5, 27.5, 35, 43, 50.5, 58.5, 67, 75, 83.5, 91.5, 99.5, 107.5]
 
 D = []
 t = []
@@ -149,18 +151,18 @@ del n
 # %% -----------------------------------------------------------------------------------------------
 # Get monthly averages
 
-print('Getting Monthly Averages')
+# print('Getting Monthly Averages')
 
-# Using de-seasoned timeseries
-tbin_m = []
-Tbin_m = []
-for n in range(len(depths)):
-    print(str(depths[n]) + ' m')
-    tt,TT = TF.bin_monthly(2011,2021,t[n],Tbin_deseason[n])
-    tbin_m.append(tt)
-    Tbin_m.append(TT)
+# # Using de-seasoned timeseries
+# tbin_m = []
+# Tbin_m = []
+# for n in range(len(depths)):
+#     print(str(depths[n]) + ' m')
+#     tt,TT = TF.bin_monthly(2011,2021,t[n],Tbin_deseason[n])
+#     tbin_m.append(tt)
+#     Tbin_m.append(TT)
     
-del tt, TT, n
+# del tt, TT, n
     
 # plt.plot(t10m,Tbin_deseason)
 # plt.plot(tbin_m,Tbin_m)
@@ -231,6 +233,25 @@ del n, tr
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
+# Innovative trend analysis
+
+ITA_stats = []
+ITA_significance = []
+ITA_slope_per_decade = []
+for n in range(len(depths)):
+    ITA_stats.append(TF.ITA(tbin[n],Tbin[n],0,0))
+    a = ITA_stats[n]
+    ITA_significance.append(a.ITA_significance)
+    ITA_slope_per_decade.append(a.ITA_trend_sen_per_decade)
+    
+plt.plot(ITA_slope_per_decade,depths)
+plt.plot(mk_trend_per_decade,depths)
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+# %% -----------------------------------------------------------------------------------------------
 # Ensemble EMD (Here for testing only)
 # print('Running Ensemble EMD')
 # t, T, trend, imfs, res = TF.Ensemble_EMD(tbin[10],Tbin[10])
@@ -278,16 +299,20 @@ del n, tr
 # Save data as mat file
 
 # convert time to string
-tbin_m_str = []
+tbin_str = []
 tbin_deseason_str = []
 a = []
 b = []
-for nn in range(len(tbin_m)):
-    ttt = tbin_m[nn]
+for nn in range(len(tbin)):
+    ttt = tbin[nn]
     for n in range(len(ttt)):
         tt = ttt[n]
-        a.append(tt.strftime("%Y-%m-%d %H:%M:%S"))
-    tbin_m_str.append(a)
+        if 'datetime64' in str(type(tt)):
+            a.append(str(tt))
+        else:
+            a.append(tt.strftime("%Y-%m-%d %H:%M:%S"))
+        if nn == 0:    
+            tbin_str.append(a)
         
     yr, mn, dy, hr, yday = TF.datevec(ttt)
     for n in range(len(yr)):
@@ -296,13 +321,17 @@ for nn in range(len(tbin_m)):
     tbin_deseason_str.append(b)
 
 
-mdic = {'MK_result': mk_result,
+Trend_dict = {'MK_result': mk_result,
 'MK_trend': mk_trend,
 'MK_trend_per_decade': mk_trend_per_decade,
 'MK_pval': mk_pval,
 'KPSS_results': KPSS_result,
-'tbin_m': tbin_m_str,
-'Tbin_m': Tbin_m,
+'ITA_stats': ITA_stats,
+'ITA_significance': ITA_significance,
+'ITA_trend_per_decade': ITA_slope_per_decade}
+
+Data_dict = {'tbin': tbin_str,
+'Tbin': Tbin,
 't': tbin_deseason_str,
 'T': T,
 'D': D,
@@ -310,7 +339,11 @@ mdic = {'MK_result': mk_result,
 'clims': clim,
 'BMP120_agg': BMP120_agg}
 
-savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\CH100_trends.mat", mdic)
+savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+        "BMP120_trends.mat", Trend_dict)
+
+savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+        "BMP120_data.mat", Data_dict)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
