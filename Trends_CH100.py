@@ -36,6 +36,7 @@ import pycwt as wavelet
 from pycwt.helpers import find
 # For montecarlo simulation
 from scipy.stats import norm
+import scipy.stats as sts
 from random import seed
 from random import random
 import signalz
@@ -56,8 +57,11 @@ CH100_agg = xr.open_dataset(main_path +
 # Select data at specific depths
 
 # code to check data distribution
-# plt.hist(CH100_agg.DEPTH, bins = np.arange(0,120,1))
-# plt.xlim(left=50, right=100)
+# check = np.isfinite(CH100_agg.TEMP) 
+# %matplotlib qt
+# plt.hist(CH100_agg.DEPTH[check], bins = np.arange(0,120,1))
+# plt.xlim(left=0, right=110)
+
 
 print('Selecting data at different depths:')
 
@@ -146,18 +150,18 @@ del n
 # %% -----------------------------------------------------------------------------------------------
 # Get monthly averages
 
-print('Getting Monthly Averages')
+# print('Getting Monthly Averages')
 
-# Using de-seasoned timeseries
-tbin_m = []
-Tbin_m = []
-for n in range(len(depths)):
-    print(str(depths[n]) + ' m')
-    tt,TT = TF.bin_monthly(2009,2021,t[n],Tbin_deseason[n])
-    tbin_m.append(tt)
-    Tbin_m.append(TT)
+# # Using de-seasoned timeseries
+# tbin_m = []
+# Tbin_m = []
+# for n in range(len(depths)):
+#     print(str(depths[n]) + ' m')
+#     tt,TT = TF.bin_monthly(2009,2021,t[n],Tbin_deseason[n])
+#     tbin_m.append(tt)
+#     Tbin_m.append(TT)
     
-del tt, TT, n
+# del tt, TT, n
     
 # plt.plot(t10m,Tbin_deseason)
 # plt.plot(tbin_m,Tbin_m)
@@ -174,13 +178,16 @@ print('Getting Daily Averages')
 # Using de-seasoned timeseries
 tbin = []
 Tbin = []
+Tbin_no_deseason = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # This is done to get a regular time grid with daily resolution
     tt,TT = TF.bin_daily(2009,2021,t[n],np.float64(Tbin_deseason[n]))
     tbin.append(tt)
     Tbin.append(TT)
-
+    _,TT = TF.bin_daily(2009,2021,t[n],np.float64(T[n]))
+    Tbin_no_deseason.append(TT)
+    
 del tt, TT, n  
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -200,6 +207,8 @@ for n in range(len(depths)):
       
 del a, n
     
+print(stationarity_array)
+
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -223,6 +232,71 @@ for n in range(len(depths)):
     
 del n, tr
     
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# %% -----------------------------------------------------------------------------------------------
+# Innovative trend analysis
+
+ITA_stats = []
+ITA_significance = []
+ITA_slope_per_decade = []
+for n in range(len(depths)):
+    ITA_stats.append(TF.ITA(tbin[n],Tbin[n],0,0))
+    a = ITA_stats[n]
+    ITA_significance.append(a.ITA_significance)
+    ITA_slope_per_decade.append(a.ITA_trend_sen_per_decade)
+    
+plt.plot(ITA_slope_per_decade,depths)
+plt.plot(mk_trend_per_decade,depths)
+
+del n, a
+
+# # Autocorrelation analysis
+# n = 0
+# TT = Tbin[n]
+# check = np.where(np.isnan(TT))
+# ACF1 = pd.Series(sm.tsa.acf(TT[1550:1690], nlags=100)); # where longest streak without nans
+# ACF2 = pd.Series(sm.tsa.acf(TT[2680:2770], nlags=100)); # where longest streak without 
+# ACF3 = pd.Series(sm.tsa.acf(TT[3785:3920], nlags=100)); # where longest streak without 
+# ACF_result = []
+# for n in range(0,50):
+#     ACF_result.append(np.nanmean([ACF1[n],ACF2[n],ACF3[n]]))
+# ACF_result = np.array(ACF_result)
+
+# # 95% confidence level for no trend case
+# # confidence_ITA = TF.ITA_significance(tbin[0],Tbin[0],ACF_result,500)
+
+# # https://www.mathsisfun.com/data/confidence-interval.html
+
+
+# line = np.arange(start=-20, stop=20, step=1) 
+# conf = 1.96*(np.nanstd(line)/np.sqrt(len(line)))
+# # line = np.arange(start=2500, stop=5700, step=1) 
+# line_upper = line+conf
+# line_lower = line-conf
+
+
+# plt.plot(line,line,color='k')
+# plt.plot(line,line_lower,color='r')
+# plt.plot(line, line_upper,color='r')
+# plt.scatter(ITA_stats.TEMP_half_1,ITA_stats.TEMP_half_2,2)
+# plt.xlim(left=-4, right=4)
+# plt.ylim(bottom=-4, top=4)
+
+
+# plt.plot(ITA_stats.TEMP_half_1,ITA_stats.TEMP_half_1*ITA_stats.ITA_trend_sen_period)
+
+
+
+# plt.plot(ITA_stats.TEMP_half_1,
+#    ITA_stats.TEMP_half_2*(ITA_stats.ITA_trend_sen_period+ITA_stats.ITA_slope_upper_conf),color='r')
+# plt.plot(ITA_stats.TEMP_half_1,
+#    ITA_stats.TEMP_half_2*(ITA_stats.ITA_trend_sen_period-ITA_stats.ITA_slope_upper_conf),color='r')
+# plt.scatter(ITA_stats.TEMP_half_1,ITA_stats.TEMP_half_2)
+# plt.xlim(left=-2, right=2)
+# plt.ylim(bottom=-2, top=2)
+
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -274,16 +348,16 @@ del n, tr
 # Save data as mat file
 
 # convert time to string
-tbin_m_str = []
+tbin_str = []
 tbin_deseason_str = []
 a = []
 b = []
-for nn in range(len(tbin_m)):
-    ttt = tbin_m[nn]
+for nn in range(len(tbin)):
+    ttt = tbin[nn]
     for n in range(len(ttt)):
         tt = ttt[n]
         a.append(tt.strftime("%Y-%m-%d %H:%M:%S"))
-    tbin_m_str.append(a)
+    tbin_str.append(a)
         
     yr, mn, dy, hr, yday = TF.datevec(ttt)
     for n in range(len(yr)):
@@ -292,13 +366,17 @@ for nn in range(len(tbin_m)):
     tbin_deseason_str.append(b)
 
 
-mdic = {'MK_result': mk_result,
+Trend_dict = {'MK_result': mk_result,
 'MK_trend': mk_trend,
 'MK_trend_per_decade': mk_trend_per_decade,
 'MK_pval': mk_pval,
 'KPSS_results': KPSS_result,
-'tbin_m': tbin_m_str,
-'Tbin_m': Tbin_m,
+'ITA_stats': ITA_stats,
+'ITA_significance': ITA_significance,
+'ITA_trend_per_decade': ITA_slope_per_decade}
+
+Data_dict = {'tbin': tbin_str,
+'Tbin': Tbin,
 't': tbin_deseason_str,
 'T': T,
 'D': D,
@@ -306,8 +384,11 @@ mdic = {'MK_result': mk_result,
 'clims': clim,
 'CH100_agg': CH100_agg}
 
-savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\CH100_trends.mat", mdic)
+savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+        "CH100_trends.mat", Trend_dict)
 
+savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+        "CH100_data.mat", Data_dict)
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
