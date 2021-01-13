@@ -213,10 +213,6 @@ print(stationarity_array)
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
-# estimate trend with sensitivity testing
-# changing bin sizes, changing depth, changing start and end date
-
-
 # Mann kendall tests
 print('Estimating Sen slopes and performing Mann Kendall tests')
 mk_result = []
