@@ -40,6 +40,7 @@ from scipy.stats import norm
 from random import seed
 from random import random
 import signalz
+from scipy.io import savemat
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -70,25 +71,63 @@ del c, main_path
 # %% -----------------------------------------------------------------------------------------------
 # Select data at specific depths
 
-# surface
-csurf = [(NRSPHB_agg.DEPTH >= 0) & (NRSPHB_agg.DEPTH <= 2)]
-Dsurf = np.array(NRSPHB_agg.DEPTH)
-Dsurf = Dsurf[csurf]
-tsurf = np.array(NRSPHB_agg.TIME)
-tsurf = tsurf[csurf]
-Tsurf = np.array(NRSPHB_agg.TEMP)
-Tsurf = Tsurf[csurf]
+print('Selecting data at different depths:')
 
-del csurf
+depths = [2, 19, 31, 40, 50, 59, 75, 81, 99]
+
+D = []
+t = []
+T = []
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m')
+    # index check
+    c = [(NRSPHB_agg.DEPTH >= depths[n] - 2) & (NRSPHB_agg.DEPTH <= depths[n] + 2)]
+    # Depth
+    d = np.array(NRSPHB_agg.DEPTH);
+    D.append(d[c])
+    # time
+    tt = np.array(NRSPHB_agg.TIME);
+    t.append(tt[c])    
+    # Temp
+    TT = np.array(NRSPHB_agg.TEMP);
+    T.append(TT[c])       
+
+# plt.plot(t[0],T[0])
+# plt.plot(t[10],T[10])
+# plt.show()
+
+del c, d, tt, TT
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+# %% -----------------------------------------------------------------------------------------------
+# Get climatology at same depths
+
+
+clim = np.ones((365,9),dtype=float)
+for day in range(0,365):
+    day_temps = NRSPHB_clim.TEMP_AVE[day,:] 
+    clim[day,:] = np.interp(depths,NRSPHB_clim.DEPTH,day_temps)
+
+# plt.plot(NRSPHB_clim.TEMP_AVE[:,1],'k')
+# plt.plot(np.arange(0,364,1),clim[:,1],'r')
+# plt.plot(NRSPHB_clim.TEMP_AVE[:,2],'k')
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
 # Bin the data
-
 # This is done to get a regular time grid with daily resolution
-tbin,Tbin = TF.bin_daily(1953,2020,tsurf,Tsurf)
+
+tbin = []
+Tbin = []
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m')
+    tt, TT = TF.bin_daily(1953,2020,t[n],T[n])
+    tbin.append(tt)
+    Tbin.append(TT)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -96,11 +135,17 @@ tbin,Tbin = TF.bin_daily(1953,2020,tsurf,Tsurf)
 # %% -----------------------------------------------------------------------------------------------
 # De-season data
 
-# select climatology at similar depth
-climsurf = NRSPHB_clim.TEMP_AVE[:,0] # climatology at 20m
-# get de-seasoned temperatures
-Tbin_deseason = np.array(TF.deseason(tbin,Tbin,climsurf))
+print('Removing the season')
 
+
+# get de-seasoned temperatures
+Tbin_deseason = []
+for n in range(len(depths)):
+    cl = clim[:,n]
+    Tbin_deseason.append(np.array(TF.deseason(tbin[n],Tbin[n],cl)))
+    
+del n, cl
+    
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -109,7 +154,14 @@ Tbin_deseason = np.array(TF.deseason(tbin,Tbin,climsurf))
 # Get monthly averages
 
 # Using de-seasoned timeseries
-tbin_m,Tbin_m = TF.bin_monthly(1953,2021,tbin,Tbin_deseason)
+tbin_m = []
+Tbin_m = []
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m')
+    tt,TT = TF.bin_monthly(1953,2021,tbin[n],Tbin_deseason[n])
+    tbin_m.append(tt)
+    Tbin_m.append(TT)
+    
    
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -117,66 +169,126 @@ tbin_m,Tbin_m = TF.bin_monthly(1953,2021,tbin,Tbin_deseason)
 # %% -----------------------------------------------------------------------------------------------
 # Ensemble EMD
 print('Running Ensemble EMD')
-t, T, trend, imfs, res = TF.Ensemble_EMD(tbin_m,Tbin_m)
 
-# Autocorrelation analysis
-check = np.where(np.isnan(Tbin_m))
-ACF1 = pd.Series(sm.tsa.acf(Tbin_m[20:401], nlags=10)); # where longest streak without nans
-ACF2 = pd.Series(sm.tsa.acf(Tbin_m[671:777], nlags=10)); # where longest streak without 
+EEMD_t = []
+EEMD_T = []
+EEMD_trend = []
+EEMD_imfs = []
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m')
+    t, T, trend, imfs, res = TF.Ensemble_EMD(tbin_m[n],Tbin_m[n],0)
+    EEMD_t.append(t)
+    EEMD_T.append(T)
+    EEMD_trend.append(trend)
+    EEMD_imfs.append(imfs)
+    
+# plt.plot(EEMD_t[0],EEMD_trend[0])
+# plt.plot(EEMD_t[1],EEMD_trend[1])
+# plt.plot(EEMD_t[2],EEMD_trend[2]) 
+# plt.plot(EEMD_t[3],EEMD_trend[3])
+# plt.plot(EEMD_t[4],EEMD_trend[4])
+# plt.plot(EEMD_t[5],EEMD_trend[5])
+# plt.plot(EEMD_t[6],EEMD_trend[6])
+# plt.plot(EEMD_t[7],EEMD_trend[7])
+# plt.plot(EEMD_t[8],EEMD_trend[8])
+
+# plt.plot(EEMD_t[5],EEMD_T[5],'.')
+# plt.plot(EEMD_t[5],EEMD_trend[5])
+
+    
+
+# Autocorrelation analysis and significance
+print('Running autocorrelation analysis')
+# Using last 10 years only
+
 ACF_result = []
-for n in range(0,10):
-    ACF_result.append(np.nanmean([ACF1[n],ACF2[n]]))
-ACF_result = np.array(ACF_result)
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m') 
+    check = np.where(np.logical_and([tbin_m[n] > dt.datetime(2010,1,1)], 
+                   [tbin_m[n] < dt.datetime(2020,1,1)]))      
+    TT = Tbin_m[n]
+    TT = TT[check[1]]
+    TT = TT[np.isfinite(TT)]
+    # gaps = np.where(np.diff(check) > np.array(1))
+    # f_times = np.where(np.diff(gaps[1]) > 10)
+    # if np.max(gaps) < len(tbin_m[n])-10:
+    #     if '[]' not in str(f_times):
+    #         f_times = np.array(f_times)
+    #         f_times[-1] = np.int64(len(tbin_m[n]))
+    #     else:
+    #         f_times = np.int64(len(tbin_m[n]))          
+    # a = gaps[1]
+    # f_times = a[f_times]
+    # ACF = []
+    # for ind in range(len(f_times)-1):
+    #     TT = Tbin_m[n]
+    #     TT = TT[f_times[ind]+1:f_times[ind+1]]
+    #     TT = TT[np.where(np.isfinite(TT))]
+    #     ACF.append(pd.Series(sm.tsa.acf(TT, nlags=10)));
 
-# significance
-conf_std_limit, std_array, trend_sims, x_sims =  TF.EEMD_significance(tbin_m,Tbin_m,ACF_result,200)
+    ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
+
+    # significance
+    conf_std_limit, std_array, trend_sims, x_sims = \
+            TF.EEMD_significance(tbin_m[n],Tbin_m[n],ACF_result[n],200)
+
+del TT, n, check
 
 # Create figure
-plt.figure(figsize=(15,8))
-for n in range(1,200):
-    tt = trend_sims[n]
-    plt.plot(tbin_m,tt-tt[0],color='grey')
-plt.plot(tbin_m,conf_std_limit,color='r')
-plt.plot(tbin_m,conf_std_limit*-1,color='r')
-plt.plot(t,trend-trend[0],color='k',linewidth=2)
-plt.xlabel('Year')
-plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
-plt.show()
+# plt.figure(figsize=(15,8))
+# for n in range(1,200):
+#     tt = trend_sims[n]
+#     plt.plot(tbin_m,tt-tt[0],color='grey')
+# plt.plot(tbin_m,conf_std_limit,color='r')
+# plt.plot(tbin_m,conf_std_limit*-1,color='r')
+# plt.plot(t,trend-trend[0],color='k',linewidth=2)
+# plt.xlabel('Year')
+# plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
+# plt.show()
 
 
 
 # %% -----------------------------------------------------------------------------------------------
 # Pettitt tests
 
-pett_result = hg.pettitt_test(Tbin_m)
-trend_change_date = tbin_m[pett_result[1]]
+# pett_result = hg.pettitt_test(Tbin_m)
+# trend_change_date = tbin_m[pett_result[1]]
 
 # %% -----------------------------------------------------------------------------------------------
 # KPSS test to check for stationarity
 # If the result = 'Not stationary', a deterministc trend / linear regression is not suitable
 
-TF.kpss_test(Tbin_m)
-
+print('Checking for stationarity')
+KPSS_result = []
+stationarity_array = []
+for n in range(len(depths)):
+    KPSS_result.append(TF.kpss_test((Tbin_m[n]))) 
+    a = KPSS_result[n]
+    stationarity_array.append(str(depths[n]) + ' m :  ' + a.KPSS_result)       
+      
+del a, n
+    
+print(stationarity_array)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 # %% -----------------------------------------------------------------------------------------------
-# estimate trend with sensitivity testing
-# changing bin sizes, changing depth, changing start and end date
-
-
 # Mann kendall tests
-
-mk_result = mk.trend_free_pre_whitening_modification_test(Tbin_m)
-mk_trend = range(len(tbin_m))*mk_result.slope + mk_result.intercept;
-
-plt.plot(tbin_m,Tbin_m)
-plt.plot(tbin_m,mk_trend,'r')
-plt.plot(t,trend,'g')
-plt.show()
-
+# print('Estimating Sen slopes and performing Mann Kendall tests')
+# mk_result = []
+# mk_trend = []
+# mk_trend_per_decade = []
+# mk_pval = []
+# for n in range(len(depths)):
+#     mk_result.append(mk.trend_free_pre_whitening_modification_test(Tbin_m[n]))
+#     mk_pval.append(mk_result[n].p)
+#     mk_trend.append(range(len(tbin[n]))*mk_result[n].slope + mk_result[n].intercept)
+#     tr = range(0,3652)*mk_result[n].slope + mk_result[n].intercept
+#     mk_trend_per_decade.append(tr[-1]-tr[0])
+    
+# del n, tr
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -184,7 +296,50 @@ plt.show()
 # Save data as mat file for plotting etc.
 # https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.savemat.html
 
+# convert time to string
+tbin_str = []
+tbin_deseason_str = []
+a = []
+b = []
+for nn in range(len(tbin_m)):
+    ttt = tbin[nn]
+    for n in range(len(ttt)):
+        tt = ttt[n]
+        a.append(str("%Y-%m-%d %H:%M:%S"))
+    tbin_str.append(a)
+        
+    yr, mn, dy, hr, yday = TF.datevec(ttt)
+    for n in range(len(yr)):
+        d = dt.datetime(yr[n],mn[n],dy[n],hr[n])
+        b.append(d.strftime("%Y-%m-%d %H:%M:%S"))
+    tbin_deseason_str.append(b)
 
+
+Trend_dict = {'ACF': ACF_result,
+'KPSS_results': KPSS_result,
+'EEMD_t': EEMD_t,
+'EEMD_T': EEMD_T,
+'EEMD_trend': EEMD_trend,
+'EEMD_imfs': imfs,
+'EEMD_conf_std_limit': conf_std_limit,
+'EEMD_std_array': std_array,
+'EEMD_trend_sims': trend_sims,
+'EEMD_sims': x_sims}
+
+Data_dict = {'tbin': tbin_str,
+'Tbin': Tbin,
+'t': tbin_deseason_str,
+'T': T,
+'D': D,
+'Tbin_deseason': Tbin_deseason,
+'clims': clim,
+'NRSPHB_agg': NRSPHB_agg}
+
+savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+        "NRSPHB_trends.mat", Trend_dict)
+
+savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+        "NRSPHB_data.mat", Data_dict)
 
 
 
