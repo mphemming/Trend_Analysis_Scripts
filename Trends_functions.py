@@ -593,7 +593,7 @@ def ITA_significance(TIME,TEMP,ACF_result,numb_sims):
 # -----------------------------------------------------------------------------------------------
 # EEMD function
 
-def Ensemble_EMD(TIME,TEMP):
+def Ensemble_EMD(TIME,TEMP,figure):
     
     # https://github.com/laszukdawid/PyEMD
     # https://pyemd.readthedocs.io/en/latest/intro.html#
@@ -615,11 +615,12 @@ def Ensemble_EMD(TIME,TEMP):
     eemd = EEMD(noise_width = 0.2, trials=500, parallel=True, processes=5) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
     eemd.eemd(T)
     imfs, res = eemd.get_imfs_and_residue()
-    # visualise imfs
-    vis = Visualisation()
-    vis.plot_imfs(imfs=imfs, residue=res, t=t, include_residue=True)
-    # vis.plot_instant_freq(np.arange(1,len(t)+1,1), imfs=imfs)
-    vis.show()
+    if figure == 1:
+        # visualise imfs
+        vis = Visualisation()
+        vis.plot_imfs(imfs=imfs, residue=res, t=t, include_residue=True)
+        # vis.plot_instant_freq(np.arange(1,len(t)+1,1), imfs=imfs)
+        vis.show()
     # reconstruct timeseries from imfs
     n_imfs = np.size(imfs,0)
     for n in range(n_imfs):
@@ -635,11 +636,12 @@ def Ensemble_EMD(TIME,TEMP):
         # construct trend using last 3 imfs
         trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]    
         
-    # create trend figure
-    plt.figure()
-    plt.plot(t,T)
-    plt.plot(t,trend,'k')
-    plt.show()
+    if figure == 1:
+        # create trend figure
+        plt.figure()
+        plt.plot(t,T)
+        plt.plot(t,trend,'k')
+        plt.show()
     
     return t, T, trend, imfs, res
 
