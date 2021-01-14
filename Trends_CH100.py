@@ -297,6 +297,93 @@ del n, a
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
+# Ensemble EMD
+print('Running Ensemble EMD')
+
+EEMD_t = []
+EEMD_T = []
+EEMD_trend = []
+EEMD_imfs = []
+EEMD_res = []
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m')
+    t, T, trend, imfs, res = TF.Ensemble_EMD(tbin[n],Tbin[n],0)
+    EEMD_t.append(t)
+    EEMD_T.append(T)
+    EEMD_trend.append(trend)
+    EEMD_imfs.append(imfs)
+    EEMD_res.append(res)
+    
+    
+    
+plt.plot(EEMD_t[0],EEMD_trend[0])
+plt.plot(EEMD_t[1],EEMD_trend[1])
+
+
+plt.plot(EEMD_t[0],EEMD_T[0],'.')
+plt.plot(EEMD_t[0],EEMD_trend[0])
+
+    
+
+# Autocorrelation analysis and significance
+print('Running autocorrelation analysis')
+# Using last 10 years only
+
+ACF_result = []
+conf_std_limit = []
+std_array = []
+trend_sims = []
+x_sims = []
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m') 
+    check = np.where(np.logical_and([tbin_m[n] > dt.datetime(2010,1,1)], 
+                   [tbin_m[n] < dt.datetime(2020,1,1)]))      
+    TT = Tbin_m[n]
+    TT = TT[check[1]]
+    TT = TT[np.isfinite(TT)]
+    # gaps = np.where(np.diff(check) > np.array(1))
+    # f_times = np.where(np.diff(gaps[1]) > 10)
+    # if np.max(gaps) < len(tbin_m[n])-10:
+    #     if '[]' not in str(f_times):
+    #         f_times = np.array(f_times)
+    #         f_times[-1] = np.int64(len(tbin_m[n]))
+    #     else:
+    #         f_times = np.int64(len(tbin_m[n]))          
+    # a = gaps[1]
+    # f_times = a[f_times]
+    # ACF = []
+    # for ind in range(len(f_times)-1):
+    #     TT = Tbin_m[n]
+    #     TT = TT[f_times[ind]+1:f_times[ind+1]]
+    #     TT = TT[np.where(np.isfinite(TT))]
+    #     ACF.append(pd.Series(sm.tsa.acf(TT, nlags=10)));
+
+    ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
+
+    # significance
+    csl, sa, ts, xs = \
+           TF.EEMD_significance(tbin_m[n],Tbin_m[n],ACF_result[n],1000)
+    conf_std_limit.append(csl)
+    std_array.append(sa)
+    trend_sims.append(ts)
+    x_sims.append(xs)
+
+del TT, n, check, csl, sa, ts, xs
+
+# Create figure
+# plt.figure(figsize=(15,8))
+# for n in range(1,200):
+#     tt = trend_sims[n]
+#     plt.plot(tbin_m,tt-tt[0],color='grey')
+# plt.plot(tbin_m,conf_std_limit,color='r')
+# plt.plot(tbin_m,conf_std_limit*-1,color='r')
+# plt.plot(t,trend-trend[0],color='k',linewidth=2)
+# plt.xlabel('Year')
+# plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
+# plt.show()
+
+
+# %% -----------------------------------------------------------------------------------------------
 # Ensemble EMD (Here for testing only)
 # print('Running Ensemble EMD')
 # t, T, trend, imfs, res = TF.Ensemble_EMD(tbin[10],Tbin[10])
