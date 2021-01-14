@@ -612,7 +612,8 @@ def Ensemble_EMD(TIME,TEMP,figure):
     T = TEMP[check_nans]
     t = TIME[check_nans]
     # perform EEMD
-    eemd = EEMD(noise_width = 0.2, trials=500, parallel=True, processes=5) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+    eemd = EEMD(noise_width = 0.2, trials=500, parallel=True, 
+                processes=5, max_imfs=4,include_residue=False) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
     eemd.eemd(T)
     imfs, res = eemd.get_imfs_and_residue()
     if figure == 1:
@@ -642,6 +643,9 @@ def Ensemble_EMD(TIME,TEMP,figure):
         plt.plot(t,T)
         plt.plot(t,trend,'k')
         plt.show()
+    
+    if 'trend' not in (locals()):
+        trend = 0
     
     return t, T, trend, imfs, res
 
