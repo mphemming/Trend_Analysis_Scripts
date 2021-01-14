@@ -174,6 +174,7 @@ EEMD_t = []
 EEMD_T = []
 EEMD_trend = []
 EEMD_imfs = []
+EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     t, T, trend, imfs, res = TF.Ensemble_EMD(tbin_m[n],Tbin_m[n],0)
@@ -181,6 +182,7 @@ for n in range(len(depths)):
     EEMD_T.append(T)
     EEMD_trend.append(trend)
     EEMD_imfs.append(imfs)
+    EEMD_res.append(res)
     
 # plt.plot(EEMD_t[0],EEMD_trend[0])
 # plt.plot(EEMD_t[1],EEMD_trend[1])
@@ -202,6 +204,10 @@ print('Running autocorrelation analysis')
 # Using last 10 years only
 
 ACF_result = []
+conf_std_limit = []
+std_array = []
+trend_sims = []
+x_sims = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m') 
     check = np.where(np.logical_and([tbin_m[n] > dt.datetime(2010,1,1)], 
@@ -229,10 +235,14 @@ for n in range(len(depths)):
     ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
 
     # significance
-    conf_std_limit, std_array, trend_sims, x_sims = \
-            TF.EEMD_significance(tbin_m[n],Tbin_m[n],ACF_result[n],200)
+    csl, sa, ts, xs = \
+           TF.EEMD_significance(tbin_m[n],Tbin_m[n],ACF_result[n],1000)
+    conf_std_limit.append(csl)
+    std_array.append(sa)
+    trend_sims.append(ts)
+    x_sims.append(xs)
 
-del TT, n, check
+del TT, n, check, csl, sa, ts, xs
 
 # Create figure
 # plt.figure(figsize=(15,8))
@@ -245,14 +255,6 @@ del TT, n, check
 # plt.xlabel('Year')
 # plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
 # plt.show()
-
-
-
-# %% -----------------------------------------------------------------------------------------------
-# Pettitt tests
-
-# pett_result = hg.pettitt_test(Tbin_m)
-# trend_change_date = tbin_m[pett_result[1]]
 
 # %% -----------------------------------------------------------------------------------------------
 # KPSS test to check for stationarity
@@ -270,25 +272,6 @@ del a, n
     
 print(stationarity_array)
 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
-# %% -----------------------------------------------------------------------------------------------
-# Mann kendall tests
-# print('Estimating Sen slopes and performing Mann Kendall tests')
-# mk_result = []
-# mk_trend = []
-# mk_trend_per_decade = []
-# mk_pval = []
-# for n in range(len(depths)):
-#     mk_result.append(mk.trend_free_pre_whitening_modification_test(Tbin_m[n]))
-#     mk_pval.append(mk_result[n].p)
-#     mk_trend.append(range(len(tbin[n]))*mk_result[n].slope + mk_result[n].intercept)
-#     tr = range(0,3652)*mk_result[n].slope + mk_result[n].intercept
-#     mk_trend_per_decade.append(tr[-1]-tr[0])
-    
-# del n, tr
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -320,7 +303,8 @@ Trend_dict = {'ACF': ACF_result,
 'EEMD_t': EEMD_t,
 'EEMD_T': EEMD_T,
 'EEMD_trend': EEMD_trend,
-'EEMD_imfs': imfs,
+'EEMD_imfs': EEMD_imfs,
+'EEMD_res': EEMD_res,
 'EEMD_conf_std_limit': conf_std_limit,
 'EEMD_std_array': std_array,
 'EEMD_trend_sims': trend_sims,
@@ -345,56 +329,6 @@ savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" +
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-# %% -----------------------------------------------------------------------------------------------
-# Innovative trend analysis
-
-# trend_change_points = 0
-# ITA_stats = TF.ITA(tbin_m,Tbin_m,trend_change_points)
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-# %% -----------------------------------------------------------------------------------------------
-# Statistical significance
-
-# run Monte Carlo simulations
-
-# test = np.random.normal(0,0.25/np.sqrt(len(T)),len(T))
-
-# sim = []
-# for x in test:
-#     sim.append(T[0]*x)
-    
-    
-# _,_, trend_test,_,_ = TF.Ensemble_EMD(t,test)
-
-
-# random walk simulation
-
-# seed(1)
-# random_walk = list()
-# random_walk.append(-1 if random() < 0.5 else 1)
-# for i in range(1, len(T)):
-# 	movement = -1 if random() < 0.5 else 1
-# 	value = random_walk[i-1] + movement
-# 	random_walk.append(value)
-# plt.plot(random_walk)
-# plt.show()
-
-# ACF_test = pd.Series(sm.tsa.acf(random_walk, nlags=10))
-    
-
-# https://matousc89.github.io/signalz/sources/generators/brownian_noise.html
-
-# x = signalz.brownian_noise(len(T), leak=0.55, start=0, std=1, source="gaussian")
-# ACF_test = pd.Series(sm.tsa.acf(x, nlags=10))
-# _,_, trend_test,_,_ = TF.Ensemble_EMD(t,x)
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 
 
 
