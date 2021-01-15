@@ -147,30 +147,6 @@ del n
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-
-# %% -----------------------------------------------------------------------------------------------
-# Get monthly averages
-
-# print('Getting Monthly Averages')
-
-# # Using de-seasoned timeseries
-# tbin_m = []
-# Tbin_m = []
-# for n in range(len(depths)):
-#     print(str(depths[n]) + ' m')
-#     tt,TT = TF.bin_monthly(2011,2021,t[n],Tbin_deseason[n])
-#     tbin_m.append(tt)
-#     Tbin_m.append(TT)
-    
-# del tt, TT, n
-    
-# plt.plot(t10m,Tbin_deseason)
-# plt.plot(tbin_m,Tbin_m)
-# plt.show()
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 # %% -----------------------------------------------------------------------------------------------
 # Get daily averages
 
@@ -243,50 +219,14 @@ for n in range(len(depths)):
 plt.plot(ITA_slope_per_decade,depths)
 plt.plot(mk_trend_per_decade,depths)
 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+r = [0, 5, 10]
 
-
-# %% -----------------------------------------------------------------------------------------------
-# Ensemble EMD (Here for testing only)
-# print('Running Ensemble EMD')
-# t, T, trend, imfs, res = TF.Ensemble_EMD(tbin[10],Tbin[10])
-
-# # Autocorrelation analysis
-# check = np.where(np.isnan(Tbin_m))
-# ACF1 = pd.Series(sm.tsa.acf(Tbin_m[20:401], nlags=10)); # where longest streak without nans
-# ACF2 = pd.Series(sm.tsa.acf(Tbin_m[671:777], nlags=10)); # where longest streak without 
-# ACF_result = []
-# for n in range(0,10):
-#     ACF_result.append(np.nanmean([ACF1[n],ACF2[n]]))
-# ACF_result = np.array(ACF_result)
-
-# # significance
-# conf_std_limit, std_array, trend_sims, x_sims =  TF.EEMD_significance(tbin_m,Tbin_m,ACF_result,200)
-
-# # Create figure
-# plt.figure(figsize=(15,8))
-# for n in range(1,200):
-#     tt = trend_sims[n]
-#     plt.plot(tbin_m,tt-tt[0],color='grey')
-# plt.plot(tbin_m,conf_std_limit,color='r')
-# plt.plot(tbin_m,conf_std_limit*-1,color='r')
-# plt.plot(t,trend-trend[0],color='k',linewidth=2)
-# plt.xlabel('Year')
-# plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
-# plt.show()
-
-    
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-# %% -----------------------------------------------------------------------------------------------
-# trend comparison plot
-
-# plt.plot(tbin_m,Tbin_m)
-# plt.plot(tbin_m,mk_trend,'r')
-# # plt.plot(t,trend,'g')
-# plt.show()
+for n in range(len(depths)):
+    line = np.arange(start=-20, stop=20, step=1) 
+    plt.plot(line,line,color='k')
+    plt.scatter(ITA_stats[n].TEMP_half_1,ITA_stats[n].TEMP_half_2,2)
+    plt.xlim(left=-4, right=4)
+    plt.ylim(bottom=-4, top=4)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
