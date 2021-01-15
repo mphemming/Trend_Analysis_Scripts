@@ -184,15 +184,15 @@ for n in range(len(depths)):
     EEMD_imfs.append(imfs)
     EEMD_res.append(res)
     
-# plt.plot(EEMD_t[0],EEMD_trend[0])
-# plt.plot(EEMD_t[1],EEMD_trend[1])
-# plt.plot(EEMD_t[2],EEMD_trend[2]) 
-# plt.plot(EEMD_t[3],EEMD_trend[3])
-# plt.plot(EEMD_t[4],EEMD_trend[4])
-# plt.plot(EEMD_t[5],EEMD_trend[5])
-# plt.plot(EEMD_t[6],EEMD_trend[6])
-# plt.plot(EEMD_t[7],EEMD_trend[7])
-# plt.plot(EEMD_t[8],EEMD_trend[8])
+plt.plot(EEMD_t[0],EEMD_trend[0])
+plt.plot(EEMD_t[1],EEMD_trend[1])
+plt.plot(EEMD_t[2],EEMD_trend[2]) 
+plt.plot(EEMD_t[3],EEMD_trend[3])
+plt.plot(EEMD_t[4],EEMD_trend[4])
+plt.plot(EEMD_t[5],EEMD_trend[5])
+plt.plot(EEMD_t[6],EEMD_trend[6])
+plt.plot(EEMD_t[7],EEMD_trend[7])
+plt.plot(EEMD_t[8],EEMD_trend[8])
 
 # plt.plot(EEMD_t[5],EEMD_T[5],'.')
 # plt.plot(EEMD_t[5],EEMD_trend[5])
@@ -280,27 +280,35 @@ print(stationarity_array)
 # https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.savemat.html
 
 # convert time to string
-tbin_str = []
+tbin_m_str = []
 tbin_deseason_str = []
-a = []
-b = []
 for nn in range(len(tbin_m)):
-    ttt = tbin[nn]
+    ttt = tbin_m[nn]
+    a = []
     for n in range(len(ttt)):
         tt = ttt[n]
-        a.append(str("%Y-%m-%d %H:%M:%S"))
-    tbin_str.append(a)
-        
+        a.append(str(tt))
+    tbin_m_str.append(a)
+    b = []    
     yr, mn, dy, hr, yday = TF.datevec(ttt)
     for n in range(len(yr)):
         d = dt.datetime(yr[n],mn[n],dy[n],hr[n])
         b.append(d.strftime("%Y-%m-%d %H:%M:%S"))
     tbin_deseason_str.append(b)
+   
+EEMD_t_str = []
+for nn in range(len(EEMD_t)):
+    ttt = EEMD_t[nn]
+    a = []  
+    for n in range(len(ttt)):
+        tt = ttt[n]
+        a.append(tt.strftime("%Y-%m-%d %H:%M:%S"))
+    EEMD_t_str.append(a)
 
 
 Trend_dict = {'ACF': ACF_result,
 'KPSS_results': KPSS_result,
-'EEMD_t': EEMD_t,
+'EEMD_t': EEMD_t_str,
 'EEMD_T': EEMD_T,
 'EEMD_trend': EEMD_trend,
 'EEMD_imfs': EEMD_imfs,
@@ -310,8 +318,8 @@ Trend_dict = {'ACF': ACF_result,
 'EEMD_trend_sims': trend_sims,
 'EEMD_sims': x_sims}
 
-Data_dict = {'tbin': tbin_str,
-'Tbin': Tbin,
+Data_dict = {'tbin': tbin_m_str,
+'Tbin': Tbin_m,
 't': tbin_deseason_str,
 'T': T,
 'D': D,
