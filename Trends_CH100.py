@@ -89,7 +89,7 @@ for n in range(len(depths)):
 # plt.plot(t[10],T[10])
 # plt.show()
 
-del c, d, tt, TT
+del c, d, tt, TT, n
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -123,6 +123,7 @@ c1 = [(TQC < 14) & (tQC > np.datetime64('2010-12-01')) & (tQC < np.datetime64('2
 TQC[c1] = np.nan; 
 T[5] = TQC; 
 
+del c1, c2, c3, c4
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -143,30 +144,6 @@ for n in range(len(depths)):
     
 del n
     
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
-# %% -----------------------------------------------------------------------------------------------
-# Get monthly averages
-
-# print('Getting Monthly Averages')
-
-# # Using de-seasoned timeseries
-# tbin_m = []
-# Tbin_m = []
-# for n in range(len(depths)):
-#     print(str(depths[n]) + ' m')
-#     tt,TT = TF.bin_monthly(2009,2021,t[n],Tbin_deseason[n])
-#     tbin_m.append(tt)
-#     Tbin_m.append(TT)
-    
-# del tt, TT, n
-    
-# plt.plot(t10m,Tbin_deseason)
-# plt.plot(tbin_m,Tbin_m)
-# plt.show()
-
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -272,13 +249,14 @@ del n, a
 # line_upper = line+conf
 # line_lower = line-conf
 
+r = [0, 5, 10]
 
-# plt.plot(line,line,color='k')
-# plt.plot(line,line_lower,color='r')
-# plt.plot(line, line_upper,color='r')
-# plt.scatter(ITA_stats.TEMP_half_1,ITA_stats.TEMP_half_2,2)
-# plt.xlim(left=-4, right=4)
-# plt.ylim(bottom=-4, top=4)
+for n in r:
+    line = np.arange(start=-20, stop=20, step=1) 
+    plt.plot(line,line,color='k')
+    plt.scatter(ITA_stats[n].TEMP_half_1,ITA_stats[n].TEMP_half_2,2)
+    plt.xlim(left=-4, right=4)
+    plt.ylim(bottom=-4, top=4)
 
 
 # plt.plot(ITA_stats.TEMP_half_1,ITA_stats.TEMP_half_1*ITA_stats.ITA_trend_sen_period)
@@ -336,9 +314,9 @@ trend_sims = []
 x_sims = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m') 
-    check = np.where(np.logical_and([tbin_m[n] > dt.datetime(2010,1,1)], 
-                   [tbin_m[n] < dt.datetime(2020,1,1)]))      
-    TT = Tbin_m[n]
+    check = np.where(np.logical_and([tbin[n] > dt.datetime(2010,1,1)], 
+                   [tbin[n] < dt.datetime(2020,1,1)]))      
+    TT = Tbin[n]
     TT = TT[check[1]]
     TT = TT[np.isfinite(TT)]
     # gaps = np.where(np.diff(check) > np.array(1))
@@ -362,7 +340,7 @@ for n in range(len(depths)):
 
     # significance
     csl, sa, ts, xs = \
-           TF.EEMD_significance(tbin_m[n],Tbin_m[n],ACF_result[n],1000)
+           TF.EEMD_significance(tbin[n],Tbin[n],ACF_result[n],1000)
     conf_std_limit.append(csl)
     std_array.append(sa)
     trend_sims.append(ts)
@@ -383,36 +361,6 @@ del TT, n, check, csl, sa, ts, xs
 # plt.show()
 
 
-# %% -----------------------------------------------------------------------------------------------
-# Ensemble EMD (Here for testing only)
-# print('Running Ensemble EMD')
-# t, T, trend, imfs, res = TF.Ensemble_EMD(tbin[10],Tbin[10])
-
-# # Autocorrelation analysis
-# check = np.where(np.isnan(Tbin_m))
-# ACF1 = pd.Series(sm.tsa.acf(Tbin_m[20:401], nlags=10)); # where longest streak without nans
-# ACF2 = pd.Series(sm.tsa.acf(Tbin_m[671:777], nlags=10)); # where longest streak without 
-# ACF_result = []
-# for n in range(0,10):
-#     ACF_result.append(np.nanmean([ACF1[n],ACF2[n]]))
-# ACF_result = np.array(ACF_result)
-
-# # significance
-# conf_std_limit, std_array, trend_sims, x_sims =  TF.EEMD_significance(tbin_m,Tbin_m,ACF_result,200)
-
-# # Create figure
-# plt.figure(figsize=(15,8))
-# for n in range(1,200):
-#     tt = trend_sims[n]
-#     plt.plot(tbin_m,tt-tt[0],color='grey')
-# plt.plot(tbin_m,conf_std_limit,color='r')
-# plt.plot(tbin_m,conf_std_limit*-1,color='r')
-# plt.plot(t,trend-trend[0],color='k',linewidth=2)
-# plt.xlabel('Year')
-# plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
-# plt.show()
-
-    
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
