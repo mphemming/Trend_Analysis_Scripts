@@ -527,6 +527,10 @@ def ITA(TIME,TEMP,trend_change_points,figure):
         ITA_significance = significance
         TEMP_half_1 = T1_nonan
         TEMP_half_2 = T2_nonan
+        t_start_half_1 = T1_min_year
+        t_end_half_1 = T1_max_year
+        t_start_half_2 = T2_min_year
+        t_end_half_2 = T2_max_year
         
     return ITA_stats
 
