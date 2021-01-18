@@ -256,24 +256,24 @@ del TT, n, check, csl, sa, ts, xs
 # Testing edge effects
 
 
-n = 0
-tt = tbin_m[n]
-TT = Tbin_m[n]
-t_0, T_0, trend_0, imfs_0, res_0 = TF.Ensemble_EMD(tt,TT,0)
-t_1, T_1, trend_1, imfs_1, res_1 = TF.Ensemble_EMD(
-    tt[np.int64(len(tt)*0.1):len(tt)-np.int64(len(tt)*0.1)],
-    TT[np.int64(len(tt)*0.1):len(tt)-np.int64(len(tt)*0.1)],0)
-t_2, T_2, trend_2, imfs_2, res_2 = TF.Ensemble_EMD(
-    tt[np.int64(len(tt)*0.25):len(tt)-np.int64(len(tt)*0.25)],
-    TT[np.int64(len(tt)*0.25):len(tt)-np.int64(len(tt)*0.25)],0)
-t_3, T_3, trend_3, imfs_3, res_3 = TF.Ensemble_EMD(
-    tt[np.int64(len(tt)*0.4):len(tt)-np.int64(len(tt)*0.4)],
-    TT[np.int64(len(tt)*0.4):len(tt)-np.int64(len(tt)*0.4)],0)
+# n = 0
+# tt = tbin_m[n]
+# TT = Tbin_m[n]
+# t_0, T_0, trend_0, imfs_0, res_0 = TF.Ensemble_EMD(tt,TT,0)
+# t_1, T_1, trend_1, imfs_1, res_1 = TF.Ensemble_EMD(
+#     tt[np.int64(len(tt)*0.1):len(tt)-np.int64(len(tt)*0.1)],
+#     TT[np.int64(len(tt)*0.1):len(tt)-np.int64(len(tt)*0.1)],0)
+# t_2, T_2, trend_2, imfs_2, res_2 = TF.Ensemble_EMD(
+#     tt[np.int64(len(tt)*0.25):len(tt)-np.int64(len(tt)*0.25)],
+#     TT[np.int64(len(tt)*0.25):len(tt)-np.int64(len(tt)*0.25)],0)
+# t_3, T_3, trend_3, imfs_3, res_3 = TF.Ensemble_EMD(
+#     tt[np.int64(len(tt)*0.4):len(tt)-np.int64(len(tt)*0.4)],
+#     TT[np.int64(len(tt)*0.4):len(tt)-np.int64(len(tt)*0.4)],0)
     
-plt.plot(t_0[1::],np.diff(trend_0))
-plt.plot(t_1[1::],np.diff(trend_1))
-plt.plot(t_2[1::],np.diff(trend_2))
-plt.plot(t_3[1::],np.diff(imfs_3[6]+imfs_3[5]))
+# plt.plot(t_0[1::],np.diff(trend_0))
+# plt.plot(t_1[1::],np.diff(trend_1))
+# plt.plot(t_2[1::],np.diff(trend_2))
+# plt.plot(t_3[1::],np.diff(imfs_3[6]+imfs_3[5]))
 
 
 # %% -----------------------------------------------------------------------------------------------
@@ -300,27 +300,35 @@ print(stationarity_array)
 # https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.savemat.html
 
 # convert time to string
-tbin_str = []
+tbin_m_str = []
 tbin_deseason_str = []
-a = []
-b = []
 for nn in range(len(tbin_m)):
-    ttt = tbin[nn]
+    ttt = tbin_m[nn]
+    a = []
     for n in range(len(ttt)):
         tt = ttt[n]
-        a.append(str("%Y-%m-%d %H:%M:%S"))
-    tbin_str.append(a)
-        
+        a.append(str(tt))
+    tbin_m_str.append(a)
+    b = []    
     yr, mn, dy, hr, yday = TF.datevec(ttt)
     for n in range(len(yr)):
         d = dt.datetime(yr[n],mn[n],dy[n],hr[n])
         b.append(d.strftime("%Y-%m-%d %H:%M:%S"))
     tbin_deseason_str.append(b)
+   
+EEMD_t_str = []
+for nn in range(len(EEMD_t)):
+    ttt = EEMD_t[nn]
+    a = []  
+    for n in range(len(ttt)):
+        tt = ttt[n]
+        a.append(tt.strftime("%Y-%m-%d %H:%M:%S"))
+    EEMD_t_str.append(a)
 
 
 Trend_dict = {'ACF': ACF_result,
 'KPSS_results': KPSS_result,
-'EEMD_t': EEMD_t,
+'EEMD_t': EEMD_t_str,
 'EEMD_T': EEMD_T,
 'EEMD_trend': EEMD_trend,
 'EEMD_imfs': EEMD_imfs,
@@ -330,7 +338,7 @@ Trend_dict = {'ACF': ACF_result,
 'EEMD_trend_sims': trend_sims,
 'EEMD_sims': x_sims}
 
-Data_dict = {'tbin': tbin_str,
+Data_dict = {'tbin': tbin_m_str,
 'Tbin': Tbin,
 't': tbin_deseason_str,
 'T': T,
