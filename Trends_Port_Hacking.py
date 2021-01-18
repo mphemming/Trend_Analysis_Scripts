@@ -196,8 +196,10 @@ plt.plot(EEMD_t[8],EEMD_trend[8])
 
 # plt.plot(EEMD_t[5],EEMD_T[5],'.')
 # plt.plot(EEMD_t[5],EEMD_trend[5])
-
-    
+# a = EEMD_trend[0]
+# plt.plot(EEMD_t[0],a-a[0])
+# plt.plot(EEMD_t[0],a/np.nanstd(Tbin_m[n])-(a[0]/np.nanstd(Tbin_m[n])))
+# plt.plot(EEMD_t[0],np.ones(len(EEMD_t[0]))*0.4,'k')
 
 # Autocorrelation analysis and significance
 print('Running autocorrelation analysis')
@@ -213,6 +215,7 @@ for n in range(len(depths)):
     check = np.where(np.logical_and([tbin_m[n] > dt.datetime(2010,1,1)], 
                    [tbin_m[n] < dt.datetime(2020,1,1)]))      
     TT = Tbin_m[n]
+    tt = tbin_m[n]
     TT = TT[check[1]]
     TT = TT[np.isfinite(TT)]
     # gaps = np.where(np.diff(check) > np.array(1))
