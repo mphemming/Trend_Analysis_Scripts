@@ -237,19 +237,14 @@ for n in range(len(depths)):
 # convert time to string
 tbin_str = []
 tbin_deseason_str = []
-a = []
-b = []
 for nn in range(len(tbin)):
     ttt = tbin[nn]
+    a = []
     for n in range(len(ttt)):
         tt = ttt[n]
-        if 'datetime64' in str(type(tt)):
-            a.append(str(tt))
-        else:
-            a.append(tt.strftime("%Y-%m-%d %H:%M:%S"))
-        if nn == 0:    
-            tbin_str.append(a)
-        
+        a.append(str(tt))
+    tbin_str.append(a)
+    b = []    
     yr, mn, dy, hr, yday = TF.datevec(ttt)
     for n in range(len(yr)):
         d = dt.datetime(yr[n],mn[n],dy[n],hr[n])
