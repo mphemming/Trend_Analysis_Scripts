@@ -292,16 +292,6 @@ for n in range(len(depths)):
     EEMD_imfs.append(imfs)
     EEMD_res.append(res)
     
-    
-    
-plt.plot(EEMD_t[0],EEMD_trend[0])
-plt.plot(EEMD_t[1],EEMD_trend[1])
-
-
-plt.plot(EEMD_t[0],EEMD_T[0],'.')
-plt.plot(EEMD_t[0],EEMD_trend[0])
-
-    
 
 # Autocorrelation analysis and significance
 print('Running autocorrelation analysis')
@@ -317,24 +307,9 @@ for n in range(len(depths)):
     check = np.where(np.logical_and([tbin[n] > dt.datetime(2010,1,1)], 
                    [tbin[n] < dt.datetime(2020,1,1)]))      
     TT = Tbin[n]
+    tt = tbin[n]
     TT = TT[check[1]]
     TT = TT[np.isfinite(TT)]
-    # gaps = np.where(np.diff(check) > np.array(1))
-    # f_times = np.where(np.diff(gaps[1]) > 10)
-    # if np.max(gaps) < len(tbin_m[n])-10:
-    #     if '[]' not in str(f_times):
-    #         f_times = np.array(f_times)
-    #         f_times[-1] = np.int64(len(tbin_m[n]))
-    #     else:
-    #         f_times = np.int64(len(tbin_m[n]))          
-    # a = gaps[1]
-    # f_times = a[f_times]
-    # ACF = []
-    # for ind in range(len(f_times)-1):
-    #     TT = Tbin_m[n]
-    #     TT = TT[f_times[ind]+1:f_times[ind+1]]
-    #     TT = TT[np.where(np.isfinite(TT))]
-    #     ACF.append(pd.Series(sm.tsa.acf(TT, nlags=10)));
 
     ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
 
@@ -347,18 +322,6 @@ for n in range(len(depths)):
     x_sims.append(xs)
 
 del TT, n, check, csl, sa, ts, xs
-
-# Create figure
-# plt.figure(figsize=(15,8))
-# for n in range(1,200):
-#     tt = trend_sims[n]
-#     plt.plot(tbin_m,tt-tt[0],color='grey')
-# plt.plot(tbin_m,conf_std_limit,color='r')
-# plt.plot(tbin_m,conf_std_limit*-1,color='r')
-# plt.plot(t,trend-trend[0],color='k',linewidth=2)
-# plt.xlabel('Year')
-# plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
-# plt.show()
 
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -396,6 +359,17 @@ for nn in range(len(tbin)):
         b.append(d.strftime("%Y-%m-%d %H:%M:%S"))
     tbin_deseason_str.append(b)
 
+EEMD_t_str = []
+for nn in range(len(EEMD_t)):
+    ttt = EEMD_t[nn]
+    a = []  
+    yr, mn, dy, hr, yday = TF.datevec(ttt)
+    for n in range(len(ttt)):
+        tt = ttt[n]
+        d = dt.datetime(yr[n],mn[n],dy[n],hr[n])
+        a.append(d.strftime("%Y-%m-%d %H:%M:%S"))        
+    EEMD_t_str.append(a)
+
 
 Trend_dict = {'MK_result': mk_result,
 'MK_trend': mk_trend,
@@ -404,7 +378,19 @@ Trend_dict = {'MK_result': mk_result,
 'KPSS_results': KPSS_result,
 'ITA_stats': ITA_stats,
 'ITA_significance': ITA_significance,
-'ITA_trend_per_decade': ITA_slope_per_decade}
+'ITA_trend_per_decade': ITA_slope_per_decade,
+'ACF': ACF_result,
+'KPSS_results': KPSS_result,
+'EEMD_t': EEMD_t_str,
+'EEMD_T': EEMD_T,
+'EEMD_trend': EEMD_trend,
+'EEMD_imfs': EEMD_imfs,
+'EEMD_res': EEMD_res,
+'EEMD_conf_std_limit': conf_std_limit,
+'EEMD_std_array': std_array,
+'EEMD_trend_sims': trend_sims,
+'EEMD_sims': x_sims}
+
 
 Data_dict = {'tbin': tbin_str,
 'Tbin': Tbin,
