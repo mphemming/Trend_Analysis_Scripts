@@ -232,6 +232,57 @@ for n in range(len(depths)):
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
+# Ensemble EMD
+print('Running Ensemble EMD')
+
+EEMD_t = []
+EEMD_T = []
+EEMD_trend = []
+EEMD_imfs = []
+EEMD_res = []
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m')
+    t, T, trend, imfs, res = TF.Ensemble_EMD(tbin[n],Tbin[n],0)
+    EEMD_t.append(t)
+    EEMD_T.append(T)
+    EEMD_trend.append(trend)
+    EEMD_imfs.append(imfs)
+    EEMD_res.append(res)
+    
+
+# Autocorrelation analysis and significance
+print('Running autocorrelation analysis')
+# Using last 10 years only
+
+ACF_result = []
+conf_std_limit = []
+std_array = []
+trend_sims = []
+x_sims = []
+for n in range(len(depths)):
+    print(str(depths[n]) + ' m') 
+    check = np.where(np.logical_and([tbin[n] > dt.datetime(2010,1,1)], 
+                   [tbin[n] < dt.datetime(2020,1,1)]))      
+    TT = Tbin[n]
+    tt = tbin[n]
+    TT = TT[check[1]]
+    TT = TT[np.isfinite(TT)]
+
+    ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
+
+    # significance
+    csl, sa, ts, xs = \
+           TF.EEMD_significance(tbin[n],Tbin[n],ACF_result[n],1000)
+    conf_std_limit.append(csl)
+    std_array.append(sa)
+    trend_sims.append(ts)
+    x_sims.append(xs)
+
+del TT, n, check, csl, sa, ts, xs
+
+
+
+# %% -----------------------------------------------------------------------------------------------
 # Save data as mat file
 
 # convert time to string
@@ -251,6 +302,18 @@ for nn in range(len(tbin)):
         b.append(d.strftime("%Y-%m-%d %H:%M:%S"))
     tbin_deseason_str.append(b)
 
+EEMD_t_str = []
+for nn in range(len(EEMD_t)):
+    ttt = EEMD_t[nn]
+    a = []  
+    yr, mn, dy, hr, yday = TF.datevec(ttt)
+    for n in range(len(ttt)):
+        tt = ttt[n]
+        d = dt.datetime(yr[n],mn[n],dy[n],hr[n])
+        a.append(d.strftime("%Y-%m-%d %H:%M:%S"))        
+    EEMD_t_str.append(a)
+
+
 
 Trend_dict = {'MK_result': mk_result,
 'MK_trend': mk_trend,
@@ -259,7 +322,18 @@ Trend_dict = {'MK_result': mk_result,
 'KPSS_results': KPSS_result,
 'ITA_stats': ITA_stats,
 'ITA_significance': ITA_significance,
-'ITA_trend_per_decade': ITA_slope_per_decade}
+'ITA_trend_per_decade': ITA_slope_per_decade,
+'ACF': ACF_result,
+'KPSS_results': KPSS_result,
+'EEMD_t': EEMD_t_str,
+'EEMD_T': EEMD_T,
+'EEMD_trend': EEMD_trend,
+'EEMD_imfs': EEMD_imfs,
+'EEMD_res': EEMD_res,
+'EEMD_conf_std_limit': conf_std_limit,
+'EEMD_std_array': std_array,
+'EEMD_trend_sims': trend_sims,
+'EEMD_sims': x_sims}
 
 Data_dict = {'tbin': tbin_str,
 'Tbin': Tbin,
