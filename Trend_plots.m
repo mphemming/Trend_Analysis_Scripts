@@ -8,6 +8,7 @@ options.plot_dir = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\';
 % NRSPHB
 NRSPHB_data = load([options.data_dir,'NRSPHB_data']);
 NRSPHB_trends = load([options.data_dir,'NRSPHB_trends']);
+NRSPHB_trends_server = load([options.data_dir,'NRSPHB_trends_server']);
 % NRSMAI
 % NRSMAI_data = load([options.data_dir,'NRSMAI_data']);
 NRSMAI_trends = load([options.data_dir,'NRSMAI_trends']);
@@ -45,13 +46,25 @@ axes('Parent',gcf,...
     'Position',[0.0646701388888889 0.11 0.52662037037037 0.815]);
 
 hold on 
-tr = NRSPHB_trends.EEMD_trend{1};
-p1 = plot(NRSPHB_trends.EEMD_t_conv(1).t,NRSPHB_trends.EEMD_T{1}-tr(1),'LineWidth',2)
-p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,tr-tr(1),'LineWidth',2,'Color','r')
-check_sig = tr-tr(1) > 0.4;
-p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t(check_sig),tr(check_sig)-tr(1),'LineWidth',2,'Color','k')
+std_T = nanstd(NRSPHB_trends.EEMD_T{1});
+tr = NRSPHB_trends.EEMD_trend{1} / std_T;
+tr = tr-tr(1);
+p1 = plot(NRSPHB_trends.EEMD_t_conv(1).t,(NRSPHB_trends.EEMD_T{1}-tr(1))/std_T,'LineWidth',2)
+p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,tr,'LineWidth',2,'Color','r')
+% determine where significant
+for n = 1:numel(tr)
+    t = NRSPHB_trends.EEMD_t_conv(1).t(n);
+    f = find(NRSPHB_data.t_conv(1).t == t);
+    if tr(n) <= NRSPHB_trends_server.EEMD_conf_std_limit(1,f)/2
+        sig(n) = 0;
+    else
+        sig(n) = 1;
+    end
+end
+date_sig = datestr(nanmin(NRSPHB_trends.EEMD_t_conv(1).t(sig == 1)));
+p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t(sig == 1),tr(sig == 1)-tr(1),'LineWidth',2,'Color','k')
 
-[p3a, p3b] = boundedline(NRSPHB_trends.EEMD_t_conv(1).t,zeros(size(NRSPHB_trends.EEMD_t_conv(1).t)),0.4)
+[p3a, p3b] = boundedline(NRSPHB_data.t_conv(1).t,zeros(size(NRSPHB_data.t_conv(1).t)),NRSPHB_trends_server.EEMD_conf_std_limit(1,:)/2)
 set(p3b,'FaceColor','r','FaceAlpha',0.2)
 set(p3a,'LineStyle','None')
 
@@ -61,7 +74,7 @@ set(gca,'LineWidth',2,'Box','On','FontSize',18,'YLim',[-3 4],'XLim',[datenum(195
 
 ylabel('Temperature Anomaly [^\circC]');
 
-leg = legend([p1 p2 p3 p3b],'De-seasoned temperatures','Non-significant EEMD Trend','Significant EEMD Trend','Boundary of non-significance');
+leg = legend([p1 p2 p3 p3b],'De-seasoned temperatures','Insignificant EEMD Trend','Significant EEMD Trend','Boundary of insignificance');
 set(leg,'Location','NorthWest','Box','Off','Position',[0.101466049382716 0.767275373893183 0.238859958518986 0.146990744076638]);
 
 axes('Parent',gcf,...
@@ -70,7 +83,7 @@ axes('Parent',gcf,...
 p1 = plot(NRSPHB_trends.EEMD_t_conv(1).t,NRSPHB_trends.EEMD_T{1}-tr(1),'LineWidth',2)
 hold on;
 
-imf = NRSPHB_trends.EEMD_imfs{1};
+imf = NRSPHB_trends.EEMD_imfs.IMF_1;
 a = 0;
 for n = 1:size(imf,1)
     if n < 2
@@ -78,7 +91,7 @@ for n = 1:size(imf,1)
         p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color','k')
     else
         a = a+2;
-        if n < size(imf,1)-1
+        if n < size(imf,1)
             p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color','k')
         else
             p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color','r')
@@ -165,20 +178,65 @@ print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_example_NRSPHB_2m'])
 % s4 = scatter(sort(e_2(1:500)),sort(e_2(501:end)),'MarkerFaceColor',cmap(5,:),'MarkerEdgeColor',cmap(5,:))
 % s5 = plot(-4:0.1:4,-4:0.1:4,'LineWidth',2,'Color','k');
 
-%% ITA plots at CH100 and BMP120
+%% trend plots at CH100 and BMP120
 
 %% Heatmaps for CH100 and BMP120 ITA and MK results
+
+% get EEMD trends
+
+multiplier = 3653;
+for n_depth = 1:11
+    tr = CH100_trends.EEMD_trend{n_depth}; 
+    tt = datenum(cell2mat(CH100_trends.EEMD_t(n_depth)));
+    tr_rate = diff(tr);
+    % 2010s
+    trend_ave_CH100(n_depth).t2010s = nanmean(tr_rate)*multiplier;        
+end
+for n_depth = 1:12
+    tr = BMP120_trends.EEMD_trend{n_depth}; 
+    tt = datenum(cell2mat(BMP120_trends.EEMD_t(n_depth)));
+    tr_rate = diff(tr);
+    % 2010s
+    trend_ave_BMP120(n_depth).t2010s = nanmean(tr_rate)*multiplier;        
+end
+
 
 figure('units','normalized','position',[0 0.1 .6 .7]);
 
 cmap = cmocean('balance',23);
-cmap_limits = -1.1:0.1:1.1;
+cmap_limits = linspace(-1.1,1.1,23);
 
 % CH100
 axes(gcf,'Position',[0.132595486111111 0.233796296296296 0.33206360479798 0.691203703703695])
 
 ylim([1 12])
-xlim([0 2])
+xlim([0 3])
+
+% EEMD
+for n_depth = 1:11
+
+    tr = trend_ave_CH100(n_depth).t2010s;
+    c(1) = interp1(cmap_limits,cmap(:,1),tr);
+    c(2) = interp1(cmap_limits,cmap(:,2),tr);
+    c(3) = interp1(cmap_limits,cmap(:,3),tr);
+    color = [c(1) c(2) c(3)];
+    patch([0 0 1 1],[n_depth n_depth+1 n_depth+1 n_depth],color);
+    
+    if n_depth == 1
+        bott = 0.85;
+    else
+        bott = bott-0.063;
+    end
+    
+    annotation(gcf,'textbox',...
+    [0.16 bott 0.123131944444445 0.0714285714285705],...
+    'String',[num2str(round(tr,2)),' *'],...
+    'LineStyle','none',...
+    'FontSize',14,...
+    'FitBoxToText','off');
+
+end
+
 
 % ITA 
 for n_depth = 1:11
@@ -188,7 +246,7 @@ for n_depth = 1:11
     c(2) = interp1(cmap_limits,cmap(:,2),tr);
     c(3) = interp1(cmap_limits,cmap(:,3),tr);
     color = [c(1) c(2) c(3)];
-    patch([0 0 1 1 ],[n_depth n_depth+1 n_depth+1 n_depth],color);
+    patch([1 1 2 2 ],[n_depth n_depth+1 n_depth+1 n_depth],color);
     
     if n_depth == 1
         bott = 0.85;
@@ -197,8 +255,8 @@ for n_depth = 1:11
     end
     
     annotation(gcf,'textbox',...
-    [0.185 bott 0.123131944444445 0.0714285714285705],...
-    'String',num2str(round(tr,2)),...
+    [0.27 bott 0.123131944444445 0.0714285714285705],...
+    'String',[num2str(round(tr,2)),' *'],...
     'LineStyle','none',...
     'FontSize',14,...
     'FitBoxToText','off');
@@ -214,7 +272,7 @@ for n_depth = 1:11
     c(2) = interp1(cmap_limits,cmap(:,2),tr);
     c(3) = interp1(cmap_limits,cmap(:,3),tr);
     color = [c(1) c(2) c(3)];
-    patch([1 1 2 2],[n_depth n_depth+1 n_depth+1 n_depth],color);
+    patch([2 2 3 3],[n_depth n_depth+1 n_depth+1 n_depth],color);
     
     if n_depth == 1
         bott = 0.85;
@@ -222,25 +280,26 @@ for n_depth = 1:11
         bott = bott-0.063;
     end
     
-    annotation(gcf,'textbox',...
-    [0.35 bott 0.123131944444445 0.0714285714285705],...
-    'String',num2str(round(tr,2)),...
-    'LineStyle','none',...
-    'FontSize',14,...
-    'FitBoxToText','off');
-
-    if pv > 0.05
-        xp = 1:0.05:2
-        for n = 2:20
-            hold on
-            plot(ones(size(n_depth:0.01:n_depth+1)).*xp(n),n_depth:0.01:n_depth+1,'r')
-        end
+    if pv < 0.05
+        annotation(gcf,'textbox',...
+        [0.38 bott 0.123131944444445 0.0714285714285705],...
+        'String',[num2str(round(tr,2)),' *'],...
+        'LineStyle','none',...
+        'FontSize',14,...
+        'FitBoxToText','off');
+    else
+        annotation(gcf,'textbox',...
+        [0.38 bott 0.123131944444445 0.0714285714285705],...
+        'String',num2str(round(tr,2)),...
+        'LineStyle','none',...
+        'FontSize',14,...
+        'FitBoxToText','off');
     end
 
 end
 
 set(gca,'YDir','Reverse','LineWidth',1,'YTick',1.5:1:11.5,'YTickLabels',[10.5, 20, 27.5, 35.5, 43.5, 51.5, 59.5, 67.5, 75.5, 84.5, 91.5],...
-    'XTick',[0.5 1.5],'XTickLabels',[{'ITA'} {'TSSE'}],'FontSize',16,'Box','On');
+    'XTick',[0.5 1.5 2.5],'XTickLabels',[{'EEMD'} {'ITA'} {'TSSE'}],'FontSize',16,'Box','On');
 ylabel('Depth [m]');
 title('CH100')
 
@@ -249,7 +308,33 @@ title('CH100')
 axes(gcf,'Position',[0.570340909090909 0.11 0.334659090909091 0.773267195767196]);
 
 ylim([1 13])
-xlim([0 2])
+xlim([0 3])
+
+% EEMD
+for n_depth = 1:12
+
+    tr = trend_ave_BMP120(n_depth).t2010s;
+    c(1) = interp1(cmap_limits,cmap(:,1),tr);
+    c(2) = interp1(cmap_limits,cmap(:,2),tr);
+    c(3) = interp1(cmap_limits,cmap(:,3),tr);
+    color = [c(1) c(2) c(3)];
+    patch([0 0 1 1],[n_depth n_depth+1 n_depth+1 n_depth],color);
+    
+    if n_depth == 1
+        bott = 0.8;
+    else
+        bott = bott-0.063;
+    end
+    
+    annotation(gcf,'textbox',...
+    [0.6 bott 0.123131944444445 0.0714285714285705],...
+    'String',[num2str(round(tr,2)),' *'],...
+    'LineStyle','none',...
+    'FontSize',14,...
+    'FitBoxToText','off');
+
+end
+
 
 % ITA 
 for n_depth = 1:12
@@ -259,7 +344,7 @@ for n_depth = 1:12
     c(2) = interp1(cmap_limits,cmap(:,2),tr);
     c(3) = interp1(cmap_limits,cmap(:,3),tr);
     color = [c(1) c(2) c(3)];
-    patch([0 0 1 1 ],[n_depth n_depth+1 n_depth+1 n_depth],color);
+    patch([1 1 2 2],[n_depth n_depth+1 n_depth+1 n_depth],color);
     
     if n_depth == 1
         bott = 0.8;
@@ -268,8 +353,8 @@ for n_depth = 1:12
     end
     
     annotation(gcf,'textbox',...
-    [0.63 bott 0.123131944444445 0.0714285714285705],...
-    'String',num2str(round(tr,2)),...
+    [0.71 bott 0.123131944444445 0.0714285714285705],...
+    'String',[num2str(round(tr,2)),' *'],...
     'LineStyle','none',...
     'FontSize',14,...
     'FitBoxToText','off');
@@ -285,7 +370,7 @@ for n_depth = 1:12
     c(2) = interp1(cmap_limits,cmap(:,2),tr);
     c(3) = interp1(cmap_limits,cmap(:,3),tr);
     color = [c(1) c(2) c(3)];
-    patch([1 1 2 2],[n_depth n_depth+1 n_depth+1 n_depth],color);
+    patch([2 2 3 3],[n_depth n_depth+1 n_depth+1 n_depth],color);
     
     if n_depth == 1
         bott = 0.8;
@@ -293,25 +378,26 @@ for n_depth = 1:12
         bott = bott-0.064;
     end
     
-    annotation(gcf,'textbox',...
-    [0.8 bott 0.123131944444445 0.0714285714285705],...
-    'String',num2str(round(tr,2)),...
-    'LineStyle','none',...
-    'FontSize',14,...
-    'FitBoxToText','off');
-
-    if pv > 0.05
-        xp = 1:0.05:2
-        for n = 2:20
-            hold on
-            plot(ones(size(n_depth:0.01:n_depth+1)).*xp(n),n_depth:0.01:n_depth+1,'r')
-        end
+    if pv < 0.05
+        annotation(gcf,'textbox',...
+        [0.82 bott 0.123131944444445 0.0714285714285705],...
+        'String',[num2str(round(tr,2)),' *'],...
+        'LineStyle','none',...
+        'FontSize',14,...
+        'FitBoxToText','off');
+    else
+        annotation(gcf,'textbox',...
+        [0.82 bott 0.123131944444445 0.0714285714285705],...
+        'String',num2str(round(tr,2)),...
+        'LineStyle','none',...
+        'FontSize',14,...
+        'FitBoxToText','off');
     end
 
 end
 
 set(gca,'YDir','Reverse','LineWidth',1,'YTick',1.5:1:12.5,'YTickLabels',[18.5, 27.5, 35, 43, 50.5, 58.5, 67, 75, 83.5, 91.5, 99.5, 107.5],...
-    'XTick',[0.5 1.5],'XTickLabels',[{'ITA'} {'TSSE'}],'FontSize',16,'Box','On');
+    'XTick',[0.5 1.5 2.5],'XTickLabels',[{'EEMD'} {'ITA'} {'TSSE'}],'FontSize',16,'Box','On');
 title('BMP120')
 
 print(gcf, '-dpng','-r400', [options.plot_dir,'Trend_comparison_CH100_BMP120'])
@@ -444,7 +530,8 @@ print(gcf, '-dpng','-r400', [options.plot_dir,'ITA_comparison'])
 
 multiplier = 12*10;
 for n_depth = 1:9
-    tr = cell2mat(NRSPHB_trends.EEMD_trend(n_depth));
+    
+    tr = NRSPHB_trends.EEMD_trend{n_depth}; 
     tt = datenum(cell2mat(NRSPHB_trends.EEMD_t(n_depth)));
     tr_rate = diff(tr);
     % 1960s
@@ -463,46 +550,50 @@ for n_depth = 1:9
     check = tt >= datenum(2000,01,01) & tt < datenum(2010,01,01);
     trend_ave(n_depth).t2000s = nanmean(tr_rate(check(1:end-1)))*multiplier;    
     % 2010s
-    check = tt >= datenum(2010,01,01) & tt < datenum(2015,01,01);
-    trend_ave(n_depth).t2010s = nanmean(tr_rate(check(1:end-1)))*multiplier;        
-    
+    check = tt >= datenum(2010,01,01) & tt < datenum(2020,01,01);
+    trend_ave(n_depth).t2010s = nanmean(tr_rate(check(1:end-1)))*multiplier;  
+    % total change
+    trend_ave(n_depth).total = abs(tr(end)-tr(1));
 end
 
 figure('units','normalized','position',[0 0.1 .7 .8]);
 
 cmap = cmocean('balance',23);
-cmap_limits = -1.1:0.1:1.1;
+cmap_limits = -0.3:0.027:0.3;
 xaxis_limits = linspace(0.1,0.9,6);
 yaxis_limits = linspace(0.11,0.93,6);
-xlim_limits = linspace(0,6,6);
+xlim_limits = linspace(0,7,6);
 ylim_limits = linspace(1,10,6);
 
 
 ylim([1 10])
-xlim([0 6])
+xlim([0 7])
 
-% ITA 
 for n_depth = 1:9
 
     % organise trends over time
     trs = [trend_ave(n_depth).t1960s, trend_ave(n_depth).t1970s, trend_ave(n_depth).t1980s, ...
-        trend_ave(n_depth).t1990s, trend_ave(n_depth).t2000s, trend_ave(n_depth).t2010s];
+        trend_ave(n_depth).t1990s, trend_ave(n_depth).t2000s, trend_ave(n_depth).t2010s, trend_ave(n_depth).total];
     y_pos = interp1(ylim_limits,fliplr(yaxis_limits),n_depth+1.3,'Linear','extrap');
     for n = 1:numel(trs)
-        c(1) = interp1(cmap_limits,cmap(:,1),trs(n));
-        c(2) = interp1(cmap_limits,cmap(:,2),trs(n));
-        c(3) = interp1(cmap_limits,cmap(:,3),trs(n));
-        color = [c(1) c(2) c(3)];
+        if n < 7
+            c(1) = interp1(cmap_limits,cmap(:,1),trs(n));
+            c(2) = interp1(cmap_limits,cmap(:,2),trs(n));
+            c(3) = interp1(cmap_limits,cmap(:,3),trs(n));
+            color = [c(1) c(2) c(3)];
+        else
+            color = [0.9 0.9 0.9];            
+        end
         if n == 1
             patch([0 0 1 1 ],[n_depth n_depth+1 n_depth+1 n_depth],color);
         else
             patch([n-1 n-1 n n],[n_depth n_depth+1 n_depth+1 n_depth],color);
         end
-        x_pos = interp1(xlim_limits,xaxis_limits,n-0.5);
+        x_pos = interp1(xlim_limits,xaxis_limits,n-0.6);
         
         annotation(gcf,'textbox',...
         [x_pos y_pos 0.1 0.1],...
-        'String',num2str(round(trs(n),2)),...
+        'String',[num2str(round(trs(n),2)),' *'],...
         'LineStyle','none',...
         'FontSize',14,...
         'FitBoxToText','off');
@@ -511,7 +602,7 @@ for n_depth = 1:9
 end
 
 set(gca,'YDir','Reverse','LineWidth',1,'YTick',1.5:1:9.5,'YTickLabels',[2, 19, 31, 40, 50, 59, 75, 81, 99],...
-    'XTick',0.5:1:5.5,'XTickLabels',[{'1960s'} {'1970s'} {'1980s'} {'1990s'} {'2000s'} {'2010s'}],'FontSize',16,'Box','On');
+    'XTick',0.5:1:6.5,'XTickLabels',[{'1960s'} {'1970s'} {'1980s'} {'1990s'} {'2000s'} {'2010s'} {'Total'}],'FontSize',16,'Box','On');
 ylabel('Depth [m]');
 title('NRS Port Hacking')
 
@@ -526,7 +617,8 @@ print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_PortHacking'])
 multiplier = 12*10;
 clear trend_ave
 for n_depth = 1:2
-    tr = cell2mat(NRSMAI_trends.EEMD_trend(n_depth));
+    
+    tr = NRSMAI_trends.EEMD_trend{n_depth}; 
     tt = datenum(cell2mat(NRSMAI_trends.EEMD_t(n_depth)));
     tr_rate = diff(tr);
    % 1950s
@@ -548,17 +640,19 @@ for n_depth = 1:2
     check = tt >= datenum(2000,01,01) & tt < datenum(2010,01,01);
     trend_ave(n_depth).t2000s = nanmean(tr_rate(check(1:end-1)))*multiplier;    
     % 2010s
-    check = tt >= datenum(2010,01,01) & tt < datenum(2015,01,01);
-    trend_ave(n_depth).t2010s = nanmean(tr_rate(check(1:end-1)))*multiplier;        
+    check = tt >= datenum(2010,01,01) & tt < datenum(2020,01,01);
+    trend_ave(n_depth).t2010s = nanmean(tr_rate(check(1:end-1)))*multiplier;     
+    % total change
+    trend_ave(n_depth).total = abs(tr(end)-tr(1));    
 end
 
 figure('units','normalized','position',[0 0.1 .7 .4]);
 
 cmap = cmocean('balance',23);
-cmap_limits = -1.1:0.1:1.1;
+cmap_limits = -0.3:0.027:0.3;
 xaxis_limits = linspace(0.1,0.9,7);
 yaxis_limits = linspace(0.11,0.93,2);
-xlim_limits = linspace(0,7,7);
+xlim_limits = linspace(0,8,7);
 ylim_limits = linspace(1,3,2);
 
 axes1 = axes('Parent',gcf,...
@@ -566,34 +660,38 @@ axes1 = axes('Parent',gcf,...
 
 
 ylim([1 3])
-xlim([0 7])
+xlim([0 8])
 
 % ITA 
 for n_depth = 1:2
 
     % organise trends over time
     trs = [trend_ave(n_depth).t1950s, trend_ave(n_depth).t1960s, trend_ave(n_depth).t1970s, trend_ave(n_depth).t1980s, ...
-        trend_ave(n_depth).t1990s, trend_ave(n_depth).t2000s, trend_ave(n_depth).t2010s];
+        trend_ave(n_depth).t1990s, trend_ave(n_depth).t2000s, trend_ave(n_depth).t2010s, trend_ave(n_depth).total];
     if n_depth == 1
         y_pos = 0.581;
     else
         y_pos = 0.322;
     end    
     for n = 1:numel(trs)
-        c(1) = interp1(cmap_limits,cmap(:,1),trs(n));
-        c(2) = interp1(cmap_limits,cmap(:,2),trs(n));
-        c(3) = interp1(cmap_limits,cmap(:,3),trs(n));
-        color = [c(1) c(2) c(3)];
+      if n < 8
+            c(1) = interp1(cmap_limits,cmap(:,1),trs(n));
+            c(2) = interp1(cmap_limits,cmap(:,2),trs(n));
+            c(3) = interp1(cmap_limits,cmap(:,3),trs(n));
+            color = [c(1) c(2) c(3)];
+        else
+            color = [0.9 0.9 0.9];            
+        end
         if n == 1
             patch([0 0 1 1 ],[n_depth n_depth+1 n_depth+1 n_depth],color);
         else
             patch([n-1 n-1 n n],[n_depth n_depth+1 n_depth+1 n_depth],color);
         end
-        x_pos = interp1(xlim_limits,xaxis_limits,n-0.5);
+        x_pos = interp1(xlim_limits,xaxis_limits,n-0.6);
         
         annotation(gcf,'textbox',...
         [x_pos y_pos 0.1 0.1],...
-        'String',num2str(round(trs(n),2)),...
+        'String',[num2str(round(trs(n),2)),' *'],...
         'LineStyle','none',...
         'FontSize',14,...
         'FitBoxToText','off');
@@ -602,7 +700,7 @@ for n_depth = 1:2
 end
 
 set(gca,'YDir','Reverse','LineWidth',1,'YTick',1.5:2.5,'YTickLabels',[2, 21],...
-    'XTick',0.5:1:6.5,'XTickLabels',[{'1950s'} {'1960s'} {'1970s'} {'1980s'} {'1990s'} {'2000s'} {'2010s'}],'FontSize',16,'Box','On');
+    'XTick',0.5:1:7.5,'XTickLabels',[{'1950s'} {'1960s'} {'1970s'} {'1980s'} {'1990s'} {'2000s'} {'2010s'} {'Total'}],'FontSize',16,'Box','On');
 ylabel('Depth [m]');
 title('NRS Maria Island')
 
