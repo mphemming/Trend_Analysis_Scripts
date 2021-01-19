@@ -616,7 +616,7 @@ def Ensemble_EMD(TIME,TEMP,figure):
     T = TEMP[check_nans]
     t = TIME[check_nans]
     # perform EEMD
-    eemd = EEMD(noise_width = 0.2, trials=500, parallel=True, 
+    eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
                 processes=5, max_imfs=4,include_residue=False) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
     eemd.eemd(T)
     imfs, res = eemd.get_imfs_and_residue()
@@ -634,13 +634,27 @@ def Ensemble_EMD(TIME,TEMP,figure):
         else:
             recon = recon + imfs[n,:]
             
-    if n_imfs >= 9:        
-        # construct trend using last 3 imfs
-        trend = imfs[n_imfs-3,:] + imfs[n_imfs-2,:] + imfs[n_imfs-1,:]
-    if n_imfs == 8:        
-        # construct trend using last 3 imfs
-        trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]    
+    # if n_imfs >= 9:        
+    #     # construct trend using last 3 imfs
+    #     trend = imfs[n_imfs-3,:] + imfs[n_imfs-2,:] + imfs[n_imfs-1,:]
+    # if n_imfs == 8:        
+    #     # construct trend using last 3 imfs
+    #     trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]    
         
+    trend = imfs[n_imfs-1,:]
+    
+    if np.abs(trend[-1]-trend[0]) < 0.02:
+        if 'datetime64' in str(type(TIME[0])):
+            first_year = TIME[0].astype(object).year
+            last_year = TIME[-1].astype(object).year
+        else:
+            yr,_,_,_,_ = datevec(TIME)
+            first_year = yr[0]
+            last_year = yr[-1]   
+        if last_year - first_year > 50:
+            trend = imfs[n_imfs-1,:] + imfs[n_imfs-2,:]
+    
+    
     if figure == 1:
         # create trend figure
         plt.figure()
@@ -672,7 +686,7 @@ def Ensemble_EMD_quick(TIME,TEMP):
     # ASSUMES THAT DATA HAS NO NANS AND IS NUMPY ARRAY
 
     # perform EEMD
-    eemd = EEMD(noise_width = 0.2, trials=500, parallel=True, processes=5) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+    eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, processes=5) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
     eemd.eemd(TEMP)
     imfs, res = eemd.get_imfs_and_residue()
  
@@ -684,12 +698,18 @@ def Ensemble_EMD_quick(TIME,TEMP):
         else:
             recon = recon + imfs[n,:]
             
-    if n_imfs >= 9:        
-        # construct trend using last 3 imfs
-        trend = imfs[n_imfs-3,:] + imfs[n_imfs-2,:] + imfs[n_imfs-1,:]
-    if n_imfs == 8:        
-        # construct trend using last 3 imfs
-        trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]    
+    trend = imfs[n_imfs-1,:]
+    
+    if np.abs(trend[-1]-trend[0]) < 0.02:
+        if 'datetime64' in str(type(TIME[0])):
+            first_year = TIME[0].astype(object).year
+            last_year = TIME[-1].astype(object).year
+        else:
+            yr,_,_,_,_ = datevec(TIME)
+            first_year = yr[0]
+            last_year = yr[-1]   
+        if last_year - first_year > 50:
+            trend = imfs[n_imfs-1,:] + imfs[n_imfs-2,:]
 
     if 'trend' not in (locals()):
         trend = 0
@@ -739,7 +759,7 @@ def EEMD_significance(TIME,TEMP,ACF_result,numb_sims):
         print('Simulation: ' + str(n))
         x_sims.append(signalz.brownian_noise(len(TEMP), leak=leakage, start=0, \
                                              std=std_chosen, source="gaussian"))
-        tr,_ = Ensemble_EMD_quick(TIME,x_sims[n])
+        _, _, tr, _, _ = Ensemble_EMD(TIME,x_sims[n],0)
         trend_sims.append(tr)
         toc = time.perf_counter()
         print(f"{toc - tic:0.4f} seconds")
