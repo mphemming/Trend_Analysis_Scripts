@@ -183,6 +183,18 @@ for n in range(len(depths)):
     EEMD_trend.append(trend)
     EEMD_imfs.append(imfs)
     EEMD_res.append(res)
+
+
+EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
+             'IMF_2':EEMD_imfs[1], 
+             'IMF_3':EEMD_imfs[2], 
+             'IMF_4':EEMD_imfs[3], 
+             'IMF_5':EEMD_imfs[4], 
+             'IMF_6':EEMD_imfs[5], 
+             'IMF_7':EEMD_imfs[6], 
+             'IMF_8':EEMD_imfs[7], 
+             'IMF_9':EEMD_imfs[8]}
+
     
 plt.plot(EEMD_t[0],EEMD_trend[0])
 plt.plot(EEMD_t[1],EEMD_trend[1])
@@ -314,7 +326,7 @@ Trend_dict = {'ACF': ACF_result,
 'EEMD_t': EEMD_t_str,
 'EEMD_T': EEMD_T,
 'EEMD_trend': EEMD_trend,
-'EEMD_imfs': EEMD_imfs,
+'EEMD_imfs': EEMD_IMFS,
 'EEMD_res': EEMD_res,
 'EEMD_conf_std_limit': conf_std_limit,
 'EEMD_std_array': std_array,
