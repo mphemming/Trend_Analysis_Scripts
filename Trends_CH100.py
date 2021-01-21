@@ -131,35 +131,62 @@ del c1, c2, c3, c4
 # %% -----------------------------------------------------------------------------------------------
 # De-season data
 
-print('Removing the season')
+# print('Removing the season')
 
-# select climatology at similar depth
+# # select climatology at similar depth
 clim = []
 for n in range(len(depths)):
     clim.append(TF.calc_clim_monthly(t[n],T[n]))
-# get de-seasoned temperatures
+# # get de-seasoned temperatures
 Tbin_deseason = []
 for n in range(len(depths)):
     Tbin_deseason.append(np.array(TF.deseason(t[n],T[n],clim[n])))
     
 del n
-    
+
+# interpolate climatologies to 365 days
+t_months = [dt.datetime(1,1,1),
+            dt.datetime(1,2,1),
+            dt.datetime(1,3,1),
+            dt.datetime(1,4,1),
+            dt.datetime(1,5,1),
+            dt.datetime(1,6,1),
+            dt.datetime(1,7,1),
+            dt.datetime(1,8,1),
+            dt.datetime(1,9,1),
+            dt.datetime(1,10,1),
+            dt.datetime(1,11,1),
+            dt.datetime(1,12,1),
+            dt.datetime(1,12,31)]
+_, _, _, _, yday = datevec(t_months)
+clim_daily = []
+for n in range(len(depths)):
+    c = np.concatenate([clim[n],clim[n]])
+    c = np.stack(c).astype(None)
+    a = c[0:13]
+    clim_daily.append(np.interp(np.arange(0,367,1),yday,a))
+
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
 # Get daily averages
-
+  
 print('Getting Daily Averages')
 
 # Using de-seasoned timeseries
 tbin = []
 Tbin = []
 Tbin_no_deseason = []
+choice = 1
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # This is done to get a regular time grid with daily resolution
-    tt,TT = TF.bin_daily(2009,2021,t[n],np.float64(Tbin_deseason[n]))
+    if choice == 1:
+        tt,TT = TF.bin_daily(2009,2021,t[n],np.float64(T[n]))
+        TT,TTnoDS,_ = TF.fill_gaps(tt,TT,np.squeeze(clim_daily[n]),2*365)
+    else:
+        tt,TT = TF.bin_monthly(2009,2021,tbin[n],Tbin_deseason[n])           
     tbin.append(tt)
     Tbin.append(TT)
     _,TT = TF.bin_daily(2009,2021,t[n],np.float64(T[n]))
