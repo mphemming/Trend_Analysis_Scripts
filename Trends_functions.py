@@ -25,6 +25,7 @@ from sklearn.metrics import mean_squared_error
 import signalz
 import statsmodels.api as sm
 import time
+import random
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -850,6 +851,111 @@ def datetime2matlabdn(d):
    frac_seconds = (d-dt.datetime(d.year,d.month,d.day,0,0,0)).seconds / (24.0 * 60.0 * 60.0)
    frac_microseconds = d.microsecond / (24.0 * 60.0 * 60.0 * 1000000.0)
    return mdn.toordinal() + frac_seconds + frac_microseconds
+
+
+# %% ----------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+# Filling gaps with seasonal variability
+# using n time step standard deviation window
+
+# TEMP must include season
+
+def fill_gaps(TIME,TEMP,CLIM,std_window):
+    
+    # Find first and last date that is finite
+    check_finite = np.where(np.isfinite(TEMP))
+    first_date = np.min(check_finite)
+    last_date = np.max(check_finite)
+    std_window = std_window/2
+    
+    # simulate red noise similar to real data
+    # autocorrelation analysis
+    check = np.isfinite(TEMP)
+    ACF_result = pd.Series(sm.tsa.acf(TEMP[check], nlags=100)); # where longest streak without nans
+    # determine leakage to get closest matching brownian noise signal to TEMP
+    tests = np.arange(0,1,0.02)
+    ACF_tests = []
+    RMSE_tests = []
+    for n in range(len(tests)):
+        x = signalz.brownian_noise(len(TEMP), leak=tests[n], start=0, std=0.8, source="gaussian")
+        ACF_tests.append(pd.Series(sm.tsa.acf(x, nlags=10)))
+        A = ACF_tests[n]
+        RMSE_tests.append(np.sqrt(mean_squared_error(ACF_result[0:10], A[0:10])))
+    leakage = np.float(tests[RMSE_tests == np.min(RMSE_tests)])
+    
+    # determine standard deviation closest to reality
+    real_std = np.nanstd(TEMP)
+    tests = np.arange(0.1,2,0.1)
+    std_tests = []
+    for n in range(len(tests)):
+        x = signalz.brownian_noise(len(TEMP), leak=leakage, start=0, std=tests[n], source="gaussian")
+        x_std = np.nanstd(x)
+        std_tests.append(real_std-x_std)
+    std_chosen = np.float(tests[np.abs(std_tests) == np.nanmin(np.abs(std_tests))])     
+    variability = signalz.brownian_noise(len(TEMP), leak=leakage, start=0, \
+                                             std=std_chosen/2, source="gaussian")
+
+    # reconstruct seasonal cycle with varying standard deviation
+    # based on std_window length (days or months depending on input)
+    T_deseason = np.array(deseason(TIME,TEMP,CLIM))
+    if 'object' in str(T_deseason.dtype):
+        T_deseason = np.stack(T_deseason).astype(None)
+    stds = []
+    means = []
+    for n in range(len(TIME)):
+        index = np.arange(n-std_window,n+std_window,1)
+        check = np.logical_and([index >= 0], [index < len(TIME)])
+        index = np.int64(index[np.squeeze(check)])
+        stds.append(np.nanstd(T_deseason[index]))
+        means.append(np.nanmean(T_deseason[index]))
+    #construct simulated time series using seasonal cycle and stds
+    _, _, _, _, yday_t = datevec(TIME)
+    recon = []
+    for n in range(len(TIME)):
+        std_today = variability[n]
+        std_choice_today = np.linspace(std_today*-1, std_today,100)
+        yday_today = yday_t[n]
+        r = random.randint(0,99)
+        recon.append(CLIM[yday_today] + std_choice_today[r] + means[n])
+        
+    filled_TEMP = []
+    gap_logical = []
+    for n in range(len(TIME)):     
+        if np.isnan(TEMP[n]):
+            if n >= first_date and n <= last_date:
+                filled_TEMP.append(recon[n])
+            else:
+                filled_TEMP.append(TEMP[n])
+            gap_logical.append('True')
+        else:
+            filled_TEMP.append(TEMP[n])
+            gap_logical.append('False')
+    filled_TEMP = np.array(filled_TEMP)
+    gap_logical = np.array(gap_logical)
+    
+    # de-seasoned filled_TEMP
+    filled_TEMP_DS = np.array(deseason(TIME,filled_TEMP,CLIM))
+    
+    return filled_TEMP_DS, filled_TEMP, gap_logical
+
+
+
+
+# def seasonal_mean(ts, n, lr=0.7):
+#     """
+#     Compute the mean of corresponding seasonal periods
+#     ts: 1D array-like of the time series
+#     n: Seasonal window length of the time series
+#     """
+#     out = np.copy(ts)
+#     for i, val in enumerate(ts):
+#         if np.isnan(val):
+#             ts_seas = ts[i-1::-n]  # previous seasons only
+#             if np.isnan(np.nanmean(ts_seas)):
+#                 ts_seas = np.concatenate([ts[i-1::-n], ts[i::n]])  # previous and forward
+#             out[i] = np.nanmean(ts_seas) * lr
+#     return out
+
 
 
 
