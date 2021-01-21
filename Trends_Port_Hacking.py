@@ -108,6 +108,7 @@ del c, d, tt, TT
 clim = np.ones((365,9),dtype=float)
 for day in range(0,365):
     day_temps = NRSPHB_clim.TEMP_AVE[day,:] 
+    day_std = NRSPHB_clim.TEMP_STD[day,:] 
     clim[day,:] = np.interp(depths,NRSPHB_clim.DEPTH,day_temps)
 
 # plt.plot(NRSPHB_clim.TEMP_AVE[:,1],'k')
@@ -133,36 +134,42 @@ for n in range(len(depths)):
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
-# De-season data
+# De-season data and gap-fill
 
-print('Removing the season')
+# print('Removing the season')
 
 
-# get de-seasoned temperatures
+#get de-seasoned temperatures
 Tbin_deseason = []
 for n in range(len(depths)):
     cl = clim[:,n]
     Tbin_deseason.append(np.array(TF.deseason(tbin[n],Tbin[n],cl)))
     
 del n, cl
+
     
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 # %% -----------------------------------------------------------------------------------------------
-# Get monthly averages
+# Get monthly averages and gap-fill
 
 # Using de-seasoned timeseries
 tbin_m = []
 Tbin_m = []
+choice = 1; # 1 = yes to gap fill, 0 otherwise
+
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    tt,TT = TF.bin_monthly(1953,2021,tbin[n],Tbin_deseason[n])
+    if choice == 1:
+        tt,TT = TF.bin_monthly(1953,2021,tbin[n],Tbin[n])
+        TT,TTnoDS,_ = TF.fill_gaps(tt,TT,np.squeeze(clim[:,n]),30*12)
+    else:
+        tt,TT = TF.bin_monthly(1953,2021,tbin[n],Tbin_deseason[n])
     tbin_m.append(tt)
     Tbin_m.append(TT)
     
-   
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
