@@ -12,6 +12,7 @@ NRSPHB_trends_server = load([options.data_dir,'NRSPHB_trends_server']);
 % NRSMAI
 % NRSMAI_data = load([options.data_dir,'NRSMAI_data']);
 NRSMAI_trends = load([options.data_dir,'NRSMAI_trends']);
+NRSMAI_trends_server = load([options.data_dir,'NRSMAI_trends_server']);
 %CH100
 CH100_trends = load([options.data_dir,'CH100_trends']);
 %BMP120
@@ -55,7 +56,7 @@ p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,tr,'LineWidth',2,'Color','r')
 for n = 1:numel(tr)
     t = NRSPHB_trends.EEMD_t_conv(1).t(n);
     f = find(NRSPHB_data.t_conv(1).t == t);
-    if tr(n) <= NRSPHB_trends_server.EEMD_conf_std_limit(1,f)/2
+    if tr(n) <= NRSPHB_trends_server.EEMD_conf_std_limit(1,f)
         sig(n) = 0;
     else
         sig(n) = 1;
@@ -64,7 +65,7 @@ end
 date_sig = datestr(nanmin(NRSPHB_trends.EEMD_t_conv(1).t(sig == 1)));
 p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t(sig == 1),tr(sig == 1)-tr(1),'LineWidth',2,'Color','k')
 
-[p3a, p3b] = boundedline(NRSPHB_data.t_conv(1).t,zeros(size(NRSPHB_data.t_conv(1).t)),NRSPHB_trends_server.EEMD_conf_std_limit(1,:)/2)
+[p3a, p3b] = boundedline(NRSPHB_data.t_conv(1).t,zeros(size(NRSPHB_data.t_conv(1).t)),NRSPHB_trends_server.EEMD_conf_std_limit(1,:))
 set(p3b,'FaceColor','r','FaceAlpha',0.2)
 set(p3a,'LineStyle','None')
 
@@ -121,7 +122,7 @@ annotation(gcf,'textbox',...
     'FontSize',18,...
     'FitBoxToText','off');
 
-leg = legend([p1 p2 p3],'De-seasoned temperatures','IMFs','IMFs used for trend');
+leg = legend([p1 p2 p3],'De-seasoned temperatures','IMFs','Trend');
 set(leg,'Location','SouthWest','Box','Off');
 
 print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_example_NRSPHB_2m'])
