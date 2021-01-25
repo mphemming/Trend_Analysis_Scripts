@@ -134,10 +134,9 @@ for n in range(len(depths)):
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
-# De-season data and gap-fill
+# De-season data
 
-# print('Removing the season')
-
+print('Removing the season')
 
 #get de-seasoned temperatures
 Tbin_deseason = []
@@ -158,17 +157,16 @@ del n, cl
 # Using de-seasoned timeseries
 tbin_m = []
 Tbin_m = []
-choice = 1; # 1 = yes to gap fill, 0 otherwise
+Tbin_m_NG = []
 
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    if choice == 1:
-        tt,TT = TF.bin_monthly(1953,2021,tbin[n],Tbin[n])
-        TT,TTnoDS,_ = TF.fill_gaps(tt,TT,np.squeeze(clim[:,n]),30*12)
-    else:
-        tt,TT = TF.bin_monthly(1953,2021,tbin[n],Tbin_deseason[n])
+    tt,TT = TF.bin_monthly(1953,2021,tbin[n],Tbin[n])
+    TT,TTnoDS,_ = TF.fill_gaps(tt,TT,np.squeeze(clim[:,n]),30*12)
     tbin_m.append(tt)
-    Tbin_m.append(TT)
+    Tbin_m.append(TT)    
+    tt,TT = TF.bin_monthly(1953,2021,tbin[n],Tbin_deseason[n])
+    Tbin_m_NG.append(TT)  
     
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -180,14 +178,16 @@ print('Running Ensemble EMD')
 EEMD_t = []
 EEMD_T = []
 EEMD_trend = []
+EEMD_trend_EAC = []
 EEMD_imfs = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    t, T, trend, imfs, res = TF.Ensemble_EMD(tbin_m[n],Tbin_m[n],0)
+    t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tbin_m[n],Tbin_m[n],0)
     EEMD_t.append(t)
     EEMD_T.append(T)
     EEMD_trend.append(trend)
+    EEMD_trend_EAC.append(trend_EAC)
     EEMD_imfs.append(imfs)
     EEMD_res.append(res)
 
@@ -279,6 +279,64 @@ del TT, n, check, csl, sa, ts, xs
 # plt.show()
 
 # %% -----------------------------------------------------------------------------------------------
+# Mann kendall tests
+print('Estimating Sen slopes and performing Mann Kendall tests')
+mk_result = []
+mk_trend = []
+mk_trend_per_decade = []
+mk_pval = []
+for n in range(len(depths)):
+    mk_result.append(mk.trend_free_pre_whitening_modification_test(Tbin_m[n]))
+    mk_pval.append(mk_result[n].p)
+    mk_trend.append(range(len(tbin_m[n]))*mk_result[n].slope + mk_result[n].intercept)
+    tr = range(0,120)*mk_result[n].slope + mk_result[n].intercept
+    mk_trend_per_decade.append(tr[-1]-tr[0])
+    
+del n, tr
+    
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+# %% -----------------------------------------------------------------------------------------------
+# Innovative trend analysis
+
+ITA_stats = []
+ITA_significance = []
+ITA_slope_per_decade = []
+# ITA_slope_per_decade_high = []
+# ITA_slope_per_decade_low = []
+for n in range(len(depths)):
+    tt = TF.to_date64(tbin_m[n])
+    ITA_stats.append(TF.ITA(tt,Tbin_m[n],-1,0))
+    a = ITA_stats[n]
+    ITA_significance.append(a.ITA_significance)
+    ITA_slope_per_decade.append(a.ITA_trend_sen_per_decade)
+    # ITA_slope_per_decade_high.append(a.ITA_trend_sen_high_per_decade)
+    # ITA_slope_per_decade_low.append(a.ITA_trend_sen_low_per_decade)
+    
+# plt.plot(ITA_slope_per_decade_low,depths,color='b')
+# plt.plot(ITA_slope_per_decade_high,depths,color='r')
+plt.plot(ITA_slope_per_decade,depths,color='k')
+plt.plot(mk_trend_per_decade,depths,color='g')
+
+del n, a
+
+
+r = np.arange(0,8,1)
+
+for n in r:
+    line = np.arange(start=-20, stop=20, step=1) 
+    plt.plot(line,line,color='k')
+    plt.scatter(ITA_stats[n].TEMP_half_1,ITA_stats[n].TEMP_half_2,2)
+    plt.xlim(left=-4, right=4)
+    plt.ylim(bottom=-4, top=4)
+
+
+
+
+# %% -----------------------------------------------------------------------------------------------
 # KPSS test to check for stationarity
 # If the result = 'Not stationary', a deterministc trend / linear regression is not suitable
 
@@ -333,6 +391,7 @@ Trend_dict = {'ACF': ACF_result,
 'EEMD_t': EEMD_t_str,
 'EEMD_T': EEMD_T,
 'EEMD_trend': EEMD_trend,
+'EEMD_trend_EAC': EEMD_trend_EAC,
 'EEMD_imfs': EEMD_IMFS,
 'EEMD_res': EEMD_res,
 'EEMD_conf_std_limit': conf_std_limit,
