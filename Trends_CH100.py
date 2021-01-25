@@ -276,7 +276,7 @@ del n, a
 # line_upper = line+conf
 # line_lower = line-conf
 
-r = [0, 5, 10]
+r = np.arange(0,10,1)
 
 for n in r:
     line = np.arange(start=-20, stop=20, step=1) 
