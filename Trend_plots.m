@@ -37,6 +37,157 @@ for nn = 1:9
     end
 end
 
+%% Get trends per decade
+
+%% Port Hacking
+
+multiplier = 12*10; %because is monthly data
+
+for n_depth = 1:9
+    
+    sig = NRSPHB_trends_server.EEMD_conf_std_limit(1,:);
+    tr = NRSPHB_trends.EEMD_trend{n_depth}; 
+    tr_EAC = NRSPHB_trends.EEMD_trend_EAC{n_depth}; 
+    tr_0 = tr-tr(1);    
+    tr_EAC_0 = tr_EAC-tr_EAC(1);  
+    tt = datenum(cell2mat(NRSPHB_trends.EEMD_t(n_depth)));
+    % flag as NaN if insignificant trend value
+    tr_0_sig = ones(size(tr_0));
+    tr_EAC_0_sig = ones(size(tr_EAC_0));
+    for n = 1:numel(tt)
+        check = NRSPHB_data.t_conv(1).t == tt(n);
+        if tr_0(n) < sig(check)
+            tr_0_sig(n) = 0;
+        end
+        if tr_EAC_0(n) < sig(check)
+            tr_EAC_0_sig(n) = 0;
+        end        
+    end
+    % 1960s
+    check = tt >= datenum(1960,01,01) & tt < datenum(1970,01,01);
+    T_rate_sig = diff(tr(check & tr_0_sig' == 1));
+    T_rate_insig = diff(tr(check));
+    T_rate_EAC_sig = diff(tr_EAC(check & tr_EAC_0_sig' == 1));
+    T_rate_EAC_insig = diff(tr_EAC(check));
+    if sum(isfinite(T_rate_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t1960s_sig = nanmean(T_rate_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t1960s_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t1960s_insig = nanmean(T_rate_insig)*multiplier;    
+    if sum(isfinite(T_rate_EAC_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t1960s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t1960s_EAC_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t1960s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;    
+    % 1970s
+    check = tt >= datenum(1970,01,01) & tt < datenum(1980,01,01);
+    T_rate_sig = diff(tr(check & tr_0_sig' == 1));
+    T_rate_insig = diff(tr(check));
+    T_rate_EAC_sig = diff(tr_EAC(check & tr_EAC_0_sig' == 1));
+    T_rate_EAC_insig = diff(tr_EAC(check));
+    if sum(isfinite(T_rate_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t1970s_sig = nanmean(T_rate_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t1970s_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t1970s_insig = nanmean(T_rate_insig)*multiplier;    
+    if sum(isfinite(T_rate_EAC_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t1970s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t1970s_EAC_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t1970s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;     
+    % 1980s
+    check = tt >= datenum(1980,01,01) & tt < datenum(1990,01,01);
+    T_rate_sig = diff(tr(check & tr_0_sig' == 1));
+    T_rate_insig = diff(tr(check));
+    T_rate_EAC_sig = diff(tr_EAC(check & tr_EAC_0_sig' == 1));
+    T_rate_EAC_insig = diff(tr_EAC(check));
+    if sum(isfinite(T_rate_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t1980s_sig = nanmean(T_rate_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t1980s_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t1980s_insig = nanmean(T_rate_insig)*multiplier;    
+    if sum(isfinite(T_rate_EAC_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t1980s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t1980s_EAC_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t1980s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;      
+    % 1990s
+    check = tt >= datenum(1990,01,01) & tt < datenum(2000,01,01);
+    trend_ave_NRSPHB(n_depth).t1990s = nanmean(tr_rate(check(1:end-1)))*multiplier;     
+    T_rate_sig = diff(tr(check & tr_0_sig' == 1));
+    T_rate_insig = diff(tr(check));
+    T_rate_EAC_sig = diff(tr_EAC(check & tr_EAC_0_sig' == 1));
+    T_rate_EAC_insig = diff(tr_EAC(check));
+    if sum(isfinite(T_rate_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t1990s_sig = nanmean(T_rate_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t1990s_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t1990s_insig = nanmean(T_rate_insig)*multiplier;    
+    if sum(isfinite(T_rate_EAC_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t1990s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t1990s_EAC_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t1990s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;          
+    % 2000s
+    check = tt >= datenum(2000,01,01) & tt < datenum(2010,01,01);
+    T_rate_sig = diff(tr(check & tr_0_sig' == 1));
+    T_rate_insig = diff(tr(check));
+    T_rate_EAC_sig = diff(tr_EAC(check & tr_EAC_0_sig' == 1));
+    T_rate_EAC_insig = diff(tr_EAC(check));
+    if sum(isfinite(T_rate_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t2000s_sig = nanmean(T_rate_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t2000s_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t2000s_insig = nanmean(T_rate_insig)*multiplier;    
+    if sum(isfinite(T_rate_EAC_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t2000s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t2000s_EAC_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t2000s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;      
+    % 2010s
+    check = tt >= datenum(2010,01,01) & tt < datenum(2020,01,01);
+    T_rate_sig = diff(tr(check & tr_0_sig' == 1));
+    T_rate_insig = diff(tr(check));
+    T_rate_EAC_sig = diff(tr_EAC(check & tr_EAC_0_sig' == 1));
+    T_rate_EAC_insig = diff(tr_EAC(check));
+    if sum(isfinite(T_rate_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t2010s_sig = nanmean(T_rate_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t2010s_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t2010s_insig = nanmean(T_rate_insig)*multiplier;    
+    if sum(isfinite(T_rate_EAC_sig)) > 90
+        trend_ave_NRSPHB(n_depth).t2010s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+    else
+        trend_ave_NRSPHB(n_depth).t2010s_EAC_sig = NaN;   
+    end
+    trend_ave_NRSPHB(n_depth).t2010s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;      
+    % total change
+    trend_ave_NRSPHB(n_depth).total_insig = abs(tr(end)-tr(1));
+    tr_sig = tr(tr_0_sig' == 1);
+    if ~isempty(tr_sig)
+        trend_ave_NRSPHB(n_depth).total_sig = abs(tr_sig(end)-tr_sig(1));
+    else
+        trend_ave_NRSPHB(n_depth).total_sig = NaN;
+    end
+    trend_ave_NRSPHB(n_depth).total_EAC_insig = abs(tr_EAC(end)-tr_EAC(1));
+    tr_EAC_sig = tr_EAC(tr_EAC_0_sig' == 1);
+    if ~isempty(tr_EAC_sig)
+        trend_ave_NRSPHB(n_depth).total_EAC_sig = abs(tr_EAC_sig(end)-tr_EAC_sig(1));    
+    else
+        trend_ave_NRSPHB(n_depth).total_EAC_sig = NaN;
+    end
+end
 
 
 %% Example EEMD plot
@@ -50,8 +201,11 @@ hold on
 std_T = nanstd(NRSPHB_trends.EEMD_T{1});
 tr = NRSPHB_trends.EEMD_trend{1} / std_T;
 tr = tr-tr(1);
+tr_EAC = NRSPHB_trends.EEMD_trend_EAC{1} / std_T;
+tr_EAC = tr_EAC-tr_EAC(1);
 p1 = plot(NRSPHB_trends.EEMD_t_conv(1).t,(NRSPHB_trends.EEMD_T{1}-tr(1))/std_T,'LineWidth',2)
 p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,tr,'LineWidth',2,'Color','r')
+p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t,tr_EAC,'LineWidth',2,'Color','r')
 % determine where significant
 for n = 1:numel(tr)
     t = NRSPHB_trends.EEMD_t_conv(1).t(n);
@@ -61,9 +215,16 @@ for n = 1:numel(tr)
     else
         sig(n) = 1;
     end
+    if tr_EAC(n) <= NRSPHB_trends_server.EEMD_conf_std_limit(1,f)
+        sig_EAC(n) = 0;
+    else
+        sig_EAC(n) = 1;
+    end     
 end
 date_sig = datestr(nanmin(NRSPHB_trends.EEMD_t_conv(1).t(sig == 1)));
-p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t(sig == 1),tr(sig == 1)-tr(1),'LineWidth',2,'Color','k')
+p4 = plot(NRSPHB_trends.EEMD_t_conv(1).t(sig == 1),tr(sig == 1)-tr(1),'LineWidth',2,'Color','k')
+p5 = plot(NRSPHB_trends.EEMD_t_conv(1).t(sig_EAC == 1),tr_EAC(sig_EAC == 1)-tr(1),'LineWidth',2,'Color',[1 .6 0])
+
 
 [p3a, p3b] = boundedline(NRSPHB_data.t_conv(1).t,zeros(size(NRSPHB_data.t_conv(1).t)),NRSPHB_trends_server.EEMD_conf_std_limit(1,:))
 set(p3b,'FaceColor','r','FaceAlpha',0.2)
@@ -75,7 +236,8 @@ set(gca,'LineWidth',2,'Box','On','FontSize',18,'YLim',[-3 4],'XLim',[datenum(195
 
 ylabel('Temperature Anomaly [^\circC]');
 
-leg = legend([p1 p2 p3 p3b],'De-seasoned temperatures','Insignificant EEMD Trend','Significant EEMD Trend','Boundary of insignificance');
+leg = legend([p1 p4 p5 p3b],'De-seasoned temperatures', ...
+    'Significant EEMD Trend_{B}','Significant EEMD Trend_{B+A}','Boundary of insignificance');
 set(leg,'Location','NorthWest','Box','Off','Position',[0.101466049382716 0.767275373893183 0.238859958518986 0.146990744076638]);
 
 axes('Parent',gcf,...
@@ -86,21 +248,27 @@ hold on;
 
 imf = NRSPHB_trends.EEMD_imfs.IMF_1;
 a = 0;
-for n = 1:size(imf,1)
+for n = 1:size(imf,1)-1
     if n < 2
         a = a+4;
-        p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color','k')
+        p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color',[0 .4 .4])
     else
         a = a+2;
-        if n < size(imf,1)
-            p2 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color','k')
-        else
-            p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color','r')
+        if n < size(imf,1)-2
+            p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color',[0 .4 .4])
+        end
+        if n == size(imf,1)-2
+            p4 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color',[.6 .4 .8]) 
+        end
+        if n == size(imf,1)-1
+            p5 = plot(NRSPHB_trends.EEMD_t_conv(1).t,imf(n,:)-a,'LineWidth',2,'Color','k')
         end
     end
 end
 
-set(gca,'LineWidth',2,'Box','On','FontSize',18,'YLim',[-24 5],'XLim',[datenum(1950,01,01) datenum(2021,01,01)],...
+p6 = plot(NRSPHB_trends.EEMD_t_conv(1).t,tr_EAC-tr(1)-20,'LineWidth',2,'Color',[1 .6 0])
+
+set(gca,'LineWidth',2,'Box','On','FontSize',18,'YLim',[-28 5],'XLim',[datenum(1950,01,01) datenum(2021,01,01)],...
     'XTick',[datenum(1960,01,01) datenum(1980,01,01) datenum(2000,01,01) datenum(2020,01,01)],...
     'XTickLabels',[{'1960'} {'1980'} {'2000'} {'2020'}],'YTickLabels','','YTick','')
 
@@ -122,8 +290,8 @@ annotation(gcf,'textbox',...
     'FontSize',18,...
     'FitBoxToText','off');
 
-leg = legend([p1 p2 p3],'De-seasoned temperatures','IMFs','Trend');
-set(leg,'Location','SouthWest','Box','Off');
+leg = legend([p2 p4 p5 p6],'IMFs','IMF_{A}','Trend_{B}','Trend_{B+A}');
+set(leg,'Location','SouthWest','Box','Off','FontSize',16);
 
 print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_example_NRSPHB_2m'])
 
@@ -526,41 +694,10 @@ print(gcf, '-dpng','-r400', [options.plot_dir,'ITA_comparison'])
 
 %% Port Hacking heatmap
 
-% get trend per decade
-% MAKE SURE TO LEAVE 5 YEARS EITHER SIDE OF PERIOD FOR EDGE EFFECTS
-
-multiplier = 12*10;
-for n_depth = 1:9
-    
-    tr = NRSPHB_trends.EEMD_trend{n_depth}; 
-    tt = datenum(cell2mat(NRSPHB_trends.EEMD_t(n_depth)));
-    tr_rate = diff(tr);
-    % 1960s
-    check = tt >= datenum(1960,01,01) & tt < datenum(1970,01,01);
-    trend_ave(n_depth).t1960s = nanmean(tr_rate(check(1:end-1)))*multiplier;    
-    % 1970s
-    check = tt >= datenum(1970,01,01) & tt < datenum(1980,01,01);
-    trend_ave(n_depth).t1970s = nanmean(tr_rate(check(1:end-1)))*multiplier;   
-    % 1980s
-    check = tt >= datenum(1980,01,01) & tt < datenum(1990,01,01);
-    trend_ave(n_depth).t1980s = nanmean(tr_rate(check(1:end-1)))*multiplier; 
-    % 1990s
-    check = tt >= datenum(1990,01,01) & tt < datenum(2000,01,01);
-    trend_ave(n_depth).t1990s = nanmean(tr_rate(check(1:end-1)))*multiplier;      
-    % 2000s
-    check = tt >= datenum(2000,01,01) & tt < datenum(2010,01,01);
-    trend_ave(n_depth).t2000s = nanmean(tr_rate(check(1:end-1)))*multiplier;    
-    % 2010s
-    check = tt >= datenum(2010,01,01) & tt < datenum(2020,01,01);
-    trend_ave(n_depth).t2010s = nanmean(tr_rate(check(1:end-1)))*multiplier;  
-    % total change
-    trend_ave(n_depth).total = abs(tr(end)-tr(1));
-end
-
 figure('units','normalized','position',[0 0.1 .7 .8]);
 
 cmap = cmocean('balance',23);
-cmap_limits = -0.3:0.027:0.3;
+cmap_limits = linspace(-1,1,23);
 xaxis_limits = linspace(0.1,0.9,6);
 yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,7,6);
@@ -573,17 +710,41 @@ xlim([0 7])
 for n_depth = 1:9
 
     % organise trends over time
-    trs = [trend_ave(n_depth).t1960s, trend_ave(n_depth).t1970s, trend_ave(n_depth).t1980s, ...
-        trend_ave(n_depth).t1990s, trend_ave(n_depth).t2000s, trend_ave(n_depth).t2010s, trend_ave(n_depth).total];
-    y_pos = interp1(ylim_limits,fliplr(yaxis_limits),n_depth+1.3,'Linear','extrap');
-    for n = 1:numel(trs)
+    trs_sig = [trend_ave_NRSPHB(n_depth).t1960s_sig, trend_ave_NRSPHB(n_depth).t1970s_sig, trend_ave_NRSPHB(n_depth).t1980s_sig, ...
+        trend_ave_NRSPHB(n_depth).t1990s_sig, trend_ave_NRSPHB(n_depth).t2000s_sig, trend_ave_NRSPHB(n_depth).t2010s_sig, trend_ave_NRSPHB(n_depth).total_sig];
+    trs_insig = [trend_ave_NRSPHB(n_depth).t1960s_insig, trend_ave_NRSPHB(n_depth).t1970s_insig, trend_ave_NRSPHB(n_depth).t1980s_insig, ...
+        trend_ave_NRSPHB(n_depth).t1990s_insig, trend_ave_NRSPHB(n_depth).t2000s_insig, trend_ave_NRSPHB(n_depth).t2010s_insig, trend_ave_NRSPHB(n_depth).total_insig];
+    trs_EAC_sig = [trend_ave_NRSPHB(n_depth).t1960s_EAC_sig, trend_ave_NRSPHB(n_depth).t1970s_EAC_sig, trend_ave_NRSPHB(n_depth).t1980s_EAC_sig, ...
+        trend_ave_NRSPHB(n_depth).t1990s_EAC_sig, trend_ave_NRSPHB(n_depth).t2000s_EAC_sig, trend_ave_NRSPHB(n_depth).t2010s_EAC_sig, trend_ave_NRSPHB(n_depth).total_EAC_sig];    
+    trs_EAC_insig = [trend_ave_NRSPHB(n_depth).t1960s_EAC_insig, trend_ave_NRSPHB(n_depth).t1970s_EAC_insig, trend_ave_NRSPHB(n_depth).t1980s_EAC_insig, ...
+        trend_ave_NRSPHB(n_depth).t1990s_EAC_insig, trend_ave_NRSPHB(n_depth).t2000s_EAC_insig, trend_ave_NRSPHB(n_depth).t2010s_EAC_insig, trend_ave_NRSPHB(n_depth).total_EAC_insig];    
+    y_pos = interp1(ylim_limits,fliplr(yaxis_limits),n_depth+1.1,'Linear','extrap');
+    y_pos_EAC = interp1(ylim_limits,fliplr(yaxis_limits),n_depth+1.4,'Linear','extrap');
+    for n = 1:numel(trs_sig)
         if n < 7
-            c(1) = interp1(cmap_limits,cmap(:,1),trs(n));
-            c(2) = interp1(cmap_limits,cmap(:,2),trs(n));
-            c(3) = interp1(cmap_limits,cmap(:,3),trs(n));
+            % determine value used
+            if isfinite(trs_sig(n))
+                val = trs_sig(n);
+                sig_indicator = 1;
+            else
+                val = trs_insig(n);
+                sig_indicator = 0;
+            end
+            if isfinite(trs_EAC_sig(n))
+                val_EAC = trs_EAC_sig(n);
+                sig_indicator_EAC = 1;
+            else
+                val_EAC = trs_EAC_insig(n);
+                sig_indicator_EAC = 0;
+            end            
+            c(1) = interp1(cmap_limits,cmap(:,1),val_EAC);
+            c(2) = interp1(cmap_limits,cmap(:,2),val_EAC);
+            c(3) = interp1(cmap_limits,cmap(:,3),val_EAC);
             color = [c(1) c(2) c(3)];
         else
-            color = [0.9 0.9 0.9];            
+            val = trs_sig(7);
+            val_EAC = trs_EAC_sig(7);
+            color = [1 1 1];            
         end
         if n == 1
             patch([0 0 1 1 ],[n_depth n_depth+1 n_depth+1 n_depth],color);
@@ -592,12 +753,43 @@ for n_depth = 1:9
         end
         x_pos = interp1(xlim_limits,xaxis_limits,n-0.6);
         
-        annotation(gcf,'textbox',...
-        [x_pos y_pos 0.1 0.1],...
-        'String',[num2str(round(trs(n),2)),' *'],...
-        'LineStyle','none',...
-        'FontSize',14,...
-        'FitBoxToText','off');
+        if isnan(val)
+            val = 0;
+        end
+        if isnan(val_EAC)
+            val_EAC = 0;
+        end
+        
+        if sig_indicator == 1
+            annotation(gcf,'textbox',...
+            [x_pos y_pos_EAC 0.1 0.1],...
+            'String',[num2str(round(val,2)),' \color{black}{\diamondsuit}'],...
+            'LineStyle','none',...
+            'FontSize',14,...
+            'FitBoxToText','off');
+        else
+            annotation(gcf,'textbox',...
+            [x_pos y_pos_EAC 0.1 0.1],...
+            'String',[num2str(round(val,2))],...
+            'LineStyle','none',...
+            'FontSize',14,...
+            'FitBoxToText','off');                  
+        end
+        if sig_indicator_EAC == 1        
+            annotation(gcf,'textbox',...
+            [x_pos y_pos 0.1 0.1],...
+            'String',['\bf', num2str(round(val_EAC,2)),' \color{black}{\diamondsuit}'],...
+            'LineStyle','none',...
+            'FontSize',14,...
+            'FitBoxToText','off','FontName','Helvetica-Narrow');        
+        else
+            annotation(gcf,'textbox',...
+            [x_pos y_pos 0.1 0.1],...
+            'String',['\bf', num2str(round(val_EAC,2))],...
+            'LineStyle','none',...
+            'FontSize',14,...
+            'FitBoxToText','off','FontName','Helvetica-Narrow');     
+        end
     end
 
 end
