@@ -33,6 +33,22 @@ import random
 # %% -----------------------------------------------------------------------------------------------
 # Functions
 
+
+# -----------------------------------------------------------------------------------------------
+# datetime to datetime64
+
+def to_date64(TIME):
+        t = []
+        for nt in range(len(TIME)):
+            o = TIME[nt]
+            if '64' not in str(type(o)):
+                t.append(np.datetime64(o.strftime("%Y-%m-%dT%H:%M:%S")))
+            else:
+                t.append(o)
+        TIME = np.array(t)
+        
+        return TIME
+
 # -----------------------------------------------------------------------------------------------
 # datevec function
  
@@ -54,15 +70,7 @@ def datevec(TIME):
     """
     
     # If not a datetime64, convert from dt.datetime
-    if '64' not in str(type(TIME)):
-        t = []
-        for nt in range(len(TIME)):
-            o = TIME[nt]
-            if '64' not in str(type(o)):
-                t.append(np.datetime64(o.strftime("%Y-%m-%dT%H:%M:%S")))
-            else:
-                t.append(o)
-        TIME = np.array(t)
+    TIME = to_date64(TIME)
     # allocate output 
     out = np.empty(TIME.shape + (7,), dtype="u4")
     # decompose calendar floors
@@ -334,7 +342,9 @@ def ITA(TIME,TEMP,trend_change_points,figure):
     check_nans = np.squeeze(np.logical_and(\
             [np.isfinite(T1)], [np.isfinite(T2)]))
     T1_nonan = T1[check_nans]
-    T2_nonan = T2[check_nans]    
+    t1_nonan = t1[check_nans]
+    T2_nonan = T2[check_nans]  
+    t2_nonan = t2[check_nans]  
     if figure == 1:
         # create first plot for selecting trend points
         a= plt.figure()
@@ -402,7 +412,7 @@ def ITA(TIME,TEMP,trend_change_points,figure):
         for n in range(len(lh)):
             high_res.append(np.abs(lh[n] - high_line_points[n]))        
         # trend_mean = np.mean([np.mean(high_res),np.mean(low_res)])
-        date_range = np.nanmax(t2)-np.nanmin(t1)
+        date_range = np.nanmax(t2_nonan)-np.nanmin(t1_nonan)
         days = date_range.astype('timedelta64[D]')
         # trend_ave_per_decade = (trend_mean/np.int64(days))*3653
         
@@ -469,7 +479,7 @@ def ITA(TIME,TEMP,trend_change_points,figure):
         high_res = []
         for n in range(len(lh)):
             high_res.append(np.abs(lh[n] - high_line_points[n]))
-        date_range = np.nanmax(t2)-np.nanmin(t1)
+        date_range = np.nanmax(t2_nonan)-np.nanmin(t1_nonan)
         days = date_range.astype('timedelta64[D]')
         # trend_ave_per_decade = (trend_mean/np.int64(days))*3653
         
@@ -484,23 +494,54 @@ def ITA(TIME,TEMP,trend_change_points,figure):
     T2_min_year = np.nanmin(yrs)
     T2_max_year = np.nanmax(yrs)      
     yr_range = (T2_max_year-T1_min_year)
-    slope_sen = ((2*(np.nanmean(T2)-np.nanmean(T1)))/np.int64(days))
+    n = len(TEMP[np.isfinite(TEMP)])
+    slope_sen = ((2*(np.nanmean(T2_nonan)-np.nanmean(T1_nonan)))/n)
+    # low, medium, and high slopes
+    thresh_low = round(len(T1_nonan)*0.10)
+    thresh_high = len(T1_nonan)-round(len(T1_nonan)*0.10)
+    low_T1 = T1_nonan[0:thresh_low]
+    low_T2 = T2_nonan[0:thresh_low]
+    med_T1 = T1_nonan[thresh_low:thresh_high]
+    med_T2 = T2_nonan[thresh_low:thresh_high]
+    high_T1 = T1_nonan[thresh_high::]
+    high_T2 = T2_nonan[thresh_high::]  
+    slope_sen_low = ((2*(np.nanmean(low_T2)-np.nanmean(low_T1)))/len(low_T1))
+    slope_sen_med = ((2*(np.nanmean(med_T2)-np.nanmean(med_T1)))/len(med_T1))
+    slope_sen_high = ((2*(np.nanmean(high_T2)-np.nanmean(high_T1)))/len(high_T1))
     trend_sen_period = slope_sen*np.int64(days)
-    trend_sen_per_decade = slope_sen*3653
+    slope_sen_combined_weighted = np.nanmean([slope_sen_low*0.1,slope_sen_med*0.8,slope_sen_high*0.1])
+    if len(TEMP) > 1500:
+        trend_sen_per_decade = slope_sen*3653
+        trend_sen_per_decade_combined = slope_sen_combined_weighted*3653
+    else:
+        trend_sen_per_decade = slope_sen*120
+        trend_sen_per_decade_combined = slope_sen_combined_weighted*120
+ 
+    # trend_sen_low_per_decade = slope_sen_low*3653
+    # trend_sen_med_per_decade = slope_sen_med*3653
+    # trend_sen_high_per_decade = slope_sen_high*3653
     trend_sen_period_numb_days = np.int64(days)
     # get intercept
-    tt = np.interp(np.nanmean(T1),T1,T2)
-    
-    intercept = np.nanmean(T2) - \
-        ((2*(np.nanmean(T2)-np.nanmean(T1)))/np.int64(days)) * tt 
-    
+    t_bar = np.nanmean(np.arange(0,n,1))
+    y_bar = np.interp(t_bar,np.arange(0,n,1),TEMP[np.isfinite(TEMP)])
+    y2_bar = np.nanmean(T2_nonan)
+    y1_bar = np.nanmean(T1_nonan)
+    intercept = y_bar - \
+        ((2 * ( y2_bar - y1_bar )) / n) * t_bar
+    fit = np.arange(0,n,1)*slope_sen + intercept
+    split_number = np.int(np.round(len(fit)/2)-1)
+    fit_T1 = fit[0:split_number]
+    fit_T2 = fit[split_number+1::]
+    if len(fit_T1) != len(fit_T2):
+        fit_T2 = fit_T2[0:-1]    
+
     # Calculating slope standard deviation
     # covariance with NaNs
     df = pd.DataFrame({'T1':T2_nonan,'T2':T1_nonan})
     cov_vals = df.corr()
     slope_std = (2 * np.sqrt(2) ) * np.nanstd(TEMP) \
         *np.sqrt( 1 - np.array(cov_vals) ) \
-            / np.int64(days) / np.sqrt(np.int64(days))
+            / n / np.sqrt(n)
     slope_std = slope_std[0,1]
     # Trend indicator calculation
     D = np.nanmean((T2-T1)*10/np.nanmean(T1))
@@ -520,8 +561,13 @@ def ITA(TIME,TEMP,trend_change_points,figure):
         ITA_trend_sen_period = trend_sen_period
         ITA_trend_sen_period_numb_days = trend_sen_period_numb_days
         ITA_trend_sen_per_decade = trend_sen_per_decade
+        # ITA_trend_sen_low_per_decade = trend_sen_low_per_decade
+        # ITA_trend_sen_med_per_decade = trend_sen_med_per_decade
+        # ITA_trend_sen_high_per_decade = trend_sen_high_per_decade
         ITA_slope_sen = slope_sen
         ITA_slope_std = slope_std
+        ITA_intercept = intercept
+        
         ITA_trend_indicator = D
         ITA_slope_lower_conf = CLlower95
         ITA_slope_upper_conf = CLupper95
@@ -643,8 +689,10 @@ def Ensemble_EMD(TIME,TEMP,figure):
     #     trend = imfs[n_imfs-2,:] + imfs[n_imfs-1,:]    
         
     trend = imfs[n_imfs-1,:]
+    trend_EAC = trend + imfs[n_imfs-2,:]
     
-    if np.abs(trend[-1]-trend[0]) < 0.02:
+    
+    if np.abs(trend[-1]-trend[0]) < 0.05:
         if 'datetime64' in str(type(TIME[0])):
             first_year = TIME[0].astype(object).year
             last_year = TIME[-1].astype(object).year
@@ -654,6 +702,14 @@ def Ensemble_EMD(TIME,TEMP,figure):
             last_year = yr[-1]   
         if last_year - first_year > 50:
             trend = imfs[n_imfs-1,:] + imfs[n_imfs-2,:]
+            trend_EAC = imfs[n_imfs-1,:] + imfs[n_imfs-2,:] + imfs[n_imfs-3,:]
+    # check if trend is monotonic, if not revert back
+    five_percent_points = np.int64(np.round(len(trend)*0.05))
+    trend_diffs = np.diff(
+        trend[five_percent_points:len(trend)-five_percent_points])
+    if np.sum(trend_diffs < 0) > 0:
+        trend = imfs[n_imfs-1,:]
+        trend_EAC = imfs[n_imfs-1,:] + imfs[n_imfs-2,:]
     
     
     if figure == 1:
@@ -666,7 +722,7 @@ def Ensemble_EMD(TIME,TEMP,figure):
     if 'trend' not in (locals()):
         trend = 0
     
-    return t, T, trend, imfs, res
+    return t, T, trend, trend_EAC, imfs, res
 
 
 # %% ----------------------------------------------------------------------------------------------
