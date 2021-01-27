@@ -345,143 +345,143 @@ def ITA(TIME,TEMP,trend_change_points,figure):
     t1_nonan = t1[check_nans]
     T2_nonan = T2[check_nans]  
     t2_nonan = t2[check_nans]  
-    if figure == 1:
-        # create first plot for selecting trend points
-        a= plt.figure()
-        axes = a.add_axes([0.1,0.1,0.8,0.8])
-        axes.scatter(T1,T2)    
-        axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
-                       np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
-        axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
-                       np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
-        yrs,_,_,_,_ = datevec(T1_t)
-        T1_min_year = np.nanmin(yrs)
-        T1_max_year = np.nanmax(yrs)
-        yrs,_,_,_,_ = datevec(T2_t)
-        T2_min_year = np.nanmin(yrs)
-        T2_max_year = np.nanmax(yrs)    
-        axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
-        axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
-        axes.plot(line,line,'k') 
-    if np.size(trend_change_points) == 1:
+    # if figure == 1:
+    #     # create first plot for selecting trend points
+    #     a= plt.figure()
+    #     axes = a.add_axes([0.1,0.1,0.8,0.8])
+    #     axes.scatter(T1,T2)    
+    #     axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+    #                    np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+    #     axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+    #                    np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+    #     yrs,_,_,_,_ = datevec(T1_t)
+    #     T1_min_year = np.nanmin(yrs)
+    #     T1_max_year = np.nanmax(yrs)
+    #     yrs,_,_,_,_ = datevec(T2_t)
+    #     T2_min_year = np.nanmin(yrs)
+    #     T2_max_year = np.nanmax(yrs)    
+    #     axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
+    #     axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
+    #     axes.plot(line,line,'k') 
+    # if np.size(trend_change_points) == 1:
 
-        if figure == 1:
-            plt.close(fig=a)
-        # get trends
-        # trend 1
-        check_low = T1_nonan <= np.float(trend_change_points)
-        low_stats = sp.stats.linregress(T1_nonan[check_low],T2_nonan[check_low])
-        low_line_points = np.interp(T1_nonan[check_low],line,line)        
-        # trend 2
-        check_high = T1_nonan > np.float(trend_change_points)
-        high_stats = sp.stats.linregress(T1_nonan[check_high],T2_nonan[check_high])
-        high_line_points = np.interp(T1_nonan[check_high],line,line)   
-        if figure == 1:
-            # create new plot
-            a= plt.figure()
-            axes = a.add_axes([0.1,0.1,0.8,0.8])
-            axes.scatter(T1,T2)        
-            axes.scatter(T1_nonan[check_low],T2_nonan[check_low])
-            axes.scatter((T1_nonan[check_high]),T2_nonan[check_high])
-            axes.plot(T1_nonan[check_low],low_stats.slope*T1_nonan[check_low]+low_stats.intercept,'k')
-            axes.plot(T1_nonan[check_high],high_stats.slope*T1_nonan[check_high]+high_stats.intercept,'k')
-            axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
-                           np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
-            axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
-                           np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
-            yrs,_,_,_,_ = datevec(T1_t)
-            T1_min_year = np.nanmin(yrs)
-            T1_max_year = np.nanmax(yrs)
-            yrs,_,_,_,_ = datevec(T2_t)
-            T2_min_year = np.nanmin(yrs)
-            T2_max_year = np.nanmax(yrs)    
-            axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
-            axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
-            axes.plot(line,line,'k')
-            plt.show()
+        # if figure == 1:
+        #     plt.close(fig=a)
+        # # get trends
+        # # trend 1
+        # check_low = T1_nonan <= np.float(trend_change_points)
+        # low_stats = sp.stats.linregress(T1_nonan[check_low],T2_nonan[check_low])
+        # low_line_points = np.interp(T1_nonan[check_low],line,line)        
+        # # trend 2
+        # check_high = T1_nonan > np.float(trend_change_points)
+        # high_stats = sp.stats.linregress(T1_nonan[check_high],T2_nonan[check_high])
+        # high_line_points = np.interp(T1_nonan[check_high],line,line)   
+        # if figure == 1:
+        #     # create new plot
+        #     a= plt.figure()
+        #     axes = a.add_axes([0.1,0.1,0.8,0.8])
+        #     axes.scatter(T1,T2)        
+        #     axes.scatter(T1_nonan[check_low],T2_nonan[check_low])
+        #     axes.scatter((T1_nonan[check_high]),T2_nonan[check_high])
+        #     axes.plot(T1_nonan[check_low],low_stats.slope*T1_nonan[check_low]+low_stats.intercept,'k')
+        #     axes.plot(T1_nonan[check_high],high_stats.slope*T1_nonan[check_high]+high_stats.intercept,'k')
+        #     axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+        #                    np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+        #     axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+        #                    np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+        #     yrs,_,_,_,_ = datevec(T1_t)
+        #     T1_min_year = np.nanmin(yrs)
+        #     T1_max_year = np.nanmax(yrs)
+        #     yrs,_,_,_,_ = datevec(T2_t)
+        #     T2_min_year = np.nanmin(yrs)
+        #     T2_max_year = np.nanmax(yrs)    
+        #     axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
+        #     axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
+        #     axes.plot(line,line,'k')
+        #     plt.show()
         
         # Determine trends
         #------------------------
-        ll = T2_nonan[check_low]
-        low_res = []
-        for n in range(len(ll)):
-            low_res.append(np.abs(ll[n] - low_line_points[n]))
-        #------------------------
-        lh = T2_nonan[check_high]
-        high_res = []
-        for n in range(len(lh)):
-            high_res.append(np.abs(lh[n] - high_line_points[n]))        
-        # trend_mean = np.mean([np.mean(high_res),np.mean(low_res)])
-        date_range = np.nanmax(t2_nonan)-np.nanmin(t1_nonan)
-        days = date_range.astype('timedelta64[D]')
-        # trend_ave_per_decade = (trend_mean/np.int64(days))*3653
+        # ll = T2_nonan[check_low]
+        # low_res = []
+        # for n in range(len(ll)):
+        #     low_res.append(np.abs(ll[n] - low_line_points[n]))
+        # #------------------------
+        # lh = T2_nonan[check_high]
+        # high_res = []
+        # for n in range(len(lh)):
+        #     high_res.append(np.abs(lh[n] - high_line_points[n]))        
+        # # trend_mean = np.mean([np.mean(high_res),np.mean(low_res)])
+        # date_range = np.nanmax(t2_nonan)-np.nanmin(t1_nonan)
+        # days = date_range.astype('timedelta64[D]')
+        # # trend_ave_per_decade = (trend_mean/np.int64(days))*3653
         
 
-    else:
-        change_point_1 = trend_change_points[0]
-        change_point_2 = trend_change_points[1]
-        if figure == 1:
-            plt.close(fig=a)
-        # get trends
-        # trend 1
-        check_low = T1_nonan <= np.float(change_point_1)
-        low_stats = sp.stats.linregress(T1_nonan[check_low],T2_nonan[check_low])
-        low_line_points = np.interp(T1_nonan[check_low],line,line)        
-        # trend 2
-        check_med = np.logical_and(\
-                [T1_nonan > np.float(change_point_1)], [T1_nonan <= np.float(change_point_2)])
-        check_med = np.squeeze(check_med)
-        med_stats = sp.stats.linregress(T1_nonan[check_med],T2_nonan[check_med])
-        med_line_points = np.interp(T1_nonan[check_med],line,line) 
-        # trend 3
-        check_high = T1_nonan > np.float(change_point_2)
-        high_stats = sp.stats.linregress(T1_nonan[check_high],T2_nonan[check_high])
-        high_line_points = np.interp(T1_nonan[check_high],line,line)  
-        if figure == 1:
-            # create new plot
-            a= plt.figure()
-            axes = a.add_axes([0.1,0.1,0.8,0.8])
-            axes.scatter(T1,T2)        
-            axes.scatter(T1_nonan[check_low],T2_nonan[check_low])
-            axes.scatter(T1_nonan[check_med],T2_nonan[check_med])
-            axes.scatter((T1_nonan[check_high]),T2_nonan[check_high])
-            axes.plot(T1_nonan[check_low],low_stats.slope*T1_nonan[check_low]+low_stats.intercept,'k')
-            axes.plot(T1_nonan[check_med],med_stats.slope*T1_nonan[check_med]+med_stats.intercept,'k')
-            axes.plot(T1_nonan[check_high],high_stats.slope*T1_nonan[check_high]+high_stats.intercept,'k')
-            axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
-                           np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
-            axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
-                           np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
-            yrs,_,_,_,_ = datevec(T1_t)
-            T1_min_year = np.nanmin(yrs)
-            T1_max_year = np.nanmax(yrs)
-            yrs,_,_,_,_ = datevec(T2_t)
-            T2_min_year = np.nanmin(yrs)
-            T2_max_year = np.nanmax(yrs)    
-            axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
-            axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
-            axes.plot(line,line,'k')
-            plt.show()
+    # else:
+    #     change_point_1 = trend_change_points[0]
+    #     change_point_2 = trend_change_points[1]
+    #     if figure == 1:
+    #         plt.close(fig=a)
+    #     # get trends
+    #     # trend 1
+    #     check_low = T1_nonan <= np.float(change_point_1)
+    #     low_stats = sp.stats.linregress(T1_nonan[check_low],T2_nonan[check_low])
+    #     low_line_points = np.interp(T1_nonan[check_low],line,line)        
+    #     # trend 2
+    #     check_med = np.logical_and(\
+    #             [T1_nonan > np.float(change_point_1)], [T1_nonan <= np.float(change_point_2)])
+    #     check_med = np.squeeze(check_med)
+    #     med_stats = sp.stats.linregress(T1_nonan[check_med],T2_nonan[check_med])
+    #     med_line_points = np.interp(T1_nonan[check_med],line,line) 
+    #     # trend 3
+    #     check_high = T1_nonan > np.float(change_point_2)
+    #     high_stats = sp.stats.linregress(T1_nonan[check_high],T2_nonan[check_high])
+    #     high_line_points = np.interp(T1_nonan[check_high],line,line)  
+    #     if figure == 1:
+    #         # create new plot
+    #         a= plt.figure()
+    #         axes = a.add_axes([0.1,0.1,0.8,0.8])
+    #         axes.scatter(T1,T2)        
+    #         axes.scatter(T1_nonan[check_low],T2_nonan[check_low])
+    #         axes.scatter(T1_nonan[check_med],T2_nonan[check_med])
+    #         axes.scatter((T1_nonan[check_high]),T2_nonan[check_high])
+    #         axes.plot(T1_nonan[check_low],low_stats.slope*T1_nonan[check_low]+low_stats.intercept,'k')
+    #         axes.plot(T1_nonan[check_med],med_stats.slope*T1_nonan[check_med]+med_stats.intercept,'k')
+    #         axes.plot(T1_nonan[check_high],high_stats.slope*T1_nonan[check_high]+high_stats.intercept,'k')
+    #         axes.set_xlim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+    #                        np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+    #         axes.set_ylim([np.nanmin([np.nanmin(T1),np.nanmin(T2)])-0.5, \
+    #                        np.nanmax([np.nanmax(T1),np.nanmax(T2)])+0.5])
+    #         yrs,_,_,_,_ = datevec(T1_t)
+    #         T1_min_year = np.nanmin(yrs)
+    #         T1_max_year = np.nanmax(yrs)
+    #         yrs,_,_,_,_ = datevec(T2_t)
+    #         T2_min_year = np.nanmin(yrs)
+    #         T2_max_year = np.nanmax(yrs)    
+    #         axes.set_xlabel(str(T1_min_year) + ' - ' + str(T1_max_year))
+    #         axes.set_ylabel(str(T2_min_year) + ' - ' + str(T2_max_year))
+    #         axes.plot(line,line,'k')
+    #         plt.show()
         
-        # Determine trends
-        #------------------------
-        ll = T2_nonan[check_low]
-        low_res = []
-        for n in range(len(ll)):
-            low_res.append(np.abs(ll[n] - low_line_points[n]))
-        #------------------------
-        lm = T2_nonan[check_med]
-        med_res = []
-        for n in range(len(lm)):
-            med_res.append(np.abs(lm[n] - med_line_points[n]))
-        #------------------------
-        lh = T2_nonan[check_high]
-        high_res = []
-        for n in range(len(lh)):
-            high_res.append(np.abs(lh[n] - high_line_points[n]))
-        date_range = np.nanmax(t2_nonan)-np.nanmin(t1_nonan)
-        days = date_range.astype('timedelta64[D]')
-        # trend_ave_per_decade = (trend_mean/np.int64(days))*3653
+    #     # Determine trends
+    #     #------------------------
+    #     ll = T2_nonan[check_low]
+    #     low_res = []
+    #     for n in range(len(ll)):
+    #         low_res.append(np.abs(ll[n] - low_line_points[n]))
+    #     #------------------------
+    #     lm = T2_nonan[check_med]
+    #     med_res = []
+    #     for n in range(len(lm)):
+    #         med_res.append(np.abs(lm[n] - med_line_points[n]))
+    #     #------------------------
+    #     lh = T2_nonan[check_high]
+    #     high_res = []
+    #     for n in range(len(lh)):
+    #         high_res.append(np.abs(lh[n] - high_line_points[n]))
+    #     date_range = np.nanmax(t2_nonan)-np.nanmin(t1_nonan)
+    #     days = date_range.astype('timedelta64[D]')
+    #     # trend_ave_per_decade = (trend_mean/np.int64(days))*3653
         
     # code from R implementation of ITA
     # https://rdrr.io/cran/trendchange/src/R/innovtrend.R    
@@ -508,7 +508,7 @@ def ITA(TIME,TEMP,trend_change_points,figure):
     slope_sen_low = ((2*(np.nanmean(low_T2)-np.nanmean(low_T1)))/len(low_T1))
     slope_sen_med = ((2*(np.nanmean(med_T2)-np.nanmean(med_T1)))/len(med_T1))
     slope_sen_high = ((2*(np.nanmean(high_T2)-np.nanmean(high_T1)))/len(high_T1))
-    trend_sen_period = slope_sen*np.int64(days)
+    # trend_sen_period = slope_sen*np.int64(days)
     slope_sen_combined_weighted = np.nanmean([slope_sen_low*0.1,slope_sen_med*0.8,slope_sen_high*0.1])
     if len(TEMP) > 1500:
         trend_sen_per_decade = slope_sen*3653
@@ -520,7 +520,7 @@ def ITA(TIME,TEMP,trend_change_points,figure):
     # trend_sen_low_per_decade = slope_sen_low*3653
     # trend_sen_med_per_decade = slope_sen_med*3653
     # trend_sen_high_per_decade = slope_sen_high*3653
-    trend_sen_period_numb_days = np.int64(days)
+    # trend_sen_period_numb_days = np.int64(days)
     # get intercept
     t_bar = np.nanmean(np.arange(0,n,1))
     y_bar = np.interp(t_bar,np.arange(0,n,1),TEMP[np.isfinite(TEMP)])
@@ -558,8 +558,8 @@ def ITA(TIME,TEMP,trend_change_points,figure):
     # save information
     class ITA_stats: 
         
-        ITA_trend_sen_period = trend_sen_period
-        ITA_trend_sen_period_numb_days = trend_sen_period_numb_days
+        # ITA_trend_sen_period = trend_sen_period
+        # ITA_trend_sen_period_numb_days = trend_sen_period_numb_days
         ITA_trend_sen_per_decade = trend_sen_per_decade
         # ITA_trend_sen_low_per_decade = trend_sen_low_per_decade
         # ITA_trend_sen_med_per_decade = trend_sen_med_per_decade
@@ -658,6 +658,7 @@ def Ensemble_EMD(TIME,TEMP,figure):
     # ensure is numpy array
     TIME = np.array(TIME)
     TEMP = np.array(TEMP)
+    TEMP = TEMP.astype('float32')
     # remove nans from timeseries
     check_nans = np.isfinite(TEMP)
     T = TEMP[check_nans]
@@ -811,28 +812,35 @@ def EEMD_significance(TIME,TEMP,ACF_result,numb_sims):
 
     x_sims = []
     trend_sims = []
+    trend_sims_EAC = []
     for n in range(0,numb_sims):
         tic = time.perf_counter()
         print('Simulation: ' + str(n))
         x_sims.append(signalz.brownian_noise(len(TEMP), leak=leakage, start=0, \
                                              std=std_chosen, source="gaussian"))
-        _, _, tr, _, _ = Ensemble_EMD(TIME,x_sims[n],0)
+        _, _, tr, tr_EAC, _, _ = Ensemble_EMD(TIME,x_sims[n],0)
         trend_sims.append(tr)
+        trend_sims_EAC.append(tr)
         toc = time.perf_counter()
         print(f"{toc - tic:0.4f} seconds")
         
     # combine trends and calculate standard deviation of trends
     # get standard deviation
     std_array = []
+    std_array_EAC = []
     for n in range(len(TEMP)):
         array_for_stats = []
+        array_for_stats_EAC = []
         for nn in range(len(trend_sims)):
             tt = trend_sims[nn]
             array_for_stats.append(tt[n] -tt[0])
+            tt_EAC = trend_sims_EAC[nn]
+            array_for_stats_EAC.append(tt_EAC[n] -tt_EAC[0])            
         std_array.append(np.std(array_for_stats))
+        std_array_EAC.append(np.std(array_for_stats_EAC))
     conf_std_limit = (std_array * (np.ones(len(std_array))*1.96))
-    
-    return conf_std_limit, std_array, trend_sims, x_sims
+    conf_std_limit_EAC = (std_array_EAC * (np.ones(len(std_array_EAC))*1.96))
+    return conf_std_limit, conf_std_limit_EAC, std_array, std_array_EAC, trend_sims, trend_sims_EAC, x_sims
 
 
 
@@ -972,7 +980,15 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
         std_choice_today = np.linspace(std_today*-1, std_today,100)
         yday_today = yday_t[n]
         r = random.randint(0,99)
-        recon.append(CLIM[yday_today] + std_choice_today[r] + means[n])
+        if np.size(CLIM) == 12:
+            a = np.ones(13)
+            a[0:12] = CLIM
+            a[12] = CLIM[0]
+            cl = np.interp(np.linspace(1,13,365),np.arange(1,14,1),a)
+        else:
+            cl = CLIM
+            
+        recon.append(cl[yday_today] + std_choice_today[r] + means[n])
         
     filled_TEMP = []
     gap_logical = []
