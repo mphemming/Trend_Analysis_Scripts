@@ -146,10 +146,8 @@ for n in range(len(depths)):
     
 del n, cl
 
-    
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 
 # %% -----------------------------------------------------------------------------------------------
 # Get monthly averages and gap-fill
@@ -221,13 +219,16 @@ plt.plot(EEMD_t[8],EEMD_trend[8])
 # plt.plot(EEMD_t[0],np.ones(len(EEMD_t[0]))*0.4,'k')
 
 # Autocorrelation analysis and significance
-print('Running autocorrelation analysis')
+print('Running autocorrelation analysis and Significance tests')
 # Using last 10 years only
 
 ACF_result = []
 conf_std_limit = []
+conf_std_limit_EAC = []
 std_array = []
+std_array_EAC = []
 trend_sims = []
+trend_sims_EAC = []
 x_sims = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m') 
@@ -237,46 +238,20 @@ for n in range(len(depths)):
     tt = tbin_m[n]
     TT = TT[check[1]]
     TT = TT[np.isfinite(TT)]
-    # gaps = np.where(np.diff(check) > np.array(1))
-    # f_times = np.where(np.diff(gaps[1]) > 10)
-    # if np.max(gaps) < len(tbin_m[n])-10:
-    #     if '[]' not in str(f_times):
-    #         f_times = np.array(f_times)
-    #         f_times[-1] = np.int64(len(tbin_m[n]))
-    #     else:
-    #         f_times = np.int64(len(tbin_m[n]))          
-    # a = gaps[1]
-    # f_times = a[f_times]
-    # ACF = []
-    # for ind in range(len(f_times)-1):
-    #     TT = Tbin_m[n]
-    #     TT = TT[f_times[ind]+1:f_times[ind+1]]
-    #     TT = TT[np.where(np.isfinite(TT))]
-    #     ACF.append(pd.Series(sm.tsa.acf(TT, nlags=10)));
-
     ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
-
     # significance
-    csl, sa, ts, xs = \
+    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
            TF.EEMD_significance(tbin_m[n],Tbin_m[n],ACF_result[n],1000)
     conf_std_limit.append(csl)
     std_array.append(sa)
     trend_sims.append(ts)
+    conf_std_limit_EAC.append(csl_EAC)
+    std_array_EAC.append(sa_EAC)
+    trend_sims_EAC.append(ts_EAC)    
     x_sims.append(xs)
+    
 
-del TT, n, check, csl, sa, ts, xs
-
-# Create figure
-# plt.figure(figsize=(15,8))
-# for n in range(1,200):
-#     tt = trend_sims[n]
-#     plt.plot(tbin_m,tt-tt[0],color='grey')
-# plt.plot(tbin_m,conf_std_limit,color='r')
-# plt.plot(tbin_m,conf_std_limit*-1,color='r')
-# plt.plot(t,trend-trend[0],color='k',linewidth=2)
-# plt.xlabel('Year')
-# plt.ylabel(r'$\rmTemperature Trend [^\circ C]$')
-# plt.show()
+del TT, n, check, csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs
 
 # %% -----------------------------------------------------------------------------------------------
 # Mann kendall tests
@@ -386,7 +361,15 @@ for nn in range(len(EEMD_t)):
     EEMD_t_str.append(a)
 
 
-Trend_dict = {'ACF': ACF_result,
+Trend_dict = {'MK_result': mk_result,
+'MK_trend': mk_trend,
+'MK_trend_per_decade': mk_trend_per_decade,
+'MK_pval': mk_pval,
+'KPSS_results': KPSS_result,
+'ITA_stats': ITA_stats,
+'ITA_significance': ITA_significance,
+'ITA_trend_per_decade': ITA_slope_per_decade,
+'ACF': ACF_result,
 'KPSS_results': KPSS_result,
 'EEMD_t': EEMD_t_str,
 'EEMD_T': EEMD_T,
@@ -395,8 +378,11 @@ Trend_dict = {'ACF': ACF_result,
 'EEMD_imfs': EEMD_IMFS,
 'EEMD_res': EEMD_res,
 'EEMD_conf_std_limit': conf_std_limit,
+'EEMD_conf_std_limit_EAC': conf_std_limit_EAC,
 'EEMD_std_array': std_array,
+'EEMD_std_array_EAC': std_array_EAC,
 'EEMD_trend_sims': trend_sims,
+'EEMD_trend_sims_EAC': trend_sims_EAC,
 'EEMD_sims': x_sims}
 
 Data_dict = {'tbin': tbin_m_str,
