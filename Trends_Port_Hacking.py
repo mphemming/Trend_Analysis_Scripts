@@ -251,7 +251,7 @@ for n in range(len(depths)):
     x_sims.append(xs)
     
 
-del TT, n, check, csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs
+a
 
 # %% -----------------------------------------------------------------------------------------------
 # Mann kendall tests
