@@ -9,10 +9,12 @@ options.plot_dir = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\';
 NRSPHB_data = load([options.data_dir,'NRSPHB_data']);
 NRSPHB_trends = load([options.data_dir,'NRSPHB_trends']);
 NRSPHB_trends_server = load([options.data_dir,'NRSPHB_trends_server']);
+NRSPHB_Salinity_analysis = load([options.data_dir,'NRSPHB_Salinity_analysis']);
 % NRSMAI
 % NRSMAI_data = load([options.data_dir,'NRSMAI_data']);
 NRSMAI_trends = load([options.data_dir,'NRSMAI_trends']);
 NRSMAI_trends_server = load([options.data_dir,'NRSMAI_trends_server']);
+NRSMAI_Salinity_analysis = load([options.data_dir,'NRSMAI_Salinity_analysis']);
 %CH100
 CH100_trends = load([options.data_dir,'CH100_trends']);
 %BMP120
