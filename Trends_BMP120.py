@@ -131,38 +131,68 @@ del c, d, tt, TT
 # %% -----------------------------------------------------------------------------------------------
 # De-season data
 
-print('Removing the season')
+# print('Removing the season')
 
-# select climatology at similar depth
+# # select climatology at similar depth
 clim = []
 for n in range(len(depths)):
     clim.append(TF.calc_clim_monthly(t[n],T[n]))
-# get de-seasoned temperatures
+# # get de-seasoned temperatures
 Tbin_deseason = []
 for n in range(len(depths)):
     Tbin_deseason.append(np.array(TF.deseason(t[n],T[n],clim[n])))
     
 del n
+
+# interpolate climatologies to 365 days
+t_months = [dt.datetime(1,1,1),
+            dt.datetime(1,2,1),
+            dt.datetime(1,3,1),
+            dt.datetime(1,4,1),
+            dt.datetime(1,5,1),
+            dt.datetime(1,6,1),
+            dt.datetime(1,7,1),
+            dt.datetime(1,8,1),
+            dt.datetime(1,9,1),
+            dt.datetime(1,10,1),
+            dt.datetime(1,11,1),
+            dt.datetime(1,12,1),
+            dt.datetime(1,12,31)]
+_, _, _, _, yday = TF.datevec(t_months)
+clim_daily = []
+for n in range(len(depths)):
+    c = np.concatenate([clim[n],clim[n]])
+    c = np.stack(c).astype(None)
+    a = c[0:13]
+    clim_daily.append(np.interp(np.arange(0,367,1),yday,a))
     
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
 # Get daily averages
-
+  
 print('Getting Daily Averages')
 
 # Using de-seasoned timeseries
 tbin = []
 Tbin = []
+Tbin_no_deseason = []
+choice = 1
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # This is done to get a regular time grid with daily resolution
-    tt,TT = TF.bin_daily(2011,2021,t[n],np.float64(Tbin_deseason[n]))
+    if choice == 1:
+        tt,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
+        TT,TTnoDS,_ = TF.fill_gaps(tt,TT,np.squeeze(clim_daily[n]),2*365)
+    else:
+        tt,TT = TF.bin_monthly(2011,2021,tbin[n],Tbin_deseason[n])           
     tbin.append(tt)
     Tbin.append(TT)
+    _,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
+    Tbin_no_deseason.append(TT)
     
-del tt, TT, n    
+del tt, TT, n  
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -205,23 +235,48 @@ del n, tr
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
+# KPSS test to check for stationarity
+# If the result = 'Not stationary', a deterministc trend / linear regression is not suitable
+
+print('Checking for stationarity')
+KPSS_result = []
+stationarity_array = []
+for n in range(len(depths)):
+    KPSS_result.append(TF.kpss_test((Tbin[n]))) 
+    a = KPSS_result[n]
+    stationarity_array.append(str(depths[n]) + ' m :  ' + a.KPSS_result)       
+      
+del a, n
+    
+print(stationarity_array)
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+# %% -----------------------------------------------------------------------------------------------
 # Innovative trend analysis
 
 ITA_stats = []
 ITA_significance = []
 ITA_slope_per_decade = []
+
 for n in range(len(depths)):
-    ITA_stats.append(TF.ITA(tbin[n],Tbin[n],0,0))
+    tt = TF.to_date64(tbin[n])
+    ITA_stats.append(TF.ITA(tt,Tbin[n],-1,0))
     a = ITA_stats[n]
     ITA_significance.append(a.ITA_significance)
     ITA_slope_per_decade.append(a.ITA_trend_sen_per_decade)
-    
-plt.plot(ITA_slope_per_decade,depths)
-plt.plot(mk_trend_per_decade,depths)
 
-r = [0, 5, 10]
+plt.plot(ITA_slope_per_decade,depths,color='k')
+plt.plot(mk_trend_per_decade,depths,color='g')
 
-for n in range(len(depths)):
+del n, a
+
+
+r = np.arange(0,len(ITA_slope_per_decade),1)
+
+for n in r:
     line = np.arange(start=-20, stop=20, step=1) 
     plt.plot(line,line,color='k')
     plt.scatter(ITA_stats[n].TEMP_half_1,ITA_stats[n].TEMP_half_2,2)
@@ -238,16 +293,32 @@ print('Running Ensemble EMD')
 EEMD_t = []
 EEMD_T = []
 EEMD_trend = []
+EEMD_trend_EAC = []
 EEMD_imfs = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    t, T, trend, imfs, res = TF.Ensemble_EMD(tbin[n],Tbin[n],0)
+    t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tbin[n],Tbin[n],0)
     EEMD_t.append(t)
     EEMD_T.append(T)
     EEMD_trend.append(trend)
+    EEMD_trend_EAC.append(trend_EAC)
     EEMD_imfs.append(imfs)
     EEMD_res.append(res)
+
+
+EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
+             'IMF_2':EEMD_imfs[1], 
+             'IMF_3':EEMD_imfs[2], 
+             'IMF_4':EEMD_imfs[3], 
+             'IMF_5':EEMD_imfs[4], 
+             'IMF_6':EEMD_imfs[5], 
+             'IMF_7':EEMD_imfs[6], 
+             'IMF_8':EEMD_imfs[7], 
+             'IMF_9':EEMD_imfs[8], 
+             'IMF_10':EEMD_imfs[9], 
+             'IMF_11':EEMD_imfs[10],
+             'IMF_12':EEMD_imfs[11]}
     
 
 # Autocorrelation analysis and significance
@@ -256,8 +327,11 @@ print('Running autocorrelation analysis')
 
 ACF_result = []
 conf_std_limit = []
+conf_std_limit_EAC = []
 std_array = []
+std_array_EAC = []
 trend_sims = []
+trend_sims_EAC = []
 x_sims = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m') 
@@ -267,18 +341,20 @@ for n in range(len(depths)):
     tt = tbin[n]
     TT = TT[check[1]]
     TT = TT[np.isfinite(TT)]
-
     ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
-
-    # significance
-    csl, sa, ts, xs = \
-           TF.EEMD_significance(tbin[n],Tbin[n],ACF_result[n],1000)
+    # significance (using monthly values)
+    tt,TT = TF.bin_monthly(2011,2020,tbin[n],Tbin[n])
+    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+           TF.EEMD_significance(tt,TT,ACF_result[n],1)
     conf_std_limit.append(csl)
     std_array.append(sa)
     trend_sims.append(ts)
+    conf_std_limit_EAC.append(csl_EAC)
+    std_array_EAC.append(sa_EAC)
+    trend_sims_EAC.append(ts_EAC)    
     x_sims.append(xs)
 
-del TT, n, check, csl, sa, ts, xs
+del TT, n, check, csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs
 
 
 
@@ -328,11 +404,15 @@ Trend_dict = {'MK_result': mk_result,
 'EEMD_t': EEMD_t_str,
 'EEMD_T': EEMD_T,
 'EEMD_trend': EEMD_trend,
-'EEMD_imfs': EEMD_imfs,
+'EEMD_trend_EAC': EEMD_trend_EAC,
+'EEMD_imfs': EEMD_IMFS,
 'EEMD_res': EEMD_res,
 'EEMD_conf_std_limit': conf_std_limit,
+'EEMD_conf_std_limit_EAC': conf_std_limit_EAC,
 'EEMD_std_array': std_array,
+'EEMD_std_array_EAC': std_array_EAC,
 'EEMD_trend_sims': trend_sims,
+'EEMD_trend_sims_EAC': trend_sims_EAC,
 'EEMD_sims': x_sims}
 
 Data_dict = {'tbin': tbin_str,
