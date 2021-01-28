@@ -198,7 +198,6 @@ for n in range(len(depths)):
     EEMD_imfs.append(imfs)
     EEMD_res.append(res)
     
-ArithmeticError
 
 EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
              'IMF_2':EEMD_imfs[1],
@@ -239,11 +238,14 @@ for n in range(len(depths)):
     TT = Tbin_m[n]
     tt = tbin_m[n]
     TT = TT[check[1]]
+    TT = TT.astype('float64')
     TT = TT[np.isfinite(TT)]
     ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
     # significance
+    TT = Tbin_m[n]
+    TT = TT.astype('float64')
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tbin_m[n],Tbin_m[n],ACF_result[n],1)
+           TF.EEMD_significance(tbin_m[n],TT,ACF_result[n],1)
     conf_std_limit.append(csl)
     std_array.append(sa)
     trend_sims.append(ts)
@@ -418,8 +420,7 @@ Data_dict = {'tbin': tbin_m_str,
 'clims': clim,
 'NRSMAI_agg': NRSMAI_agg}
 
-ACF_resultsavemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
-        "NRSMAI_trends.mat", Trend_dict)savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
         "NRSMAI_trends.mat", Trend_dict)
 
 savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
