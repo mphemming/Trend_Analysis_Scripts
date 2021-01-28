@@ -129,6 +129,17 @@ del c1, c2, c3, c4
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # %% -----------------------------------------------------------------------------------------------
+# Remove data before 2011-03-29 to be same length as CH100
+
+for n in range(len(depths)):
+    TT = T[n]
+    TT[t[n] < np.datetime64('2011-03-29')] = np.nan
+    T[n] = TT;
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# %% -----------------------------------------------------------------------------------------------
 # De-season data
 
 # print('Removing the season')
@@ -158,7 +169,7 @@ t_months = [dt.datetime(1,1,1),
             dt.datetime(1,11,1),
             dt.datetime(1,12,1),
             dt.datetime(1,12,31)]
-_, _, _, _, yday = datevec(t_months)
+_, _, _, _, yday = TF.datevec(t_months)
 clim_daily = []
 for n in range(len(depths)):
     c = np.concatenate([clim[n],clim[n]])
@@ -183,13 +194,13 @@ for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # This is done to get a regular time grid with daily resolution
     if choice == 1:
-        tt,TT = TF.bin_daily(2009,2021,t[n],np.float64(T[n]))
+        tt,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
         TT,TTnoDS,_ = TF.fill_gaps(tt,TT,np.squeeze(clim_daily[n]),2*365)
     else:
-        tt,TT = TF.bin_monthly(2009,2021,tbin[n],Tbin_deseason[n])           
+        tt,TT = TF.bin_monthly(2011,2021,tbin[n],Tbin_deseason[n])           
     tbin.append(tt)
     Tbin.append(TT)
-    _,TT = TF.bin_daily(2009,2021,t[n],np.float64(T[n]))
+    _,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
     Tbin_no_deseason.append(TT)
     
 del tt, TT, n  
@@ -238,45 +249,25 @@ del n, tr
 # %% -----------------------------------------------------------------------------------------------
 # Innovative trend analysis
 
+
 ITA_stats = []
 ITA_significance = []
 ITA_slope_per_decade = []
+
 for n in range(len(depths)):
-    ITA_stats.append(TF.ITA(tbin[n],Tbin[n],0,0))
+    tt = TF.to_date64(tbin[n])
+    ITA_stats.append(TF.ITA(tt,Tbin[n],-1,0))
     a = ITA_stats[n]
     ITA_significance.append(a.ITA_significance)
     ITA_slope_per_decade.append(a.ITA_trend_sen_per_decade)
-    
-plt.plot(ITA_slope_per_decade,depths)
-plt.plot(mk_trend_per_decade,depths)
+
+plt.plot(ITA_slope_per_decade,depths,color='k')
+plt.plot(mk_trend_per_decade,depths,color='g')
 
 del n, a
 
-# # Autocorrelation analysis
-# n = 0
-# TT = Tbin[n]
-# check = np.where(np.isnan(TT))
-# ACF1 = pd.Series(sm.tsa.acf(TT[1550:1690], nlags=100)); # where longest streak without nans
-# ACF2 = pd.Series(sm.tsa.acf(TT[2680:2770], nlags=100)); # where longest streak without 
-# ACF3 = pd.Series(sm.tsa.acf(TT[3785:3920], nlags=100)); # where longest streak without 
-# ACF_result = []
-# for n in range(0,50):
-#     ACF_result.append(np.nanmean([ACF1[n],ACF2[n],ACF3[n]]))
-# ACF_result = np.array(ACF_result)
 
-# # 95% confidence level for no trend case
-# # confidence_ITA = TF.ITA_significance(tbin[0],Tbin[0],ACF_result,500)
-
-# # https://www.mathsisfun.com/data/confidence-interval.html
-
-
-# line = np.arange(start=-20, stop=20, step=1) 
-# conf = 1.96*(np.nanstd(line)/np.sqrt(len(line)))
-# # line = np.arange(start=2500, stop=5700, step=1) 
-# line_upper = line+conf
-# line_lower = line-conf
-
-r = np.arange(0,10,1)
+r = np.arange(0,len(ITA_slope_per_decade),1)
 
 for n in r:
     line = np.arange(start=-20, stop=20, step=1) 
@@ -285,18 +276,6 @@ for n in r:
     plt.xlim(left=-4, right=4)
     plt.ylim(bottom=-4, top=4)
 
-
-# plt.plot(ITA_stats.TEMP_half_1,ITA_stats.TEMP_half_1*ITA_stats.ITA_trend_sen_period)
-
-
-
-# plt.plot(ITA_stats.TEMP_half_1,
-#    ITA_stats.TEMP_half_2*(ITA_stats.ITA_trend_sen_period+ITA_stats.ITA_slope_upper_conf),color='r')
-# plt.plot(ITA_stats.TEMP_half_1,
-#    ITA_stats.TEMP_half_2*(ITA_stats.ITA_trend_sen_period-ITA_stats.ITA_slope_upper_conf),color='r')
-# plt.scatter(ITA_stats.TEMP_half_1,ITA_stats.TEMP_half_2)
-# plt.xlim(left=-2, right=2)
-# plt.ylim(bottom=-2, top=2)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -308,17 +287,31 @@ print('Running Ensemble EMD')
 EEMD_t = []
 EEMD_T = []
 EEMD_trend = []
+EEMD_trend_EAC = []
 EEMD_imfs = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    t, T, trend, imfs, res = TF.Ensemble_EMD(tbin[n],Tbin[n],0)
+    t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tbin[n],Tbin[n],0)
     EEMD_t.append(t)
     EEMD_T.append(T)
     EEMD_trend.append(trend)
+    EEMD_trend_EAC.append(trend_EAC)
     EEMD_imfs.append(imfs)
     EEMD_res.append(res)
-    
+
+
+EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
+             'IMF_2':EEMD_imfs[1], 
+             'IMF_3':EEMD_imfs[2], 
+             'IMF_4':EEMD_imfs[3], 
+             'IMF_5':EEMD_imfs[4], 
+             'IMF_6':EEMD_imfs[5], 
+             'IMF_7':EEMD_imfs[6], 
+             'IMF_8':EEMD_imfs[7], 
+             'IMF_9':EEMD_imfs[8], 
+             'IMF_10':EEMD_imfs[9], 
+             'IMF_11':EEMD_imfs[10]}
 
 # Autocorrelation analysis and significance
 print('Running autocorrelation analysis')
@@ -326,8 +319,11 @@ print('Running autocorrelation analysis')
 
 ACF_result = []
 conf_std_limit = []
+conf_std_limit_EAC = []
 std_array = []
+std_array_EAC = []
 trend_sims = []
+trend_sims_EAC = []
 x_sims = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m') 
@@ -340,27 +336,20 @@ for n in range(len(depths)):
 
     ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
 
-    # significance
-    csl, sa, ts, xs = \
-           TF.EEMD_significance(tbin[n],Tbin[n],ACF_result[n],1000)
+    # significance (using monthly values)
+    tt,TT = TF.bin_monthly(2011,2020,tbin[n],Tbin[n])
+    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+           TF.EEMD_significance(tt,TT,ACF_result[n],1)
     conf_std_limit.append(csl)
     std_array.append(sa)
     trend_sims.append(ts)
+    conf_std_limit_EAC.append(csl_EAC)
+    std_array_EAC.append(sa_EAC)
+    trend_sims_EAC.append(ts_EAC)    
     x_sims.append(xs)
 
-del TT, n, check, csl, sa, ts, xs
+del TT, n, check, csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs
 
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-# %% -----------------------------------------------------------------------------------------------
-# trend comparison plot
-
-# plt.plot(tbin_m,Tbin_m)
-# plt.plot(tbin_m,mk_trend,'r')
-# # plt.plot(t,trend,'g')
-# plt.show()
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -411,13 +400,16 @@ Trend_dict = {'MK_result': mk_result,
 'EEMD_t': EEMD_t_str,
 'EEMD_T': EEMD_T,
 'EEMD_trend': EEMD_trend,
-'EEMD_imfs': EEMD_imfs,
+'EEMD_trend_EAC': EEMD_trend_EAC,
+'EEMD_imfs': EEMD_IMFS,
 'EEMD_res': EEMD_res,
 'EEMD_conf_std_limit': conf_std_limit,
+'EEMD_conf_std_limit_EAC': conf_std_limit_EAC,
 'EEMD_std_array': std_array,
+'EEMD_std_array_EAC': std_array_EAC,
 'EEMD_trend_sims': trend_sims,
+'EEMD_trend_sims_EAC': trend_sims_EAC,
 'EEMD_sims': x_sims}
-
 
 Data_dict = {'tbin': tbin_str,
 'Tbin': Tbin,
