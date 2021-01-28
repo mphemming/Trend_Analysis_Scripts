@@ -665,7 +665,7 @@ def Ensemble_EMD(TIME,TEMP,figure):
     t = TIME[check_nans]
     # perform EEMD
     eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
-                processes=5, max_imfs=4,include_residue=False) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+                processes=8, max_imfs=4,include_residue=False) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
     eemd.eemd(T)
     imfs, res = eemd.get_imfs_and_residue()
     if figure == 1:
