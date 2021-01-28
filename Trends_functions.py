@@ -820,7 +820,7 @@ def EEMD_significance(TIME,TEMP,ACF_result,numb_sims):
                                              std=std_chosen, source="gaussian"))
         _, _, tr, tr_EAC, _, _ = Ensemble_EMD(TIME,x_sims[n],0)
         trend_sims.append(tr)
-        trend_sims_EAC.append(tr)
+        trend_sims_EAC.append(tr_EAC)
         toc = time.perf_counter()
         print(f"{toc - tic:0.4f} seconds")
         
