@@ -173,7 +173,8 @@ for n in range(len(depths)):
     if n == 3:
         check = tbin_m[n] < dt.datetime(1956,10,1)
         TT = Tbin_m[n]; TT[check] = np.nan
-        Tbin_m[n] = TT.astype('float64')  
+        Tbin_m[n] = TT.astype('float64') 
+        
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -412,7 +413,7 @@ Trend_dict = {'MK_result': mk_result,
 'EEMD_sims': x_sims}
 
 Data_dict = {'tbin': tbin_m_str,
-'Tbin': Tbin,
+'Tbin': Tbin_m,
 't': tbin_deseason_str,
 'T': T,
 'D': D,
