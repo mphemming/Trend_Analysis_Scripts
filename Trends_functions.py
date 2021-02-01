@@ -246,6 +246,8 @@ def bin_annually(start_yr,end_yr,TIME,TEMP):
             else:
                 Tbin_ann.append(np.nan)
                 tbin_ann.append(dt.datetime(int(un_yrs[n_bin]),6,1))   
+    tbin_ann = np.array(tbin_ann)
+    Tbin_ann = np.array(Tbin_ann)
     
     return tbin_ann, Tbin_ann
 
