@@ -257,9 +257,7 @@ for n in range(len(depths)):
 a = EEMD_imfs_S[0]
 
 
-EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
-             'IMF_2':EEMD_imfs[1],
-             'IMF_3':EEMD_imfs[2]}
+_
 
 EEMD_IMFS_S = {'IMF_1':EEMD_imfs_S[0],
              'IMF_2':EEMD_imfs_S[1],
