@@ -73,7 +73,7 @@ del c, main_path
 
 print('Selecting data at different depths:')
 
-depths = [2, 19, 31, 40, 50, 59, 75, 81, 99]
+depths = [2, 19, 31, 40, 50, 75, 99]
 
 D = []
 t = []
