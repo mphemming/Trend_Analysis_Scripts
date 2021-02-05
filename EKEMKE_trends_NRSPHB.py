@@ -96,12 +96,11 @@ EKE_clim = TF.calc_clim_monthly(t,EKE)
 # Get monthly EKE
 
 t_m,EKE_m = TF.bin_monthly(1953,2021,t,EKE)
+_,MKE_m = TF.bin_monthly(1953,2021,t,MKE)
 
 # %% -----------------------------------------------------------------------------------------------
 # Ensemble EMD
 print('Running Ensemble EMD')
-
-# NRSPHB
 
 EEMD_t, EEMD_T, EEMD_trend, EEMD_trend_EAC, EEMD_imfs, EEMD_res = \
                                                 TF.Ensemble_EMD(t_m,EKE_m,0)
