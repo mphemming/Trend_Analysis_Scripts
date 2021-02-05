@@ -65,7 +65,7 @@ del main_path
 
 print('Selecting data at different depths:')
 
-depths = [2, 10, 20, 30, 40, 50, 85]
+depths = [2]
 
 D = []
 Ds = []
@@ -112,7 +112,7 @@ del c, cs, d, ds, tt, tts, TT, SS
 # calculate simple climatology for now
 clim = np.ones((12,6),dtype=float) 
 clim_S = np.ones((12,6),dtype=float) 
-for n in range(len(depths)-1):
+for n in range(len(depths)):
     c = TF.calc_clim_monthly(t[n],T[n])  
     cs = TF.calc_clim_monthly(ts[n],S[n]) 
     clim[:,n] = c
@@ -148,7 +148,7 @@ print('Removing the season')
 # get de-seasoned temperatures
 Tbin_deseason = []
 Sbin_deseason = []
-for n in range(len(depths)-1):
+for n in range(len(depths)):
     cl = clim[:,n]
     cl_s = clim_S[:,n]
     Tbin_deseason.append(np.array(TF.deseason(tbin[n],Tbin[n],cl)))
@@ -171,7 +171,7 @@ Tbin_m = []
 Tbin_m_NG = []
 Sbin_m = []
 Sbin_m_NG = []
-for n in range(len(depths)-1):
+for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # temperature
     tt,TT = TF.bin_monthly(1945,2021,tbin[n],Tbin[n])
@@ -216,7 +216,7 @@ EEMD_res = []
 EEMD_imfs_S = []
 EEMD_res_S = []
 
-for n in range(len(depths)-1):
+for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tbin_m[n],Tbin_m[n],0)
     EEMD_t.append(t)
@@ -234,19 +234,8 @@ for n in range(len(depths)-1):
     EEMD_imfs_S.append(imfs_s)
     EEMD_res_S.append(res_s)
 
-EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
-             'IMF_2':EEMD_imfs[1],
-             'IMF_3':EEMD_imfs[2], 
-             'IMF_4':EEMD_imfs[3], 
-             'IMF_5':EEMD_imfs[4], 
-             'IMF_6':EEMD_imfs[5]}
-
-EEMD_IMFS_S = {'IMF_1':EEMD_imfs_S[0],
-             'IMF_2':EEMD_imfs_S[1],
-             'IMF_3':EEMD_imfs_S[2], 
-             'IMF_4':EEMD_imfs_S[3], 
-             'IMF_5':EEMD_imfs_S[4], 
-             'IMF_6':EEMD_imfs_S[5]}
+ArithmeticErrorEEMD_IMFS = {'IMF_1':EEMD_imfs[0]}
+EEMD_IMFS_S = {'IMF_1':EEMD_imfs_S[0]}
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -257,7 +246,7 @@ EEMD_IMFS_S = {'IMF_1':EEMD_imfs_S[0],
 EEMD_t_grid = []
 EEMD_trend_EAC_grid = []
 EEMD_trend_EAC_grid_S = []
-for n in range(len(depths)-1):
+for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # temperature
     tt,TT = TF.bin_monthly(1945,2021,EEMD_t[n],EEMD_trend_EAC[n])
@@ -350,8 +339,8 @@ for nn in range(len(EEMD_t)):
         a.append(tt.strftime("%Y-%m-%d %H:%M:%S"))
     EEMD_t_str.append(a)
 EEMD_t_str_S = []
-for nn in range(len(EEMD_tS)):
-    ttt = EEMD_t[nn]
+for nn in range(len((EEMD_tS))):
+    ttt = EEMD_tS[nn]
     a = []  
     for n in range(len(ttt)):
         tt = ttt[n]
