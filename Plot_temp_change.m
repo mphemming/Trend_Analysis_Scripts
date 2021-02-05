@@ -26,23 +26,62 @@ BMP120_trends_server = load([options.data_dir,'BMP120_trends_server']);
 MAI_depths = [2, 10, 20, 30, 40, 50, 85];
 PHB_depths = [2, 19, 31, 40, 50, 59, 75, 81, 99];
 
+%% Sort out time
+% NRSPHB
+% time
+nt = size(NRSPHB_data.t,2);
+for nn = 1:9
+    for t = 1:nt
+        a = squeeze(vertcat(NRSPHB_data.t(nn,t,:)))';
+        NRSPHB_data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
+    end
+end
+% EEMD time
+for nn = 1:9
+    a = NRSPHB_trends.EEMD_t{nn};
+    for t = 1:size(a,1)
+        b = a(t,:);
+        NRSPHB_trends.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
+    end
+end
+
+% NRSMAI
+% time
+nt = size(NRSMAI_data.t,2);
+for nn = 1:7
+    for t = 1:nt
+        a = squeeze(vertcat(NRSMAI_data.t(nn,t,:)))';
+        NRSMAI_data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
+    end
+end
+% EEMD time
+for nn = 1:7
+    a = NRSMAI_trends.EEMD_t{nn};
+    for t = 1:size(a,1)
+        b = a(t,:);
+        NRSMAI_trends.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
+    end
+end
+
+
 %% Fixing depths where IMFs not capturing trend properly
 
-a = NRSMAI_trends.EEMD_imfs.IMF_1;
-NRSMAI_trends.EEMD_trend{1} = a(end,:) + a(end-1,:);
-NRSMAI_trends.EEMD_trend_EAC{1} = a(end,:) + a(end-1,:) + a(end-2,:);
+% a = NRSMAI_trends.EEMD_imfs.IMF_1;
+% NRSMAI_trends.EEMD_trend{1} = a(end,:) + a(end-1,:);
+% NRSMAI_trends.EEMD_trend_EAC{1} = a(end,:) + a(end-1,:) + a(end-2,:);
 
 %% Get temp change
 
 % NRSPHB
 [Tchanges.NRSPHB.t1980_2020, Tchanges.NRSPHB.t1980_2020_EAC] = ...
     get_Tchange(NRSPHB_data, NRSPHB_data_server, NRSPHB_trends,NRSPHB_trends_server,1980,2020);
-Tchanges.NRSPHB.t1980_2020_EAC([4,5,7,9]) = NaN;
+Tchanges.NRSPHB.t1980_2020([6,8]) = NaN;
+Tchanges.NRSPHB.t1980_2020_EAC([4,5,6,7,8,9]) = NaN;
 % NRSMAI
 [Tchanges.NRSMAI.t1980_2020, Tchanges.NRSMAI.t1980_2020_EAC] = ...
     get_Tchange(NRSMAI_data, NRSMAI_data_server, NRSMAI_trends,NRSMAI_trends_server,1980,2020);
-Tchanges.NRSMAI.t1980_2020([4:5,7]) = NaN;
-Tchanges.NRSMAI.t1980_2020_EAC([4,7]) = NaN;
+Tchanges.NRSMAI.t1980_2020([2,4:5,7]) = NaN;
+Tchanges.NRSMAI.t1980_2020_EAC([2,4,5,7]) = NaN;
 
 %% Figure
 figure('units','normalized','position',[0 0.1 .7 .8]);
@@ -103,5 +142,5 @@ annotation(gcf,'textbox',...
     'FontSize',24,...
     'FitBoxToText','off');
 
-print(gcf, '-dpng','-r400', [options.plot_dir,'Tchange_1980_2020_NRS'])
+% print(gcf, '-dpng','-r400', [options.plot_dir,'Tchange_1980_2020_NRS'])
 
