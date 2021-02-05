@@ -49,7 +49,7 @@ p3 = plot(NRSPHB_trends.EEMD_t_conv(1).t,tr_EAC,'LineWidth',2,'Color','r')
 % determine where significant
 for n = 1:numel(tr)
     t = NRSPHB_trends.EEMD_t_conv(1).t(n);
-    f = find(NRSPHB_data.t_conv(1).t == t);;
+    f = find(NRSPHB_data.t_conv(1).t == t);
     if tr(n) <= NRSPHB_trends_server.EEMD_conf_std_limit(1,f)
         sig(n) = 0;
     else
