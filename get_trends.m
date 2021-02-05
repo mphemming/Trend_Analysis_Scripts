@@ -40,16 +40,22 @@ for n_depth = 1:n_depths
     T_rate_EAC_insig = diff(tr_EAC(check));
     if sum(isfinite(T_rate_sig)) > 90
         trends(n_depth).t1950s_sig = nanmean(T_rate_sig)*multiplier;   
+        trends(n_depth).t1950s_sig_std = nanstd(T_rate_sig)*multiplier;   
     else
         trends(n_depth).t1950s_sig = NaN;   
+        trends(n_depth).t1950s_sig_std = NaN;   
     end
     trends(n_depth).t1950s_insig = nanmean(T_rate_insig)*multiplier;    
+    trends(n_depth).t1950s_insig_std = nanstd(T_rate_insig)*multiplier;    
     if sum(isfinite(T_rate_EAC_sig)) > 90
         trends(n_depth).t1950s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+        trends(n_depth).t1950s_EAC_sig_std = nanstd(T_rate_EAC_sig)*multiplier;   
     else
         trends(n_depth).t1950s_EAC_sig = NaN;   
+        trends(n_depth).t1950s_EAC_sig_std = NaN;   
     end
-    trends(n_depth).t1950s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;        
+    trends(n_depth).t1950s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier; 
+    trends(n_depth).t1950s_EAC_insig_std = nanstd(T_rate_EAC_insig)*multiplier;      
     % 1960s
     check = tt >= datenum(1960,01,01) & tt < datenum(1970,01,01);
     T_rate_sig = diff(tr(check & tr_0_sig' == 1));
@@ -58,16 +64,22 @@ for n_depth = 1:n_depths
     T_rate_EAC_insig = diff(tr_EAC(check));
     if sum(isfinite(T_rate_sig)) > 90
         trends(n_depth).t1960s_sig = nanmean(T_rate_sig)*multiplier;   
+        trends(n_depth).t1960s_sig_std = nanstd(T_rate_sig)*multiplier;   
     else
         trends(n_depth).t1960s_sig = NaN;   
+        trends(n_depth).t1960s_sig_std = NaN;  
     end
     trends(n_depth).t1960s_insig = nanmean(T_rate_insig)*multiplier;    
+    trends(n_depth).t1960s_insig_std = nanstd(T_rate_insig)*multiplier;    
     if sum(isfinite(T_rate_EAC_sig)) > 90
         trends(n_depth).t1960s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+        trends(n_depth).t1960s_EAC_sig_std = nanstd(T_rate_EAC_sig)*multiplier;   
     else
-        trends(n_depth).t1960s_EAC_sig = NaN;   
+        trends(n_depth).t1960s_EAC_sig = NaN;  
+        trends(n_depth).t1960s_EAC_sig_std = NaN;   
     end
-    trends(n_depth).t1960s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;    
+    trends(n_depth).t1960s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;  
+    trends(n_depth).t1960s_EAC_insig_std = nanstd(T_rate_EAC_insig)*multiplier;    
     % 1970s
     check = tt >= datenum(1970,01,01) & tt < datenum(1980,01,01);
     T_rate_sig = diff(tr(check & tr_0_sig' == 1));
@@ -75,17 +87,23 @@ for n_depth = 1:n_depths
     T_rate_EAC_sig = diff(tr_EAC(check & tr_EAC_0_sig' == 1));
     T_rate_EAC_insig = diff(tr_EAC(check));
     if sum(isfinite(T_rate_sig)) > 90
-        trends(n_depth).t1970s_sig = nanmean(T_rate_sig)*multiplier;   
+        trends(n_depth).t1970s_sig = nanmean(T_rate_sig)*multiplier; 
+        trends(n_depth).t1970s_sig_std = nanstd(T_rate_sig)*multiplier;   
     else
         trends(n_depth).t1970s_sig = NaN;   
+        trends(n_depth).t1970s_sig_std = NaN;   
     end
     trends(n_depth).t1970s_insig = nanmean(T_rate_insig)*multiplier;    
+    trends(n_depth).t1970s_insig_std = nanstd(T_rate_insig)*multiplier;    
     if sum(isfinite(T_rate_EAC_sig)) > 90
-        trends(n_depth).t1970s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+        trends(n_depth).t1970s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;
+        trends(n_depth).t1970s_EAC_sig_std = nanstd(T_rate_EAC_sig)*multiplier;
     else
         trends(n_depth).t1970s_EAC_sig = NaN;   
+        trends(n_depth).t1970s_EAC_sig_std = NaN;   
     end
-    trends(n_depth).t1970s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;     
+    trends(n_depth).t1970s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;    
+    trends(n_depth).t1970s_EAC_insig_std = nanstd(T_rate_EAC_insig)*multiplier;    
     % 1980s
     check = tt >= datenum(1980,01,01) & tt < datenum(1990,01,01);
     T_rate_sig = diff(tr(check & tr_0_sig' == 1));
@@ -94,16 +112,22 @@ for n_depth = 1:n_depths
     T_rate_EAC_insig = diff(tr_EAC(check));
     if sum(isfinite(T_rate_sig)) > 90
         trends(n_depth).t1980s_sig = nanmean(T_rate_sig)*multiplier;   
+        trends(n_depth).t1980s_sig_std = nanstd(T_rate_sig)*multiplier;   
     else
         trends(n_depth).t1980s_sig = NaN;   
+        trends(n_depth).t1980s_sig_std = NaN;   
     end
-    trends(n_depth).t1980s_insig = nanmean(T_rate_insig)*multiplier;    
+    trends(n_depth).t1980s_insig = nanmean(T_rate_insig)*multiplier; 
+    trends(n_depth).t1980s_insig_std = nanstd(T_rate_insig)*multiplier;    
     if sum(isfinite(T_rate_EAC_sig)) > 90
         trends(n_depth).t1980s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+        trends(n_depth).t1980s_EAC_sig_std = nanstd(T_rate_EAC_sig)*multiplier;   
     else
         trends(n_depth).t1980s_EAC_sig = NaN;   
+        trends(n_depth).t1980s_EAC_sig_std = NaN;   
     end
     trends(n_depth).t1980s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;      
+    trends(n_depth).t1980s_EAC_insig_std = nanstd(T_rate_EAC_insig)*multiplier;    
     % 1990s
     check = tt >= datenum(1990,01,01) & tt < datenum(2000,01,01);
     T_rate_sig = diff(tr(check & tr_0_sig' == 1));
@@ -112,16 +136,22 @@ for n_depth = 1:n_depths
     T_rate_EAC_insig = diff(tr_EAC(check));
     if sum(isfinite(T_rate_sig)) > 90
         trends(n_depth).t1990s_sig = nanmean(T_rate_sig)*multiplier;   
+        trends(n_depth).t1990s_sig_std = nanstd(T_rate_sig)*multiplier;   
     else
         trends(n_depth).t1990s_sig = NaN;   
+        trends(n_depth).t1990s_sig_std = NaN;   
     end
     trends(n_depth).t1990s_insig = nanmean(T_rate_insig)*multiplier;    
+    trends(n_depth).t1990s_insig_std = nanstd(T_rate_insig)*multiplier;  
     if sum(isfinite(T_rate_EAC_sig)) > 90
         trends(n_depth).t1990s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+        trends(n_depth).t1990s_EAC_sig_std = nanstd(T_rate_EAC_sig)*multiplier;   
     else
         trends(n_depth).t1990s_EAC_sig = NaN;   
+        trends(n_depth).t1990s_EAC_sig_std = NaN;   
     end
-    trends(n_depth).t1990s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;          
+    trends(n_depth).t1990s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;   
+    trends(n_depth).t1990s_EAC_insig_std = nanmean(T_rate_EAC_insig)*multiplier;  
     % 2000s
     check = tt >= datenum(2000,01,01) & tt < datenum(2010,01,01);
     T_rate_sig = diff(tr(check & tr_0_sig' == 1));
@@ -130,16 +160,22 @@ for n_depth = 1:n_depths
     T_rate_EAC_insig = diff(tr_EAC(check));
     if sum(isfinite(T_rate_sig)) > 90
         trends(n_depth).t2000s_sig = nanmean(T_rate_sig)*multiplier;   
+        trends(n_depth).t2000s_sig_std = nanmean(T_rate_sig)*multiplier;   
     else
         trends(n_depth).t2000s_sig = NaN;   
+        trends(n_depth).t2000s_sig_std = NaN;   
     end
     trends(n_depth).t2000s_insig = nanmean(T_rate_insig)*multiplier;    
+    trends(n_depth).t2000s_insig_std = nanstd(T_rate_insig)*multiplier;    
     if sum(isfinite(T_rate_EAC_sig)) > 90
         trends(n_depth).t2000s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+        trends(n_depth).t2000s_EAC_sig_std = nanstd(T_rate_EAC_sig)*multiplier;  
     else
         trends(n_depth).t2000s_EAC_sig = NaN;   
+        trends(n_depth).t2000s_EAC_sig_std = NaN;   
     end
     trends(n_depth).t2000s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;      
+    trends(n_depth).t2000s_EAC_insig_std = nanstd(T_rate_EAC_insig)*multiplier;      
     % 2010s
     check = tt >= datenum(2010,01,01) & tt < datenum(2020,01,01);
     T_rate_sig = diff(tr(check & tr_0_sig' == 1));
@@ -147,17 +183,23 @@ for n_depth = 1:n_depths
     T_rate_EAC_sig = diff(tr_EAC(check & tr_EAC_0_sig' == 1));
     T_rate_EAC_insig = diff(tr_EAC(check));
     if sum(isfinite(T_rate_sig)) > 90
-        trends(n_depth).t2010s_sig = nanmean(T_rate_sig)*multiplier;   
+        trends(n_depth).t2010s_sig = nanmean(T_rate_sig)*multiplier; 
+        trends(n_depth).t2010s_sig_std = nanstd(T_rate_sig)*multiplier;   
     else
         trends(n_depth).t2010s_sig = NaN;   
+        trends(n_depth).t2010s_sig_std = NaN;   
     end
-    trends(n_depth).t2010s_insig = nanmean(T_rate_insig)*multiplier;    
+    trends(n_depth).t2010s_insig = nanmean(T_rate_insig)*multiplier; 
+    trends(n_depth).t2010s_insig_std = nanstd(T_rate_insig)*multiplier;    
     if sum(isfinite(T_rate_EAC_sig)) > 90
         trends(n_depth).t2010s_EAC_sig = nanmean(T_rate_EAC_sig)*multiplier;   
+        trends(n_depth).t2010s_EAC_sig_std = nanstd(T_rate_EAC_sig)*multiplier;   
     else
         trends(n_depth).t2010s_EAC_sig = NaN;   
+        trends(n_depth).t2010s_EAC_sig_std = NaN;   
     end
     trends(n_depth).t2010s_EAC_insig = nanmean(T_rate_EAC_insig)*multiplier;      
+    trends(n_depth).t2010s_EAC_insig_std = nanstd(T_rate_EAC_insig)*multiplier;      
     % total change   
     trends(n_depth).total_insig = abs(tr(end)-tr(1));
     tr_sig = tr(tr_0_sig' == 1);
