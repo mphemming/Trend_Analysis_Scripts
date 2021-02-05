@@ -23,6 +23,29 @@ BMP120_data = load([options.data_dir,'BMP120_data']);
 BMP120_trends = load([options.data_dir,'BMP120_trends']);
 BMP120_trends_server = load([options.data_dir,'BMP120_trends_server']);
 
+%% Remove some depths that lack data affecting trends
+
+% NRSPHB
+% missing 1950s/1960s with higher maxima than 1970s
+
+NRSPHB_trends.EEMD_t{6} = [];
+NRSPHB_trends.EEMD_T{6} = [];
+NRSPHB_trends.EEMD_trend{6} = [];
+NRSPHB_trends.EEMD_trend_EAC{6} = [];
+NRSPHB_trends_server.EEMD_t{6} = [];
+NRSPHB_trends_server.EEMD_T{6} = [];
+NRSPHB_trends_server.EEMD_trend{6} = [];
+NRSPHB_trends_server.EEMD_trend_EAC{6} = [];
+
+NRSPHB_trends.EEMD_t{8} = [];
+NRSPHB_trends.EEMD_T{8} = [];
+NRSPHB_trends.EEMD_trend{8} = [];
+NRSPHB_trends.EEMD_trend_EAC{8} = [];
+NRSPHB_trends_server.EEMD_t{8} = [];
+NRSPHB_trends_server.EEMD_T{8} = [];
+NRSPHB_trends_server.EEMD_trend{8} = [];
+NRSPHB_trends_server.EEMD_trend_EAC{8} = [];
+
 %% Plot ITA for CH100 and BMP120
 
 figure('units','normalized','position',[0 0.1 .8 .75]);
@@ -144,7 +167,7 @@ annotation(gcf,'textbox',...
 
 print(gcf, '-dpng','-r400', [options.plot_dir,'ITA_comparison_CH100_BMP120'])
 
-%% Plot ITA for CH100 and BMP120
+%% Plot ITA for PHB and MAI
 
 figure('units','normalized','position',[0 0.1 .8 .75]);
 
@@ -154,7 +177,7 @@ axes(gcf,'Position',[0.0818684895833333 0.11 0.397786458333333 0.814999999999983
 cmap = cbrewer('qual','Paired',12);
 
 clear s
-for n = 1:9
+for n = [1:5,7,9]
   s(n) = scatter(NRSPHB_trends_server.ITA_stats{n}.TEMP_half_1, NRSPHB_trends_server.ITA_stats{n}.TEMP_half_2,10,'MarkerEdgeColor',cmap(n,:),'MarkerFaceColor',cmap(n,:))
   hold on
 end
@@ -167,7 +190,7 @@ ylabel('Temperature Anomaly [^\circC] 1987 to 2021')
 title('NRSPHB');
 
 clear ss
-for n = 1:numel(s)
+for n = [1:5,7,9]
     if n == 1
         ss = s(n);
     else
@@ -175,14 +198,14 @@ for n = 1:numel(s)
     end
 end
 
-leg = legend(ss,[{'2'}, {'19'}, {'31'}, {'40'}, {'50'}, {'59'}, {'75'}, {'81'}, {'99'}]);
+leg = legend(ss,[{'2'}, {'19'}, {'31'}, {'40'}, {'50'}, {'75'}, {'99'}]);
 set(leg,'Location','SouthEast','Box','Off');
 
 % Create axes
 axes(gcf,'Position',[0.526529947916667 0.11 0.404947916666667 0.814999999999977]);
 
-
-for n = 1:7
+clear s
+for n = [1,3,6]
   s(n) = scatter(NRSMAI_trends_server.ITA_stats{n}.TEMP_half_1, NRSMAI_trends_server.ITA_stats{n}.TEMP_half_2,10,'MarkerEdgeColor',cmap(n,:),'MarkerFaceColor',cmap(n,:))
   hold on
 end
@@ -194,7 +217,8 @@ xlabel('Temperature Anomaly [^\circC] 1945 to 1983')
 ylabel('Temperature Anomaly [^\circC] 1983 to 2021')
 title('NRSMAI');
 
-for n = 1:numel(s)
+clear ss
+for n = [1,3,6]
     if n == 1
         ss = s(n);
     else
@@ -202,7 +226,7 @@ for n = 1:numel(s)
     end
 end
 
-leg = legend(ss,[{'2'}, {'10'}, {'20'}, {'30'}, {'40'}, {'50'}, {'85'}]);
+leg = legend(ss,[{'2'}, {'20'}, {'50'}, {'85'}]);
 set(leg,'Location','SouthEast','Box','Off');
 
 % Create textbox
