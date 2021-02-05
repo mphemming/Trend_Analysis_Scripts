@@ -65,7 +65,7 @@ del main_path
 
 print('Selecting data at different depths:')
 
-depths = [2, 50, 75]
+depths = [2]
 
 D = []
 Ds = []
@@ -120,15 +120,15 @@ del c, cc, cs, d, ds, tt, tts, TT, SS
 # 2m
 c = S[0] < 35.1
 a = S[0]; a[c] = np.nan;
-S[0] = a;
-# 50m
-c = S[1] < 35.1
-a = S[1]; a[c] = np.nan;
-S[1] = a;
-# 75m
-c = S[2] < 35
-a = S[2]; a[c] = np.nan;
-S[2] = a;
+# S[0] = a;
+# # 50m
+# c = S[1] < 35.1
+# a = S[1]; a[c] = np.nan;
+# S[1] = a;
+# # 75m
+# c = S[2] < 35
+# a = S[2]; a[c] = np.nan;
+# S[2] = a;
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -137,8 +137,8 @@ S[2] = a;
 # Get climatology at same depths
 
 # calculate simple climatology for now
-clim = np.ones((12,3),dtype=float) 
-clim_S = np.ones((12,3),dtype=float) 
+clim = np.ones((12,1),dtype=float) 
+clim_S = np.ones((12,1),dtype=float) 
 for n in range(len(depths)):
     c = TF.calc_clim_monthly(t[n],T[n])  
     cs = TF.calc_clim_monthly(ts[n],S[n]) 
@@ -254,14 +254,13 @@ for n in range(len(depths)):
     EEMD_imfs_S.append(imfs_s)
     EEMD_res_S.append(res_s)
 
-a = EEMD_imfs_S[0]
+EEMD_IMFS = {'IMF_1':EEMD_imfs[0]}
+EEMD_IMFS_S = {'IMF_1':EEMD_imfs_S[0]}
 
 
-_
-
-EEMD_IMFS_S = {'IMF_1':EEMD_imfs_S[0],
-             'IMF_2':EEMD_imfs_S[1],
-             'IMF_3':EEMD_imfs_S[2]}
+# EEMD_IMFS_S = {'IMF_1':EEMD_imfs_S[0],
+#              'IMF_2':EEMD_imfs_S[1],
+#              'IMF_3':EEMD_imfs_S[2]}
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -367,7 +366,7 @@ for nn in range(len(EEMD_t)):
     EEMD_t_str.append(a)
 EEMD_t_str_S = []
 for nn in range(len(EEMD_tS)):
-    ttt = EEMD_t[nn]
+    ttt = EEMD_tS[nn]
     a = []  
     for n in range(len(ttt)):
         tt = ttt[n]
