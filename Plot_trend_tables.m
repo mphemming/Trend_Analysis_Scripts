@@ -63,9 +63,11 @@ end
 
 %% Fixing depths where IMFs not capturing trend properly
 
-a = NRSMAI_trends.EEMD_imfs.IMF_1;
-NRSMAI_trends.EEMD_trend{1} = a(end,:) + a(end-1,:);
-NRSMAI_trends.EEMD_trend_EAC{1} = a(end,:) + a(end-1,:) + a(end-2,:);
+% It's ok now
+
+% a = NRSMAI_trends.EEMD_imfs.IMF_1;
+% NRSMAI_trends.EEMD_trend{1} = a(end,:) + a(end-1,:);
+% NRSMAI_trends.EEMD_trend_EAC{1} = a(end,:) + a(end-1,:) + a(end-2,:);
 
 %% calculate average trends
 
