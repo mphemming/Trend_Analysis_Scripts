@@ -928,6 +928,11 @@ def datetime2matlabdn(d):
 
 def fill_gaps(TIME,TEMP,CLIM,std_window):
     
+    # remove leap year days
+    _, mn, dy, _, yday_t = datevec(TIME)
+    # check_leap = np.squeeze(np.logical_and([mn != 2],[dy != 29]))
+    # yday_t = np.array(yday_t); yday_t = yday_t[check_leap]
+    
     # Find first and last date that is finite
     check_finite = np.where(np.isfinite(TEMP))
     first_date = np.min(check_finite)
@@ -975,7 +980,6 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
         stds.append(np.nanstd(T_deseason[index]))
         means.append(np.nanmean(T_deseason[index]))
     #construct simulated time series using seasonal cycle and stds
-    _, _, _, _, yday_t = datevec(TIME)
     recon = []
     for n in range(len(TIME)):
         std_today = variability[n]
@@ -988,8 +992,9 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
             a[12] = CLIM[0]
             cl = np.interp(np.linspace(1,13,365),np.arange(1,14,1),a)
         else:
-            cl = CLIM
-            
+            cl = CLIM 
+        if yday_today == 365 or yday_today == 366:
+            yday_today = 364
         recon.append(cl[yday_today] + std_choice_today[r] + means[n])
         
     filled_TEMP = []
