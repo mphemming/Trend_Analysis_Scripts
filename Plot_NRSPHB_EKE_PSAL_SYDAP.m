@@ -277,3 +277,109 @@ annotation(gcf,'textbox',...
 
 print(gcf, '-dpng','-r400', [options.plot_dir,'Trend_Sydney_comparison'])
 
+%% Alternative figure with just EKE
+
+
+figure('units','normalized','position',[0 0 .5 .9]);
+
+colors = cbrewer('qual','Set2',4);
+set(gcf,'Color','w');
+
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.10703125 0.543981481481482 0.690625 0.386831275720165]);
+
+plot(bin.t_PHB,bin.TEMP_PHB,'LineWidth',3,'Color',colors(1,:));
+xlim([datenum(1953,01,01) datenum(2020,01,01)]);
+set(gca,'LineWidth',2,'Box','Off','YTick','','XTickLabels','','YColor','w','XTick', ...
+    [datenum(1960,01,01) datenum(1970,01,01) datenum(1980,01,01) datenum(1990,01,01) datenum(2000,01,01) datenum(2010,01,01)],...
+    'XTickLabels','');
+% datetick('x','YYYY','KeepLimits')
+ylim([-0.3 1.6])
+
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.0888020833333303 0.54295267489712 0.005 0.386831275720165]);
+ylim([-0.3 1.6])
+set(gca,'LineWidth',2,'FontSize',16,'YColor',colors(1,:),'XColor',colors(1,:));
+ylabel('Temperature [^\circC]');
+
+
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.10703125 0.543981481481482 0.690625 0.386831275720165]);
+
+plot(bin.t_PHB,bin.EKE,'LineWidth',3,'Color',colors(3,:));
+ylim([0.004 0.018])
+set(gca,'Visible','Off')
+xlim([datenum(1953,01,01) datenum(2020,01,01)]);
+
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.85 0.545010288065844 0.005 0.386831275720165]);
+
+set(gca,'LineWidth',2,'FontSize',14,'YColor',colors(3,:),'XColor',colors(3,:),'YTick',[0.006 0.008 0.01 0.012 0.014 0.016 0.018],'YTickLabels',...
+    [{'6'} {'8'} {'1'} {'1.2'} {'1.4'} {'1.6'} {'1.8'}]);
+ylabel('EKE [ x 10^{-3} m^2 s^{-2}]','FontSize',14);
+ylim([0.004 0.018])
+
+%$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.10703125 0.131430041152263 0.692708333333333 0.378600823045268]);
+
+plot(bin_mono.t_PHB,bin_mono.TEMP_PHB,'LineWidth',3,'Color',colors(1,:));
+xlim([datenum(1953,01,01) datenum(2020,01,01)]);
+set(gca,'LineWidth',2,'Box','Off','YTick','','YColor','w', 'FontSize', 16, 'XTick', ...
+    [datenum(1960,01,01) datenum(1970,01,01) datenum(1980,01,01) datenum(1990,01,01) datenum(2000,01,01) datenum(2010,01,01)],...
+    'XTickLabels',[{'1960'} {'1970'} {'1980'} {'1990'} {'2000'} {'2010'}]);
+ylim([-0.3 1.2])
+xlabel('Year');
+
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.0893229166666634 0.131430041152263 0.00520833333333663 0.381172839506175]);
+ylim([-0.3 1.2])
+set(gca,'LineWidth',2,'FontSize',16,'YColor',colors(1,:),'XColor',colors(1,:));
+ylabel('Temperature [^\circC]');
+
+
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.10703125 0.131430041152263 0.692708333333333 0.378600823045268]);
+
+plot(bin_mono.t_PHB,bin_mono.EKE,'LineWidth',3,'Color',colors(3,:));
+ylim([-3E-4 12E-4])
+set(gca,'Visible','Off')
+xlim([datenum(1953,01,01) datenum(2020,01,01)]);
+
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.85 0.130401234567902 0.005 0.386831275720165]);
+
+set(gca,'LineWidth',2,'FontSize',14,'YColor',colors(3,:),'XColor',colors(3,:),'YTick',[0.0002 0.0004 0.0006 0.0008 0.0010],'YTickLabels',...
+    [{'2'} {'4'} {'6'} {'8'} {'10'}]);
+ylabel('EKE [ x 10^{-4} m^2 s^{-2}]','FontSize',14);
+ylim([-3E-4 12E-4])
+
+
+
+% Create textbox
+annotation(gcf,'textbox',...
+    [0.0978749999999999 0.878600823045268 0.0792083333333329 0.0421810699588483],...
+    'String',{'(a)'},...
+    'LineStyle','none',...
+    'FontSize',24,...
+    'FitBoxToText','off');
+
+% Create textbox
+annotation(gcf,'textbox',...
+    [0.101520833333333 0.462448559670782 0.0792083333333326 0.0421810699588482],...
+    'String','(b)',...
+    'LineStyle','none',...
+    'FontSize',24,...
+    'FitBoxToText','off');
+
+print(gcf, '-dpng','-r400', [options.plot_dir,'Trend_Sydney_comparison_alternate'])
