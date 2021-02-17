@@ -160,7 +160,7 @@ for n_depth = 1:n_depths
     T_rate_EAC_insig = diff(tr_EAC(check));
     if sum(isfinite(T_rate_sig)) > 90
         trends(n_depth).t2000s_sig = nanmean(T_rate_sig)*multiplier;   
-        trends(n_depth).t2000s_sig_std = nanmean(T_rate_sig)*multiplier;   
+        trends(n_depth).t2000s_sig_std = nanstd(T_rate_sig)*multiplier;   
     else
         trends(n_depth).t2000s_sig = NaN;   
         trends(n_depth).t2000s_sig_std = NaN;   
