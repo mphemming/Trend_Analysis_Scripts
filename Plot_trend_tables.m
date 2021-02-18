@@ -12,7 +12,7 @@ NRSPHB_trends_server = load([options.data_dir,'NRSPHB_trends_server']);
 % NRSMAI
 NRSMAI_data = load([options.data_dir,'NRSMAI_data']);
 NRSMAI_data_server = load([options.data_dir,'NRSMAI_data_server']);
-NRSMAI_trends = load([options.data_dir,'NRSMAI_trends_server']); % using server for both for now because only 2 depths at moment
+NRSMAI_trends = load([options.data_dir,'NRSMAI_trends']);
 NRSMAI_trends_server = load([options.data_dir,'NRSMAI_trends_server']);
 %CH100
 CH100_data = load([options.data_dir,'CH100_data']);
@@ -30,15 +30,15 @@ BMP120_trends_server = load([options.data_dir,'BMP120_trends_server']);
 % NRSPHB
 % time
 nt = size(NRSPHB_data.t,2);
-for nn = 1:9
+for nn = 1:7
     for t = 1:nt
         a = squeeze(vertcat(NRSPHB_data.t(nn,t,:)))';
         NRSPHB_data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
     end
 end
 % EEMD time
-for nn = 1:9
-    a = NRSPHB_trends.EEMD_t{nn};
+for nn = 1:7
+    a = squeeze(NRSPHB_trends.EEMD_t(nn,:,:));
     for t = 1:size(a,1)
         b = a(t,:);
         NRSPHB_trends.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
@@ -48,15 +48,15 @@ end
 % NRSMAI
 % time
 nt = size(NRSMAI_data.t,2);
-for nn = 1:7
+for nn = 1:3
     for t = 1:nt
         a = squeeze(vertcat(NRSMAI_data.t(nn,t,:)))';
         NRSMAI_data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
     end
 end
 % EEMD time
-for nn = 1:7
-    a = NRSMAI_trends.EEMD_t{nn};
+for nn = 1:3
+    a = squeeze(NRSMAI_trends.EEMD_t(nn,:,:));
     for t = 1:size(a,1)
         b = a(t,:);
         NRSMAI_trends.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
@@ -103,9 +103,9 @@ end
 
 % It's ok now
 
-a = NRSMAI_trends.EEMD_imfs.IMF_1;
-NRSMAI_trends.EEMD_trend{1} = a(end,:) + a(end-1,:);
-NRSMAI_trends.EEMD_trend_EAC{1} = a(end,:) + a(end-1,:) + a(end-2,:);
+% a = NRSMAI_trends.EEMD_imfs.IMF_1;
+% NRSMAI_trends.EEMD_trend{1} = a(end,:) + a(end-1,:);
+% NRSMAI_trends.EEMD_trend_EAC{1} = a(end,:) + a(end-1,:) + a(end-2,:);
 
 %% calculate average trends
 
@@ -130,7 +130,7 @@ ylim([1 8])
 xlim([0 6])
 
 row_n = 0;
-for n_depth = [1:5,7,9]
+for n_depth = 1:7
 
     % organise trends over time
     % trends
@@ -192,8 +192,8 @@ for n_depth = [1:5,7,9]
             val_EAC = 0;
             std_EAC = ' ';
         end
-        val_str = num2str(round(val,3));
-        val_EAC_str = num2str(round(val_EAC,3));
+        val_str = num2str(round(val,6));
+        val_EAC_str = num2str(round(val_EAC,6));
         std_str = num2str(round(std,6));
         std_EAC_str = num2str(round(std_EAC,6));        
         % ensure value is same size
@@ -221,16 +221,16 @@ for n_depth = [1:5,7,9]
         
         if sig_indicator == 1      
             text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color, ...
-                'EdgeColor',[0 0 0],'LineWidth',2)
+                'EdgeColor',[0 0 0],'LineWidth',1)
         else      
-            text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color)
+            text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color,'color',[.4 .4 .4])
         end
         
         if sig_indicator_EAC == 1             
             text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''], ...
                 'BackgroundColor',color_EAC,'EdgeColor',[0 0 0],'LineWidth',2)
         else                  
-            text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC)
+            text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC,'color',[.4 .4 .4])
         end        
     end
 
@@ -263,7 +263,7 @@ x_spacing = linspace(0,0.2,6);
 
 
 row_n = 0;
-for n_depth = [1,3,6]
+for n_depth = 1:3
 
     % organise trends over time
     % trends
@@ -354,16 +354,16 @@ for n_depth = [1,3,6]
         
         if sig_indicator == 1      
             text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,'  '],'BackgroundColor',color, ...
-                'EdgeColor',[0 0 0],'LineWidth',2)
+                'EdgeColor',[0 0 0],'LineWidth',1)
         else      
-            text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,'  '],'BackgroundColor',color)
+            text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,'  '],'BackgroundColor',color,'color',[.4 .4 .4])
         end
         
         if sig_indicator_EAC == 1             
             text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,'  '], ...
                 'BackgroundColor',color_EAC,'EdgeColor',[0 0 0],'LineWidth',2)
         else                  
-            text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,'  '],'BackgroundColor',color_EAC)
+            text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,'  '],'BackgroundColor',color_EAC,'color',[.4 .4 .4])
         end        
     end
 
