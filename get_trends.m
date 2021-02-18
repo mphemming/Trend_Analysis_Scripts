@@ -1,18 +1,35 @@
 function [trends] = get_trends(data_struct, data_struct_server, trend_data_struct,trend_data_struct_server,multiplier)
 
-n_depths = numel(trend_data_struct.EEMD_trend);
 
+if iscell(trend_data_struct.EEMD_trend) ~= 1
+    n_depths = size(trend_data_struct.EEMD_trend,1);
+else
+    n_depths = size(trend_data_struct.EEMD_trend,2);
+end
 
 for n_depth = 1:n_depths
     
     sig = trend_data_struct_server.EEMD_conf_std_limit(1,:);
     sig_EAC = trend_data_struct_server.EEMD_conf_std_limit_EAC(1,:);
     tt_sig = data_struct.t_conv(n_depth).t;
-    tr = trend_data_struct.EEMD_trend{n_depth} / nanstd(trend_data_struct.EEMD_T{n_depth}); % normalise trend 
-    tr_EAC = trend_data_struct.EEMD_trend_EAC{n_depth}  / nanstd(trend_data_struct.EEMD_T{n_depth}); % normalise trend
-    tr_0 = tr-tr(1);  
-    tr_EAC_0 = tr_EAC-tr_EAC(1);  
-    tt = datenum(cell2mat(trend_data_struct.EEMD_t(n_depth)));
+    
+    if iscell(trend_data_struct.EEMD_trend) ~= 1
+        tr = trend_data_struct.EEMD_trend(n_depth,:) / nanstd(trend_data_struct.EEMD_T(n_depth,:)); % normalise trend 
+        tr_EAC = trend_data_struct.EEMD_trend_EAC(n_depth,:)  / nanstd(trend_data_struct.EEMD_T(n_depth,:)); % normalise trend
+        tr_0 = tr-tr(1);  
+        tr_EAC_0 = tr_EAC-tr_EAC(1);  
+        a = squeeze(trend_data_struct.EEMD_t(n_depth,:,:));
+    else
+        tr = trend_data_struct.EEMD_trend{n_depth} / nanstd(trend_data_struct.EEMD_T{n_depth}); % normalise trend 
+        tr_EAC = trend_data_struct.EEMD_trend_EAC{n_depth}  / nanstd(trend_data_struct.EEMD_T{n_depth}); % normalise trend
+        tr_0 = tr-tr(1);  
+        tr_EAC_0 = tr_EAC-tr_EAC(1);  
+        a = squeeze(trend_data_struct.EEMD_t{n_depth});
+    end
+    for nt = 1:size(a,1)
+        aa(nt) = convertCharsToStrings(a(nt,:));
+    end
+    tt = datenum(aa);
     % get significance from start of time period of interest
     sig = sig(1:numel(tt));
     sig_EAC = sig_EAC(1:numel(tt));
@@ -234,6 +251,7 @@ for n_depth = 1:n_depths
     end   
     % determine if > 10% of data is gap-filled
     trends(n_depth).data_coverage = 0;
+    
     if 1 - sum(isfinite(data_struct.Tbin(n_depths,:))) / sum(isfinite(data_struct_server.Tbin(n_depths,:))) > 0.1
         trends(n_depth).data_coverage = 0.1;
     end    
