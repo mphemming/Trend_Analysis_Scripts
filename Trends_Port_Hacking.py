@@ -105,7 +105,7 @@ del c, d, tt, TT
 # Get climatology at same depths
 
 
-clim = np.ones((365,9),dtype=float)
+clim = np.ones((365,7),dtype=float)
 for day in range(0,365):
     day_temps = NRSPHB_clim.TEMP_AVE[day,:] 
     day_std = NRSPHB_clim.TEMP_STD[day,:] 
@@ -196,9 +196,7 @@ EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
              'IMF_4':EEMD_imfs[3], 
              'IMF_5':EEMD_imfs[4], 
              'IMF_6':EEMD_imfs[5], 
-             'IMF_7':EEMD_imfs[6], 
-             'IMF_8':EEMD_imfs[7], 
-             'IMF_9':EEMD_imfs[8]}
+             'IMF_7':EEMD_imfs[6]}
 
     
 plt.plot(EEMD_t[0],EEMD_trend[0])
@@ -208,8 +206,8 @@ plt.plot(EEMD_t[3],EEMD_trend[3])
 plt.plot(EEMD_t[4],EEMD_trend[4])
 plt.plot(EEMD_t[5],EEMD_trend[5])
 plt.plot(EEMD_t[6],EEMD_trend[6])
-plt.plot(EEMD_t[7],EEMD_trend[7])
-plt.plot(EEMD_t[8],EEMD_trend[8])
+# plt.plot(EEMD_t[7],EEMD_trend[7])
+# plt.plot(EEMD_t[8],EEMD_trend[8])
 
 # plt.plot(EEMD_t[5],EEMD_T[5],'.')
 # plt.plot(EEMD_t[5],EEMD_trend[5])
@@ -249,9 +247,7 @@ for n in range(len(depths)):
     std_array_EAC.append(sa_EAC)
     trend_sims_EAC.append(ts_EAC)    
     x_sims.append(xs)
-    
 
-a
 
 # %% -----------------------------------------------------------------------------------------------
 # Mann kendall tests
@@ -293,13 +289,13 @@ for n in range(len(depths)):
     
 # plt.plot(ITA_slope_per_decade_low,depths,color='b')
 # plt.plot(ITA_slope_per_decade_high,depths,color='r')
-plt.plot(ITA_slope_per_decade,depths,color='k')
-plt.plot(mk_trend_per_decade,depths,color='g')
+# plt.plot(ITA_slope_per_decade,depths,color='k')
+# plt.plot(mk_trend_per_decade,depths,color='g')
 
 del n, a
 
 
-r = np.arange(0,8,1)
+r = np.arange(0,6,1)
 
 for n in r:
     line = np.arange(start=-20, stop=20, step=1) 
