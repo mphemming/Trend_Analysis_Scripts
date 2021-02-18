@@ -666,11 +666,35 @@ def Ensemble_EMD(TIME,TEMP,figure):
     T = TEMP[check_nans]
     t = TIME[check_nans]
     # perform EEMD
-    eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
-                processes=8,include_residue=False,
-                num_siftings=6) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
-    eemd.eemd(T)
-    imfs, res = eemd.get_imfs_and_residue()
+    # average of 10 different stoppages
+    imfs = []
+    res = []
+    for n in range(4,14):
+        eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
+                    processes=8,include_residue=False,
+                    S_number=n) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+        eemd.eemd(T)
+        i, r = eemd.get_imfs_and_residue()
+        imfs.append(i)
+        res.append(r)
+    # Average over all stoppages
+    len_imfs = []
+    for n in range(0,10):   
+        len_imfs.append(len(imfs[n]))
+     
+    imfs_averaged = []    
+    imfs_std = []    
+    for n_imfs in range(np.nanmax(len_imfs)-1):
+        imf_to_ave = np.ones((10,len(i[0])),dtype=float)
+        for n in range(0,10):
+            chosen_imfs = imfs[n]
+            imf_to_ave[n,:] = chosen_imfs[n_imfs]
+        imfs_averaged.append(np.nanmean(imf_to_ave,0))
+        imfs_std.append(np.nanstd(imf_to_ave,0))
+    
+    res = np.array(np.nanmean(np.array(res),0))
+    imfs = np.array(imfs_averaged)
+      
     if figure == 1:
         # visualise imfs
         vis = Visualisation()
@@ -695,25 +719,29 @@ def Ensemble_EMD(TIME,TEMP,figure):
     trend = imfs[n_imfs-1,:]
     trend_EAC = trend + imfs[n_imfs-2,:]
     
-    
-    if np.abs(trend[-1]-trend[0]) < 0.05:
-        if 'datetime64' in str(type(TIME[0])):
-            first_year = TIME[0].astype(object).year
-            last_year = TIME[-1].astype(object).year
-        else:
-            yr,_,_,_,_ = datevec(TIME)
-            first_year = yr[0]
-            last_year = yr[-1]   
-        if last_year - first_year > 50:
-            trend = imfs[n_imfs-1,:] + imfs[n_imfs-2,:]
-            trend_EAC = imfs[n_imfs-1,:] + imfs[n_imfs-2,:] + imfs[n_imfs-3,:]
+    # Deal with low magnitude trend IMFs
+    if np.abs(trend[-1]-trend[0]) < 0.1:
+        check = np.diff(imfs[-2]) < 0
+        trend = trend+imfs[-2]
+        trend_EAC = trend + imfs[-3]  
+            
+        # if 'datetime64' in str(type(TIME[0])):
+        #     first_year = TIME[0].astype(object).year
+        #     last_year = TIME[-1].astype(object).year
+        # else:
+        #     yr,_,_,_,_ = datevec(TIME)
+        #     first_year = yr[0]
+        #     last_year = yr[-1]   
+        # if last_year - first_year > 50:
+        #     trend = imfs[n_imfs-1,:] + imfs[n_imfs-2,:]
+        #     trend_EAC = imfs[n_imfs-1,:] + imfs[n_imfs-2,:] + imfs[n_imfs-3,:]
     # check if trend is monotonic, if not revert back
-    five_percent_points = np.int64(np.round(len(trend)*0.05))
-    trend_diffs = np.diff(
-        trend[five_percent_points:len(trend)-five_percent_points])
-    if np.sum(trend_diffs < 0) > 0:
-        trend = imfs[n_imfs-1,:]
-        trend_EAC = imfs[n_imfs-1,:] + imfs[n_imfs-2,:]
+    # five_percent_points = np.int64(np.round(len(trend)*0.05))
+    # trend_diffs = np.diff(
+    #     trend[five_percent_points:len(trend)-five_percent_points])
+    # if np.sum(trend_diffs < 0) > 0:
+    #     trend = imfs[n_imfs-1,:]
+    #     trend_EAC = imfs[n_imfs-1,:] + imfs[n_imfs-2,:]
     
     
     if figure == 1:
