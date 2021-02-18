@@ -63,7 +63,7 @@ del main_path
 
 print('Selecting data at different depths:')
 
-depths = [2, 10, 20, 30, 40, 50, 85]
+depths = [2, 20, 50]
 
 D = []
 t = []
@@ -202,15 +202,11 @@ for n in range(len(depths)):
 
 EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
              'IMF_2':EEMD_imfs[1],
-             'IMF_3':EEMD_imfs[2], 
-             'IMF_4':EEMD_imfs[3], 
-             'IMF_5':EEMD_imfs[4], 
-             'IMF_6':EEMD_imfs[5],
-             'IMF_7':EEMD_imfs[6]}
+             'IMF_3':EEMD_imfs[2]}
     
-# plt.plot(EEMD_t[0],EEMD_trend[0])
-# plt.plot(EEMD_t[1],EEMD_trend[1])
-# plt.plot(EEMD_t[2],EEMD_trend[2])
+plt.plot(EEMD_t[0],EEMD_trend[0])
+plt.plot(EEMD_t[1],EEMD_trend[1])
+plt.plot(EEMD_t[2],EEMD_trend[2])
 # plt.plot(EEMD_t[3],EEMD_trend[3])
 # plt.plot(EEMD_t[4],EEMD_trend[4])
 # plt.plot(EEMD_t[5],EEMD_trend[5])
@@ -328,7 +324,7 @@ plt.plot(mk_trend_per_decade,depths,color='g')
 del n, a
 
 
-r = np.arange(0,6,1)
+r = np.arange(0,3,1)
 
 for n in r:
     line = np.arange(start=-20, stop=20, step=1) 
@@ -386,7 +382,6 @@ for nn in range(len(EEMD_t)):
         tt = ttt[n]
         a.append(tt.strftime("%Y-%m-%d %H:%M:%S"))
     EEMD_t_str.append(a)
-
 
 Trend_dict = {'MK_result': mk_result,
 'MK_trend': mk_trend,
