@@ -50,7 +50,7 @@ from scipy.io import savemat
 # mooring data
 main_path = "\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\"
 BMP120_agg = xr.open_dataset(main_path + 
-    'Data\\IMOS_ANMN-NSW_TZ_20110329_BMP120_FV01_TEMP-aggregated-timeseries_END-20200826_C-20201207.nc')
+    'Data\\IMOS_ANMN-NSW_TZ_20110329_BMP120_FV01_TEMP-aggregated-timeseries_END-20210119_C-20210219.nc')
 
 # %% -----------------------------------------------------------------------------------------------
 # Select data at specific depths
@@ -233,26 +233,6 @@ del n, tr
     
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-# %% -----------------------------------------------------------------------------------------------
-# KPSS test to check for stationarity
-# If the result = 'Not stationary', a deterministc trend / linear regression is not suitable
-
-print('Checking for stationarity')
-KPSS_result = []
-stationarity_array = []
-for n in range(len(depths)):
-    KPSS_result.append(TF.kpss_test((Tbin[n]))) 
-    a = KPSS_result[n]
-    stationarity_array.append(str(depths[n]) + ' m :  ' + a.KPSS_result)       
-      
-del a, n
-    
-print(stationarity_array)
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 
 # %% -----------------------------------------------------------------------------------------------
 # Innovative trend analysis
