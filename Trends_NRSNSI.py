@@ -212,20 +212,23 @@ print('Getting Daily Averages')
 # Using de-seasoned timeseries
 tbin = []
 Tbin = []
-Tbin_no_deseason = []
+Tbin_deseason = []
+Tbin_deseason_nofill = []
 choice = 1
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # This is done to get a regular time grid with daily resolution
     if choice == 1:
         tt,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
-        TT,TTnoDS,_ = TF.fill_gaps(tt,TT,np.squeeze(clim_daily[n]),2*365)
+        TT,TTnoDS,_,non_filled = TF.fill_gaps(tt,TT,np.squeeze(clim_daily[n]),2*365)
+        Tbin_deseason_nofill.append(non_filled)
     else:
         tt,TT = TF.bin_monthly(2011,2021,tbin[n],Tbin_deseason[n])           
     tbin.append(tt)
-    Tbin.append(TT)
-    _,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
-    Tbin_no_deseason.append(TT)
+    Tbin.append(TTnoDS)
+    Tbin_deseason.append(TT)
+    # _,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
+    # Tbin_no_deseason.append(TT)
     
 del tt, TT, n  
 
@@ -256,13 +259,60 @@ print('Estimating Sen slopes and performing Mann Kendall tests')
 mk_result = []
 mk_trend = []
 mk_trend_per_decade = []
+mk_trend_per_decade_Su = []
+mk_trend_per_decade_Au = []
+mk_trend_per_decade_Wi = []
+mk_trend_per_decade_Sp = []
 mk_pval = []
+mk_pval_Su = []
+mk_pval_Au = []
+mk_pval_Wi = []
+mk_pval_Sp = []
+
 for n in range(len(depths)):
-    mk_result.append(mk.trend_free_pre_whitening_modification_test(Tbin[n]))
+    tt = tbin[n]; TT = Tbin_deseason[n];
+    mk_result.append(
+        mk.trend_free_pre_whitening_modification_test(TT))
     mk_pval.append(mk_result[n].p)
-    mk_trend.append(range(len(tbin[n]))*mk_result[n].slope + mk_result[n].intercept)
-    tr = range(0,3652)*mk_result[n].slope + mk_result[n].intercept
-    mk_trend_per_decade.append(tr[-1]-tr[0])
+    mk_trend.append(range(len(tt[np.isfinite(TT)]))
+                    *mk_result[n].slope + mk_result[n].intercept)
+    a = mk_trend[n]
+    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    mk_trend_per_decade.append(tr)
+    # Seasons
+    yr, mn, dy, hr, yday = TF.datevec(tt)
+    c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
+    c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
+    c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
+    c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
+    # Summer
+    mk_res = mk.trend_free_pre_whitening_modification_test(TT[c_summer])
+    a = range(len(tt[np.squeeze(
+        np.logical_and([np.isfinite(TT)],[c_summer]))]))*mk_res.slope + mk_res.intercept
+    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    mk_trend_per_decade_Su.append(tr)    
+    mk_pval_Su.append(mk_res.p)
+    # Autumn
+    mk_res = mk.trend_free_pre_whitening_modification_test(TT[c_autumn])
+    a = range(len(tt[np.squeeze(
+        np.logical_and([np.isfinite(TT)],[c_autumn]))]))*mk_res.slope + mk_res.intercept
+    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    mk_trend_per_decade_Au.append(tr)  
+    mk_pval_Au.append(mk_res.p)
+    # Winter
+    mk_res = mk.trend_free_pre_whitening_modification_test(TT[c_winter])
+    a = range(len(tt[np.squeeze(
+    np.logical_and([np.isfinite(TT)],[c_winter]))]))*mk_res.slope + mk_res.intercept
+    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    mk_trend_per_decade_Wi.append(tr)   
+    mk_pval_Wi.append(mk_res.p)
+    # Spring
+    mk_res = mk.trend_free_pre_whitening_modification_test(TT[c_spring])
+    a = range(len(tt[np.squeeze(
+        np.logical_and([np.isfinite(TT)],[c_spring]))]))*mk_res.slope + mk_res.intercept
+    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    mk_trend_per_decade_Sp.append(tr)   
+    mk_pval_Sp.append(mk_res.p)     
     
 del n, tr
     
@@ -278,7 +328,7 @@ ITA_slope_per_decade = []
 
 for n in range(len(depths)):
     tt = TF.to_date64(tbin[n])
-    ITA_stats.append(TF.ITA(tt,Tbin[n],-1,0))
+    ITA_stats.append(TF.ITA(tt,Tbin_deseason_nofill[n],-1,0))
     a = ITA_stats[n]
     ITA_significance.append(a.ITA_significance)
     ITA_slope_per_decade.append(a.ITA_trend_sen_per_decade)
@@ -308,32 +358,69 @@ print('Running Ensemble EMD')
 EEMD_t = []
 EEMD_T = []
 EEMD_trend = []
+EEMD_trend_Su = []
+EEMD_trend_Au = []
+EEMD_trend_Wi = []
+EEMD_trend_Sp = []
 EEMD_trend_EAC = []
+EEMD_trend_EAC_Su = []
+EEMD_trend_EAC_Au = []
+EEMD_trend_EAC_Wi = []
+EEMD_trend_EAC_Sp = []
 EEMD_imfs = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tbin[n],Tbin[n],0)
+    tt = tbin[0]; TT = Tbin[0];
+    t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tt,TT,0)
     EEMD_t.append(t)
     EEMD_T.append(T)
     EEMD_trend.append(trend)
     EEMD_trend_EAC.append(trend_EAC)
     EEMD_imfs.append(imfs)
     EEMD_res.append(res)
-
-
+    # Seasons
+    yr, mn, dy, hr, yday = TF.datevec(tt)
+    # Summer
+    c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
+    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
+        tt[c_summer],TT[c_summer],0)
+    EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC); 
+    # Autumn
+    c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
+    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
+        tt[c_autumn],TT[c_autumn],0)
+    EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
+    # Winter
+    c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
+    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
+        tt[c_winter],TT[c_winter],0)
+    EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
+    # Spring
+    c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
+    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
+        tt[c_spring],TT[c_spring],0)
+    EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
+    
 EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
              'IMF_2':EEMD_imfs[1],
-             'IMF_2':EEMD_imfs[2]}
+             'IMF_3':EEMD_imfs[2]}
     
-
 # Autocorrelation analysis and significance
 print('Running autocorrelation analysis')
 # Using last 10 years only
 
 ACF_result = []
 conf_std_limit = []
+conf_std_limit_Su = []
+conf_std_limit_Au = []
+conf_std_limit_Wi = []
+conf_std_limit_Sp = []
 conf_std_limit_EAC = []
+conf_std_limit_EAC_Su = []
+conf_std_limit_EAC_Au = []
+conf_std_limit_EAC_Wi = []
+conf_std_limit_EAC_Sp = []
 std_array = []
 std_array_EAC = []
 trend_sims = []
@@ -359,6 +446,29 @@ for n in range(len(depths)):
     std_array_EAC.append(sa_EAC)
     trend_sims_EAC.append(ts_EAC)    
     x_sims.append(xs)
+    # For the seasons, changing std only for each season
+    # Using same ACF result as whole time series
+    # Summer
+    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+           TF.EEMD_significance(tt[c_summer],TT[c_summer],ACF_result[n],1)    
+    conf_std_limit_Su.append(csl)
+    conf_std_limit_EAC_Su.append(csl_EAC)
+    # autumn
+    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+           TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1)    
+    conf_std_limit_Su.append(csl)
+    conf_std_limit_EAC_Su.append(csl_EAC)
+    # winter
+    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+           TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1)    
+    conf_std_limit_Su.append(csl)
+    conf_std_limit_EAC_Su.append(csl_EAC)
+    # spring
+    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+           TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1)    
+    conf_std_limit_Su.append(csl)
+    conf_std_limit_EAC_Su.append(csl_EAC)
+
 
 del TT, n, check, csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs
 
@@ -396,11 +506,18 @@ for nn in range(len(EEMD_t)):
     EEMD_t_str.append(a)
 
 
-
 Trend_dict = {'MK_result': mk_result,
 'MK_trend': mk_trend,
 'MK_trend_per_decade': mk_trend_per_decade,
+'MK_trend_per_decade_Su': mk_trend_per_decade_Su,
+'MK_trend_per_decade_Au': mk_trend_per_decade_Au,
+'MK_trend_per_decade_Wi': mk_trend_per_decade_Wi,
+'MK_trend_per_decade_Sp': mk_trend_per_decade_Sp,
 'MK_pval': mk_pval,
+'MK_pval_Su': mk_pval_Su,
+'MK_pval_Au': mk_pval_Au,
+'MK_pval_Wi': mk_pval_Wi,
+'MK_pval_Sp': mk_pval_Sp,
 'KPSS_results': KPSS_result,
 'ITA_stats': ITA_stats,
 'ITA_significance': ITA_significance,
@@ -410,11 +527,27 @@ Trend_dict = {'MK_result': mk_result,
 'EEMD_t': EEMD_t_str,
 'EEMD_T': EEMD_T,
 'EEMD_trend': EEMD_trend,
+'EEMD_trend_Su': EEMD_trend_Su,
+'EEMD_trend_Au': EEMD_trend_Au,
+'EEMD_trend_Wi': EEMD_trend_Wi,
+'EEMD_trend_Sp': EEMD_trend_Sp,
 'EEMD_trend_EAC': EEMD_trend_EAC,
+'EEMD_trend_EAC_Su': EEMD_trend_EAC_Su,
+'EEMD_trend_EAC_Au': EEMD_trend_EAC_Au,
+'EEMD_trend_EAC_Wi': EEMD_trend_EAC_Wi,
+'EEMD_trend_EAC_Sp': EEMD_trend_EAC_Sp,
 'EEMD_imfs': EEMD_IMFS,
 'EEMD_res': EEMD_res,
 'EEMD_conf_std_limit': conf_std_limit,
+'EEMD_conf_std_limit_Su': conf_std_limit_Su,
+'EEMD_conf_std_limit_Au': conf_std_limit_Au,
+'EEMD_conf_std_limit_Wi': conf_std_limit_Wi,
+'EEMD_conf_std_limit_Sp': conf_std_limit_Sp,
 'EEMD_conf_std_limit_EAC': conf_std_limit_EAC,
+'EEMD_conf_std_limit_EAC_Su': conf_std_limit_EAC_Su,
+'EEMD_conf_std_limit_EAC_Au': conf_std_limit_EAC_Au,
+'EEMD_conf_std_limit_EAC_Wi': conf_std_limit_EAC_Wi,
+'EEMD_conf_std_limit_EAC_Sp': conf_std_limit_EAC_Sp,
 'EEMD_std_array': std_array,
 'EEMD_std_array_EAC': std_array_EAC,
 'EEMD_trend_sims': trend_sims,
