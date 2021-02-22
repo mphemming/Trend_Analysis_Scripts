@@ -994,6 +994,10 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
     std_chosen = np.float(tests[np.abs(std_tests) == np.nanmin(np.abs(std_tests))])     
     variability = signalz.brownian_noise(len(TEMP), leak=leakage, start=0, \
                                              std=std_chosen/2, source="gaussian")
+    if np.nanmax(np.abs(variability)) > 0.5:
+        # normalise variability so that always between -0.5 and 0.5
+        variability = ((variability - np.nanmin(variability)) / 
+                      (np.nanmax(variability) - np.nanmin(variability)) -0.5)
 
     # reconstruct seasonal cycle with varying standard deviation
     # based on std_window length (days or months depending on input)
@@ -1010,6 +1014,7 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
         means.append(np.nanmean(T_deseason[index]))
     #construct simulated time series using seasonal cycle and stds
     recon = []
+    std_recon = []
     for n in range(len(TIME)):
         std_today = variability[n]
         std_choice_today = np.linspace(std_today*-1, std_today,100)
@@ -1024,7 +1029,8 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
             cl = CLIM 
         if yday_today == 365 or yday_today == 366:
             yday_today = 364
-        recon.append(cl[yday_today] + std_choice_today[r] + means[n])
+        std_recon.append(std_choice_today[r])
+        recon.append(cl[yday_today] + std_choice_today[r] + (means)[n])
         
     filled_TEMP = []
     gap_logical = []
@@ -1040,11 +1046,12 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
             gap_logical.append('False')
     filled_TEMP = np.array(filled_TEMP)
     gap_logical = np.array(gap_logical)
+    non_filled_TEMP = np.array(deseason(TIME,TEMP,CLIM))
     
     # de-seasoned filled_TEMP
     filled_TEMP_DS = np.array(deseason(TIME,filled_TEMP,CLIM))
     
-    return filled_TEMP_DS, filled_TEMP, gap_logical
+    return filled_TEMP_DS, filled_TEMP, gap_logical, non_filled_TEMP
 
 
 
