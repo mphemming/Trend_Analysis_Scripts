@@ -305,7 +305,7 @@ for n in range(len(depths)):
     mk_trend.append(range(len(tt[np.isfinite(TT)]))
                     *mk_result[n].slope + mk_result[n].intercept)
     a = mk_trend[n]
-    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    tr = (a[-1]-a[0]) * (3652/len(tt[np.isfinite(TT)]));
     mk_trend_per_decade.append(tr)
     # Seasons
     yr, mn, dy, hr, yday = TF.datevec(tt)
@@ -317,28 +317,28 @@ for n in range(len(depths)):
     mk_res = mk.trend_free_pre_whitening_modification_test(TT[c_summer])
     a = range(len(tt[np.squeeze(
         np.logical_and([np.isfinite(TT)],[c_summer]))]))*mk_res.slope + mk_res.intercept
-    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    tr = (a[-1]-a[0]) * (3652/len(tt[np.isfinite(TT)]));
     mk_trend_per_decade_Su.append(tr)    
     mk_pval_Su.append(mk_res.p)
     # Autumn
     mk_res = mk.trend_free_pre_whitening_modification_test(TT[c_autumn])
     a = range(len(tt[np.squeeze(
         np.logical_and([np.isfinite(TT)],[c_autumn]))]))*mk_res.slope + mk_res.intercept
-    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    tr = (a[-1]-a[0]) * (3652/len(tt[np.isfinite(TT)]));
     mk_trend_per_decade_Au.append(tr)  
     mk_pval_Au.append(mk_res.p)
     # Winter
     mk_res = mk.trend_free_pre_whitening_modification_test(TT[c_winter])
     a = range(len(tt[np.squeeze(
     np.logical_and([np.isfinite(TT)],[c_winter]))]))*mk_res.slope + mk_res.intercept
-    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    tr = (a[-1]-a[0]) * (3652/len(tt[np.isfinite(TT)]));
     mk_trend_per_decade_Wi.append(tr)   
     mk_pval_Wi.append(mk_res.p)
     # Spring
     mk_res = mk.trend_free_pre_whitening_modification_test(TT[c_spring])
     a = range(len(tt[np.squeeze(
         np.logical_and([np.isfinite(TT)],[c_spring]))]))*mk_res.slope + mk_res.intercept
-    tr = a[-1]-a[0] * (3652/len(tt[np.isfinite(TT)]));
+    tr = (a[-1]-a[0]) * (3652/len(tt[np.isfinite(TT)]));
     mk_trend_per_decade_Sp.append(tr)   
     mk_pval_Sp.append(mk_res.p)     
     
@@ -398,7 +398,7 @@ EEMD_imfs = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    tt = tbin[0]; TT = Tbin[0];
+    tt = tbin[n]; TT = Tbin[n];
     t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tt,TT,0)
     EEMD_t.append(t)
     EEMD_T.append(T)
@@ -486,21 +486,26 @@ for n in range(len(depths)):
     # For the seasons, changing std only for each season
     # Using same ACF result as whole time series
     # Summer
+    yr, mn, dy, hr, yday = TF.datevec(tt)
+    c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
            TF.EEMD_significance(tt[c_summer],TT[c_summer],ACF_result[n],1)    
     conf_std_limit_Su.append(csl)
     conf_std_limit_EAC_Su.append(csl_EAC)
     # autumn
+    c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
            TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1)    
     conf_std_limit_Su.append(csl)
     conf_std_limit_EAC_Su.append(csl_EAC)
     # winter
+    c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
            TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1)    
     conf_std_limit_Su.append(csl)
     conf_std_limit_EAC_Su.append(csl_EAC)
     # spring
+    c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
            TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1)    
     conf_std_limit_Su.append(csl)
