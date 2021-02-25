@@ -6,22 +6,28 @@ options.plot_path = 'C:\Users\mphem\Documents\Work\UNSW\climatology\Revamped_scr
 data_path = 'C:\Users\mphem\Documents\Work\UNSW\climatology\Revamped_scripts\Climatology\Data\';
 plot_path = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\';
 
-load([data_path,'bathy_PH.mat']);
-PHB.lon = x_grid;
-PHB.lat = y_grid;
-PHB.bathy = bathy_grid;
+load(['C:\Users\mphem\Documents\Work\UNSW\BATHYMETRY\','bathy_eac_etopo1.mat']);
+% PHB.lon = x_grid;
+% PHB.lat = y_grid;
+% PHB.bathy = bathy_grid;
 
 % CARS climatology
-TEMP_mean = ncread([data_path,'CARSmonthly.nc'],'TEMP_mean');  
-TEMP_std_dev = ncread([data_path,'CARSmonthly.nc'],'TEMP_std_dev');  
-LONGITUDE = ncread([data_path,'CARSmonthly.nc'],'LONGITUDE');    
-LATITUDE = ncread([data_path,'CARSmonthly.nc'],'LATITUDE');    
-LONG_mat = repmat(LONGITUDE,[1 32]);
-LAT_mat = repmat(LATITUDE,[1 92])';
+filename = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Data\SSTAARS.nc'
+
+TEMP_mean = ncread(filename,'TEMP_mean');  
+TEMP_trend = ncread(filename,'TEMP_trend');  
+TEMP_trend_std_err = ncread(filename,'TEMP_trend_std_err');  
+LONGITUDE = ncread(filename,'LONGITUDE');    
+LATITUDE = ncread(filename,'LATITUDE');    
+% LONG_mat = repmat(LONGITUDE,[1 32]);
+% LAT_mat = repmat(LATITUDE,[1 92])';
+[X,Y] = meshgrid(LONGITUDE,LATITUDE);
+
+
 % get interpolated higher resolution
-[X Y] = meshgrid(nanmin(LONGITUDE):0.05:nanmax(LONGITUDE),nanmin(LATITUDE):0.05:nanmax(LATITUDE));
-Tm = TEMP_mean(:,:,1);
-T = griddata(double(LONG_mat(:)),double(LAT_mat(:)),double(Tm(:)),double(X),double(Y));
+% [X Y] = meshgrid(nanmin(LONGITUDE):0.05:nanmax(LONGITUDE),nanmin(LATITUDE):0.05:nanmax(LATITUDE));
+% Tm = TEMP_mean(:,:,1);
+% T = griddata(double(LONG_mat(:)),double(LAT_mat(:)),double(Tm(:)),double(X),double(Y));
 
 
 API = load('C:\Users\mphem\Documents\Work\UNSW\climatology\Revamped_scripts\Climatology\Utilities\Plot_google_map\api_key');
@@ -30,37 +36,38 @@ cd 'C:\Users\mphem\Documents\Work\UNSW\climatology\Revamped_scripts\Climatology\
 % the reference stations
 Locations.NRSPHB = [151.216 -34.118];
 Locations.NRSMAI = [148.23 -42.6];
+Locations.NRSNSI = [153.562 -27.342]
 Locations.BMP120 = [150.3134 -36.2064];
 Locations.CH100 = [153.3957 -30.2656];
 
-
 %% get land mask using google earth
-xlim([111 157])
-ylim([-40 -35])
-[lonVec latVec imag] = plot_google_map('APIKey',API.apiKey,'ShowLabels',0);
-mask = ones(size(imag(:,:,1)));
-mask(imag(:,:,1) == 170) = 1;
-mask(imag(:,:,1) ~= 170) = 0;
-lv = repmat(lonVec,[1280,1]);
-lav = repmat(latVec,[1280,1])';
-m = griddata(lv(:),lav(:),mask(:),double(X),double(Y));
-
-T(m == 0) = NaN;
+% xlim([111 157])
+% ylim([-45 -15])
+% [lonVec latVec imag] = plot_google_map('APIKey',API.apiKey,'ShowLabels',0);
+% mask = ones(size(imag(:,:,1)));
+% mask(imag(:,:,1) == 170) = 1;
+% mask(imag(:,:,1) ~= 170) = 0;
+% lv = repmat(lonVec,[1280,1]);
+% lav = repmat(latVec,[1280,1])';
+% m = griddata(lv(:),lav(:),mask(:),double(X),double(Y));
+% 
+% T(m == 0) = NaN;
 
 %% Create figure
 
 figure('units','normalized','position',[.1 0 .45 .9])
 xlim([146 156])
-ylim([-44 -29])
+ylim([-44 -25])
 plot_google_map('APIKey',API.apiKey,'MapType','satellite','Resize',2,'ScaleWidth',0.2,'FigureResizeUpdate',0)
 hold on
-contourf(X,Y,T,100,'LineStyle','None')
+contourf(X,Y,TEMP_trend_std_err',100,'LineStyle','None')
 xlim([146 156])
-ylim([-44 -29])
+ylim([-44 -25])
 
 cm = cbrewer('div', 'Spectral',30);
 colormap(flipud(cm));
-caxis([12 24]);
+% caxis([12 24]);
+caxis([0 1.5]);
 
 hold on
 scatter(Locations.NRSPHB(1),Locations.NRSPHB(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
@@ -71,12 +78,14 @@ scatter(Locations.BMP120(1),Locations.BMP120(2),100,'filled','MarkerFaceColor','
 scatter(Locations.BMP120(1),Locations.BMP120(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
 scatter(Locations.CH100(1),Locations.CH100(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
 scatter(Locations.CH100(1),Locations.CH100(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
+scatter(Locations.NRSNSI(1),Locations.NRSNSI(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
+scatter(Locations.NRSNSI(1),Locations.NRSNSI(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
 
 cb = colorbar;
-ylabel(cb,'Annual Surface Temperature [\circC]');
+ylabel(cb,'Surface Temperature Trend [\circC decade^{-1}]');
 xlabel('Longitude [^\circ E]')
 ylabel('Latitude [^\circ S]')
-set(gca,'FontSize',20,'LineWidth',2,'Box','On','YTick',[-43 -41 -39 -37 -35 -33 -31],'YTickLabels',[{'43'} {'41'} {'39'} {'37'} {'35'} {'33'} {'31'}]);
+set(gca,'FontSize',20,'LineWidth',2,'Box','On','YTick',[-42 -38 -34 -30 -26],'YTickLabels',[{'42'} {'38'} {'34'} {'30'} {'26'}]);
 
 print(gcf, '-dpng','-r400', [plot_path,'Map_1'])
 
