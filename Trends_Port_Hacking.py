@@ -126,7 +126,7 @@ tbin = []
 Tbin = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    tt, TT = TF.bin_daily(1953,2020,t[n],T[n])
+    tt, TT = TF.bin_daily(1953,2021,t[n],T[n])
     tbin.append(tt)
     Tbin.append(TT)
 
