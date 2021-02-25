@@ -264,7 +264,6 @@ def bin_monthly(start_yr,end_yr,TIME,TEMP):
     # get years and months from time
     yrs,mns,_,_,_ = datevec(np.array(TIME))
     
-
     t_mns = []
     T_mns = []
     for yr in yrs_range:
