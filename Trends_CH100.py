@@ -475,7 +475,7 @@ for n in range(len(depths)):
     # significance (using monthly values)
     tt,TT = TF.bin_monthly(2011,2021,tbin[n],Tbin[n])
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt,TT,ACF_result[n],1)
+           TF.EEMD_significance(tt,TT,ACF_result[n],5)
     conf_std_limit.append(csl)
     std_array.append(sa)
     trend_sims.append(ts)
