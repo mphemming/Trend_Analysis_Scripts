@@ -11,11 +11,15 @@ load(['C:\Users\mphem\Documents\Work\UNSW\BATHYMETRY\','bathy_eac_etopo1.mat']);
 % PHB.lat = y_grid;
 % PHB.bathy = bathy_grid;
 
-% CARS climatology
+% SSTAARS climatology
 filename = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Data\SSTAARS.nc'
 
 TEMP_mean = ncread(filename,'TEMP_mean');  
+TEMP_mean_std_err = ncread(filename,'TEMP_mean_std_err');  
 TEMP_trend = ncread(filename,'TEMP_trend');  
+% get trend per decade
+TEMP_trend = (TEMP_trend / numel(datenum(1992,03,22):1:datenum(2016,12,31)))*(365*10);
+
 TEMP_trend_std_err = ncread(filename,'TEMP_trend_std_err');  
 LONGITUDE = ncread(filename,'LONGITUDE');    
 LATITUDE = ncread(filename,'LATITUDE');    
@@ -60,14 +64,14 @@ xlim([146 156])
 ylim([-44 -25])
 plot_google_map('APIKey',API.apiKey,'MapType','satellite','Resize',2,'ScaleWidth',0.2,'FigureResizeUpdate',0)
 hold on
-contourf(X,Y,TEMP_trend_std_err',100,'LineStyle','None')
+contourf(X,Y,TEMP_trend',100,'LineStyle','None')
 xlim([146 156])
 ylim([-44 -25])
 
 cm = cbrewer('div', 'Spectral',30);
 colormap(flipud(cm));
 % caxis([12 24]);
-caxis([0 1.5]);
+caxis([0 0.5]);
 
 hold on
 scatter(Locations.NRSPHB(1),Locations.NRSPHB(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
@@ -89,16 +93,16 @@ set(gca,'FontSize',20,'LineWidth',2,'Box','On','YTick',[-42 -38 -34 -30 -26],'YT
 
 print(gcf, '-dpng','-r400', [plot_path,'Map_1'])
 
-figure('units','normalized','position',[.1 0 .6 .7])
+% figure('units','normalized','position',[.1 0 .6 .7])
 
-style = ['https://maps.googleapis.com/maps/api/staticmap?key=YOUR_API_KEY&center=-29.255517051688706,133.41701195000005&zoom=4&format=png&maptype=roadmap&style=element:geometry%7Ccolor:0xf5f5f5&style=element:geometry.fill%7Ccolor:0xffffff&style=element:labels%7Cvisibility:off&style=element:labels.icon%7Cvisibility:off&style=element:labels.text.fill%7Ccolor:0x616161&style=element:labels.text.stroke%7Ccolor:0xf5f5f5&style=feature:administrative%7Celement:geometry%7Cvisibility:off&style=feature:administrative.land_parcel%7Cvisibility:off&style=feature:administrative.land_parcel%7Celement:labels.text.fill%7Ccolor:0xbdbdbd&style=feature:administrative.neighborhood%7Cvisibility:off&style=feature:poi%7Cvisibility:off&style=feature:poi%7Celement:geometry%7Ccolor:0xeeeeee&style=feature:poi%7Celement:labels.text.fill%7Ccolor:0x757575&style=feature:poi.park%7Celement:geometry%7Ccolor:0xe5e5e5&style=feature:poi.park%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&style=feature:road%7Cvisibility:off&style=feature:road%7Celement:geometry%7Ccolor:0xffffff&style=feature:road%7Celement:labels.icon%7Cvisibility:off&style=feature:road.arterial%7Celement:labels.text.fill%7Ccolor:0x757575&style=feature:road.highway%7Celement:geometry%7Ccolor:0xdadada&style=feature:road.highway%7Celement:labels.text.fill%7Ccolor:0x616161&style=feature:road.local%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&style=feature:transit%7Cvisibility:off&style=feature:transit.line%7Celement:geometry%7Ccolor:0xe5e5e5&style=feature:transit.station%7Celement:geometry%7Ccolor:0xeeeeee&style=feature:water%7Celement:geometry%7Ccolor:0xc9c9c9&style=feature:water%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&size=480x360']
-
-xlim([111 155]);
-ylim([-45 -11]);
-plot_google_map('Style',style);
-hold on;
-
-print(gcf, '-dpng','-r400', [plot_path,'Map_2'])
+% style = ['https://maps.googleapis.com/maps/api/staticmap?key=YOUR_API_KEY&center=-29.255517051688706,133.41701195000005&zoom=4&format=png&maptype=roadmap&style=element:geometry%7Ccolor:0xf5f5f5&style=element:geometry.fill%7Ccolor:0xffffff&style=element:labels%7Cvisibility:off&style=element:labels.icon%7Cvisibility:off&style=element:labels.text.fill%7Ccolor:0x616161&style=element:labels.text.stroke%7Ccolor:0xf5f5f5&style=feature:administrative%7Celement:geometry%7Cvisibility:off&style=feature:administrative.land_parcel%7Cvisibility:off&style=feature:administrative.land_parcel%7Celement:labels.text.fill%7Ccolor:0xbdbdbd&style=feature:administrative.neighborhood%7Cvisibility:off&style=feature:poi%7Cvisibility:off&style=feature:poi%7Celement:geometry%7Ccolor:0xeeeeee&style=feature:poi%7Celement:labels.text.fill%7Ccolor:0x757575&style=feature:poi.park%7Celement:geometry%7Ccolor:0xe5e5e5&style=feature:poi.park%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&style=feature:road%7Cvisibility:off&style=feature:road%7Celement:geometry%7Ccolor:0xffffff&style=feature:road%7Celement:labels.icon%7Cvisibility:off&style=feature:road.arterial%7Celement:labels.text.fill%7Ccolor:0x757575&style=feature:road.highway%7Celement:geometry%7Ccolor:0xdadada&style=feature:road.highway%7Celement:labels.text.fill%7Ccolor:0x616161&style=feature:road.local%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&style=feature:transit%7Cvisibility:off&style=feature:transit.line%7Celement:geometry%7Ccolor:0xe5e5e5&style=feature:transit.station%7Celement:geometry%7Ccolor:0xeeeeee&style=feature:water%7Celement:geometry%7Ccolor:0xc9c9c9&style=feature:water%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&size=480x360']
+% 
+% xlim([111 155]);
+% ylim([-45 -11]);
+% plot_google_map('Style',style);
+% hold on;
+% 
+% print(gcf, '-dpng','-r400', [plot_path,'Map_2'])
 
 
 
