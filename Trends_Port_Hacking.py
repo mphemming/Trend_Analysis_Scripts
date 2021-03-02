@@ -391,7 +391,7 @@ for n in range(len(depths)):
     # significance (using monthly values)
     tt,TT = TF.bin_monthly(1953,2021,tbin_m[n],Tbin_m[n])
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt,TT,ACF_result[n],1)
+           TF.EEMD_significance(tt,TT,ACF_result[n],1000)
     conf_std_limit.append(csl)
     std_array.append(sa)
     trend_sims.append(ts)
@@ -405,25 +405,25 @@ for n in range(len(depths)):
     yr, mn, dy, hr, yday = TF.datevec(tt)
     c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_summer],TT[c_summer],ACF_result[n],1)    
+           TF.EEMD_significance(tt[c_summer],TT[c_summer],ACF_result[n],1000)    
     conf_std_limit_Su.append(csl)
     conf_std_limit_EAC_Su.append(csl_EAC)
     # autumn
     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1)    
+           TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1000)    
     conf_std_limit_Su.append(csl)
     conf_std_limit_EAC_Su.append(csl_EAC)
     # winter
     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1)    
+           TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1000)    
     conf_std_limit_Su.append(csl)
     conf_std_limit_EAC_Su.append(csl_EAC)
     # spring
     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1)    
+           TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1000)    
     conf_std_limit_Su.append(csl)
     conf_std_limit_EAC_Su.append(csl_EAC)
 
