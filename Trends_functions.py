@@ -680,12 +680,41 @@ def Ensemble_EMD(TIME,TEMP,figure):
     len_imfs = []
     for n in range(0,10):   
         len_imfs.append(len(imfs[n]))
-     
+    max_numb_imfs = np.nanmax(len_imfs)
+        
+    # if IMFs not same size add rows of NaNs
+    if np.size(np.unique(len_imfs)) > 1:
+        for n in range(0,10):
+            if len_imfs[n] < max_numb_imfs:
+                a = imfs[n]
+                a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
+                imfs[n] = a
+    # second round if required
+    len_imfs = []
+    for n in range(0,10):   
+        len_imfs.append(len(imfs[n]))
+    if np.size(np.unique(len_imfs)) > 1:
+        for n in range(0,10):
+            if len_imfs[n] < max_numb_imfs:
+                a = imfs[n]
+                a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
+                imfs[n] = a  
+    len_imfs = []
+    for n in range(0,10):   
+        len_imfs.append(len(imfs[n]))             
+    # Third round if required
+    if np.size(np.unique(len_imfs)) > 1:
+        for n in range(0,10):
+            if len_imfs[n] < max_numb_imfs:
+                a = imfs[n]
+                a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
+                imfs[n] = a                    
+         
     imfs_averaged = []    
     imfs_std = []    
-    for n_imfs in range(np.nanmax(len_imfs)-1):
+    for n_imfs in range(max_numb_imfs):
         imf_to_ave = np.ones((10,len(i[0])),dtype=float)
-        for n in range(0,10):
+        for n in range(len(imfs)):
             chosen_imfs = imfs[n]
             imf_to_ave[n,:] = chosen_imfs[n_imfs]
         imfs_averaged.append(np.nanmean(imf_to_ave,0))
