@@ -60,6 +60,8 @@ Locations.CH100 = [153.3957 -30.2656];
 %% Create figure
 
 figure('units','normalized','position',[.1 0 .45 .9])
+
+axes(gcf,'Position',[0.12748457042229 0.113772293237665 0.614124225874006 0.811227706762335]);
 xlim([146 156])
 ylim([-44 -25])
 plot_google_map('APIKey',API.apiKey,'MapType','satellite','Resize',2,'ScaleWidth',0.2,'FigureResizeUpdate',0)
@@ -71,7 +73,7 @@ ylim([-44 -25])
 cm = cbrewer('div', 'Spectral',30);
 colormap(flipud(cm));
 % caxis([12 24]);
-caxis([0 0.5]);
+caxis([0 0.6]);
 
 hold on
 scatter(Locations.NRSPHB(1),Locations.NRSPHB(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
@@ -85,7 +87,7 @@ scatter(Locations.CH100(1),Locations.CH100(2),50,'filled','MarkerFaceColor','w',
 scatter(Locations.NRSNSI(1),Locations.NRSNSI(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
 scatter(Locations.NRSNSI(1),Locations.NRSNSI(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
 
-cb = colorbar;
+cb = colorbar(gca,'Position',[0.772376543596204 0.113168724279835 0.0308641975308642 0.810699588477367]);
 ylabel(cb,'Surface Temperature Trend [\circC decade^{-1}]');
 xlabel('Longitude [^\circ E]')
 ylabel('Latitude [^\circ S]')
