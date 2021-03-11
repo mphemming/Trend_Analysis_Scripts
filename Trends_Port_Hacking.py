@@ -314,7 +314,7 @@ EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     tt = tbin_m[n]; TT = Tbin_m[n];
-    t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tt,TT,0)
+    t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res = TF.Ensemble_EMD(tt,TT,0,1)
     EEMD_t.append(t)
     EEMD_T.append(T)
     EEMD_trend.append(trend)
@@ -326,22 +326,22 @@ for n in range(len(depths)):
     # Summer
     c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
     _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_summer],TT[c_summer],0)
+        tt[c_summer],TT[c_summer],0,0)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC); 
     # Autumn
     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
     _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_autumn],TT[c_autumn],0)
+        tt[c_autumn],TT[c_autumn],0,0)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
     # Winter
     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
     _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_winter],TT[c_winter],0)
+        tt[c_winter],TT[c_winter],0,0)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
     # Spring
     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
     _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_spring],TT[c_spring],0)
+        tt[c_spring],TT[c_spring],0,0)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC); 
 
 
