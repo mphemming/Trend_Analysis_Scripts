@@ -24,9 +24,13 @@ BMP120_data = load([options.data_dir,'BMP120_data']);
 BMP120_data_server = load([options.data_dir,'BMP120_data_server']);
 BMP120_trends = load([options.data_dir,'BMP120_trends']);
 BMP120_trends_server = load([options.data_dir,'BMP120_trends_server']);
-
+% NRSNSI
+NRSNSI_data_server = load([options.data_dir,'NRSNSI_data_server']);
+NRSNSI_trends_server = load([options.data_dir,'NRSNSI_trends_server']);
 
 %% Sort out time
+
+%---------------------------------------------------------------------------------------------------------------------
 % NRSPHB
 % time
 nt = size(NRSPHB_data.t,2);
@@ -45,6 +49,7 @@ for nn = 1:7
     end
 end
 
+%---------------------------------------------------------------------------------------------------------------------
 % NRSMAI
 % time
 nt = size(NRSMAI_data.t,2);
@@ -63,6 +68,7 @@ for nn = 1:3
     end
 end
 
+%---------------------------------------------------------------------------------------------------------------------
 % CH100
 % time
 nt = size(CH100_data.t,2);
@@ -81,6 +87,7 @@ for nn = 1:7
     end
 end
 
+%---------------------------------------------------------------------------------------------------------------------
 % BMP120
 % time
 nt = size(BMP120_data.t,2);
@@ -99,6 +106,25 @@ for nn = 1:7
     end
 end
 
+%---------------------------------------------------------------------------------------------------------------------
+% NRSNSI
+% time
+nt = size(NRSNSI_data_server.t,2);
+for nn = 1:3
+    for t = 1:nt
+        a = squeeze(vertcat(NRSNSI_data_server.t(nn,t,:)))';
+        NRSNSI_data_server.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
+    end
+end
+% EEMD time
+for nn = 1:3
+    a = NRSNSI_trends_server.EEMD_t{nn};
+    for t = 1:size(a,1)
+        b = a(t,:);
+        NRSNSI_trends_server.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
+    end
+end
+
 %% Fixing depths where IMFs not capturing trend properly
 
 % It's ok now
@@ -114,7 +140,8 @@ multiplier = 12*10; % 10 years in months
 [trends_MAI] = get_trends(NRSMAI_data, NRSMAI_data_server, NRSMAI_trends,NRSMAI_trends_server,multiplier);
 multiplier = 10*365.25; % 10 years in days
 [trends_CH100] = get_trends(CH100_data, CH100_data_server, CH100_trends, CH100_trends_server,multiplier);
-[trends_MAI] = get_trends(BMP120_data, BMP120_data_server, BMP120_trends, BMP120_trends_server,multiplier);
+[trends_BMP120] = get_trends(BMP120_data, BMP120_data_server, BMP120_trends, BMP120_trends_server,multiplier);
+[trends_NRSNSI] = get_trends(NRSNSI_data_server, NRSNSI_data_server, NRSNSI_trends_server, NRSNSI_trends_server,multiplier);
 
 %% Figure Port Hacking
 cmap = cmocean('balance',23);
@@ -223,14 +250,14 @@ for n_depth = 1:7
             text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color, ...
                 'EdgeColor',[0 0 0],'LineWidth',1)
         else      
-            text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color,'color',[.4 .4 .4])
+            text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color,'color',[0 0 0])
         end
         
         if sig_indicator_EAC == 1             
             text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''], ...
                 'BackgroundColor',color_EAC,'EdgeColor',[0 0 0],'LineWidth',2)
         else                  
-            text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC,'color',[.4 .4 .4])
+            text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC,'color',[0 0 0])
         end        
     end
 
@@ -356,14 +383,14 @@ for n_depth = 1:3
             text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,'  '],'BackgroundColor',color, ...
                 'EdgeColor',[0 0 0],'LineWidth',1)
         else      
-            text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,'  '],'BackgroundColor',color,'color',[.4 .4 .4])
+            text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,'  '],'BackgroundColor',color,'color',[0 0 0])
         end
         
         if sig_indicator_EAC == 1             
             text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,'  '], ...
                 'BackgroundColor',color_EAC,'EdgeColor',[0 0 0],'LineWidth',2)
         else                  
-            text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,'  '],'BackgroundColor',color_EAC,'color',[.4 .4 .4])
+            text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,'  '],'BackgroundColor',color_EAC,'color',[0 0 0])
         end        
     end
 
@@ -401,10 +428,50 @@ xlim([0 7])
 
 
 
+%% Create Large Australia Coast
 
 
+API = load('C:\Users\mphem\Documents\Work\UNSW\climatology\Revamped_scripts\Climatology\Utilities\Plot_google_map\api_key');
+  
+style = ['https://maps.googleapis.com/maps/api/staticmap?key=',...
+    API.apiKey,'&center=-34.00179784835884,150.98879117742268&', ...
+    'zoom=10&format=png&maptype=roadmap&style=element:labels%7C', ...
+    'visibility:off&style=feature:administrative%7Celement:geometry%7Cvisibility:', ...
+    'off&style=feature:administrative.land_parcel%7Cvisibility:off&style=feature:administrative.', ...
+    'neighborhood%7Cvisibility:off&style=feature:landscape%7Ccolor:0x000000&style=feature:', ...
+    'poi%7Cvisibility:off&style=feature:road%7Cvisibility:off&style=feature:road%7Celement:labels.', ...
+    'icon%7Cvisibility:off&style=feature:transit%7Cvisibility:off&style=feature:water%7Ccolor:0xffffff&size=480x360'];
+
+% the reference stations
+Locations.NRSPHB = [151.216 -34.118];
+Locations.NRSMAI = [148.23 -42.6];
+Locations.NRSNSI = [153.562 -27.342]
+Locations.BMP120 = [150.3134 -36.2064];
+Locations.CH100 = [153.3957 -30.2656];
 
 
+figure('units','normalized','position',[.1 0 .25 .9])
+
+xlim([153 154])
+ylim([-45 -15])
+plot_google_map('Style',style,'Scale',2)
+set(gca,'Visible','Off')
+set(gcf,'Color','w')
+
+hold on
+scatter(Locations.NRSPHB(1),Locations.NRSPHB(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
+scatter(Locations.NRSPHB(1),Locations.NRSPHB(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
+scatter(Locations.NRSMAI(1),Locations.NRSMAI(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
+scatter(Locations.NRSMAI(1),Locations.NRSMAI(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
+scatter(Locations.BMP120(1),Locations.BMP120(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
+scatter(Locations.BMP120(1),Locations.BMP120(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
+scatter(Locations.CH100(1),Locations.CH100(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
+scatter(Locations.CH100(1),Locations.CH100(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
+scatter(Locations.NRSNSI(1),Locations.NRSNSI(2),100,'filled','MarkerFaceColor','k','MarkerEdgeColor','k','Marker','Sq')
+scatter(Locations.NRSNSI(1),Locations.NRSNSI(2),50,'filled','MarkerFaceColor','w','MarkerEdgeColor','w','Marker','Sq')
+
+%%
+print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_Coast'])
 
 %% old tables
 
