@@ -645,7 +645,7 @@ def ITA_significance(TIME,TEMP,ACF_result,numb_sims):
 # -----------------------------------------------------------------------------------------------
 # EEMD function
 
-def Ensemble_EMD(TIME,TEMP,figure):
+def Ensemble_EMD(TIME,TEMP,figure,s_option):
     
     # https://github.com/laszukdawid/PyEMD
     # https://pyemd.readthedocs.io/en/latest/intro.html#
@@ -666,62 +666,75 @@ def Ensemble_EMD(TIME,TEMP,figure):
     t = TIME[check_nans]
     # perform EEMD
     # average of 10 different stoppages
-    imfs = []
-    res = []
-    for n in range(4,14):
+    if s_option == 1:
+        imfs = []
+        res = []
+        for n in range(4,14):
+            eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
+                        processes=5,include_residue=False,
+                        S_number=n) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+            eemd.eemd(T)
+            i, r = eemd.get_imfs_and_residue()
+            imfs.append(i)
+            res.append(r)
+        # Average over all stoppages
+        len_imfs = []
+        for n in range(0,10):   
+            len_imfs.append(len(imfs[n]))
+        max_numb_imfs = np.nanmax(len_imfs)
+            
+        # if IMFs not same size add rows of NaNs
+        if np.size(np.unique(len_imfs)) > 1:
+            for n in range(0,10):
+                if len_imfs[n] < max_numb_imfs:
+                    a = imfs[n]
+                    a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
+                    imfs[n] = a
+        # second round if required
+        len_imfs = []
+        for n in range(0,10):   
+            len_imfs.append(len(imfs[n]))
+        if np.size(np.unique(len_imfs)) > 1:
+            for n in range(0,10):
+                if len_imfs[n] < max_numb_imfs:
+                    a = imfs[n]
+                    a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
+                    imfs[n] = a  
+        len_imfs = []
+        for n in range(0,10):   
+            len_imfs.append(len(imfs[n]))             
+        # Third round if required
+        if np.size(np.unique(len_imfs)) > 1:
+            for n in range(0,10):
+                if len_imfs[n] < max_numb_imfs:
+                    a = imfs[n]
+                    a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
+                    imfs[n] = a                    
+             
+        imfs_averaged = []    
+        imfs_std = []    
+        for n_imfs in range(max_numb_imfs):
+            imf_to_ave = np.ones((10,len(i[0])),dtype=float)
+            for n in range(len(imfs)):
+                chosen_imfs = imfs[n]
+                ci = chosen_imfs[n_imfs]
+                imf_to_ave[n,:] = ci - np.nanmean(ci)
+                
+            imfs_averaged.append(np.nanmean(imf_to_ave,0))
+            imfs_std.append(np.nanstd(imf_to_ave,0))
+        
+        res = np.array(np.nanmean(np.array(res),0))
+        imfs_to_ave = imfs
+        imfs = np.array(imfs_averaged)
+    else:
+        imfs = []
+        res = []  
+        imfs_std = []
         eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
                     processes=8,include_residue=False,
-                    S_number=n) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+                    S_number=4) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
         eemd.eemd(T)
-        i, r = eemd.get_imfs_and_residue()
-        imfs.append(i)
-        res.append(r)
-    # Average over all stoppages
-    len_imfs = []
-    for n in range(0,10):   
-        len_imfs.append(len(imfs[n]))
-    max_numb_imfs = np.nanmax(len_imfs)
-        
-    # if IMFs not same size add rows of NaNs
-    if np.size(np.unique(len_imfs)) > 1:
-        for n in range(0,10):
-            if len_imfs[n] < max_numb_imfs:
-                a = imfs[n]
-                a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
-                imfs[n] = a
-    # second round if required
-    len_imfs = []
-    for n in range(0,10):   
-        len_imfs.append(len(imfs[n]))
-    if np.size(np.unique(len_imfs)) > 1:
-        for n in range(0,10):
-            if len_imfs[n] < max_numb_imfs:
-                a = imfs[n]
-                a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
-                imfs[n] = a  
-    len_imfs = []
-    for n in range(0,10):   
-        len_imfs.append(len(imfs[n]))             
-    # Third round if required
-    if np.size(np.unique(len_imfs)) > 1:
-        for n in range(0,10):
-            if len_imfs[n] < max_numb_imfs:
-                a = imfs[n]
-                a = np.concatenate([a,np.ones((1,len(i[0])),dtype=float)*np.nan])
-                imfs[n] = a                    
-         
-    imfs_averaged = []    
-    imfs_std = []    
-    for n_imfs in range(max_numb_imfs):
-        imf_to_ave = np.ones((10,len(i[0])),dtype=float)
-        for n in range(len(imfs)):
-            chosen_imfs = imfs[n]
-            imf_to_ave[n,:] = chosen_imfs[n_imfs]
-        imfs_averaged.append(np.nanmean(imf_to_ave,0))
-        imfs_std.append(np.nanstd(imf_to_ave,0))
-    
-    res = np.array(np.nanmean(np.array(res),0))
-    imfs = np.array(imfs_averaged)
+        imfs, res = eemd.get_imfs_and_residue()    
       
     if figure == 1:
         # visualise imfs
@@ -782,7 +795,7 @@ def Ensemble_EMD(TIME,TEMP,figure):
     if 'trend' not in (locals()):
         trend = 0
     
-    return t, T, trend, trend_EAC, imfs, res
+    return t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res
 
 
 # %% ----------------------------------------------------------------------------------------------
@@ -877,7 +890,7 @@ def EEMD_significance(TIME,TEMP,ACF_result,numb_sims):
         print('Simulation: ' + str(n))
         x_sims.append(signalz.brownian_noise(len(TEMP), leak=leakage, start=0, \
                                              std=std_chosen, source="gaussian"))
-        _, _, tr, tr_EAC, _, _ = Ensemble_EMD(TIME,x_sims[n],0)
+        _, _, tr, tr_EAC, _, _, _, _ = Ensemble_EMD(TIME,x_sims[n],0,0)
         trend_sims.append(tr)
         trend_sims_EAC.append(tr_EAC)
         toc = time.perf_counter()
