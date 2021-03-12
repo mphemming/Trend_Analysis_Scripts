@@ -415,18 +415,121 @@ ylim([1 7])
 xlim([0 7])
 
 
+%% Figure NRSNSI
+cmap = cmocean('balance',23);
+cmap_limits = linspace(-0.9,0.9,23);
+xaxis_limits = linspace(0.1,0.9,6);
+yaxis_limits = linspace(0.11,0.93,6);
+xlim_limits = linspace(0,6,6);
+ylim_limits = linspace(1,10,6);
+
+%%
+figure('units','normalized','position',[0 0.1000 0.5661 0.8000]);
+ylim([1 8])
+xlim([0 6])
+
+row_n = 0;
+for n_depth = 1:3
+
+    % organise trends over time
+    % trends
+    trs_sig = [trends_NRSNSI(n_depth).t2010s_sig];
+    trs_insig = [trends_NRSNSI(n_depth).t2010s_insig];
+    trs_EAC_sig = [trends_NRSNSI(n_depth).t2010s_EAC_sig];    
+    trs_EAC_insig = [trends_NRSNSI(n_depth).t2010s_EAC_insig];    
+    % stds
+    trs_sig_std = [trends_NRSNSI(n_depth).t2010s_sig_std];
+    trs_insig_std = [trends_NRSNSI(n_depth).t2010s_insig_std];
+    trs_EAC_sig_std = [trends_NRSNSI(n_depth).t2010s_EAC_sig_std];    
+    trs_EAC_insig_std = [trends_NRSNSI(n_depth).t2010s_EAC_insig_std];    
+
+    row_n = row_n+1;
+    
+    % determine value used
+    if isfinite(trs_sig)
+        val = trs_sig;
+        std = trs_sig_std;
+        sig_indicator = 1;
+    else
+        val = trs_insig;
+        std = trs_insig_std;
+        sig_indicator = 0;
+    end
+    if isfinite(trs_EAC_sig)
+        val_EAC = trs_EAC_sig;
+        std_EAC = trs_EAC_sig_std;
+        sig_indicator_EAC = 1;
+    else
+        val_EAC = trs_EAC_insig;
+        std_EAC = trs_EAC_insig_std;
+        sig_indicator_EAC = 0;
+    end                     
+
+    c(1) = interp1(cmap_limits,cmap(:,1),val_EAC);
+    c(2) = interp1(cmap_limits,cmap(:,2),val_EAC);
+    c(3) = interp1(cmap_limits,cmap(:,3),val_EAC);
+    color_EAC = [c(1) c(2) c(3)];        
+    c(1) = interp1(cmap_limits,cmap(:,1),val);
+    c(2) = interp1(cmap_limits,cmap(:,2),val);
+    c(3) = interp1(cmap_limits,cmap(:,3),val);
+    color = [c(1) c(2) c(3)];              
+
+    if isnan(val)
+        val = 0;
+        std = ' ';
+    end
+    if isnan(val_EAC)
+        val_EAC = 0;
+        std_EAC = ' ';
+    end
+    val_str = num2str(round(val,6));
+    val_EAC_str = num2str(round(val_EAC,6));
+    std_str = num2str(round(std,6));
+    std_EAC_str = num2str(round(std_EAC,6));        
+    % ensure value is same size
 
 
+    if isempty(strfind(val_str,'-')) 
+        val_str = val_str(1:4);
+    else
+        val_str = val_str(1:5);
+    end
+    std_str = std_str(1:4);
+    if isempty(strfind(val_EAC_str,'-')) 
+        val_EAC_str = val_EAC_str(1:4);
+    else
+        val_EAC_str = val_EAC_str(1:5);
+    end
+    std_EAC_str = std_EAC_str(1:4);
+
+    if ~isempty(strfind(std_str,'e'))
+        std_str = '0.00';
+    end
+    if ~isempty(strfind(std_EAC_str,'e'))
+        std_EAC_str = '0.00';
+    end
+
+    if sig_indicator == 1      
+        text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color, ...
+            'EdgeColor',[0 0 0],'LineWidth',1)
+    else      
+        text(1-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color,'color',[0 0 0])
+    end
+
+    if sig_indicator_EAC == 1             
+        text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''], ...
+            'BackgroundColor',color_EAC,'EdgeColor',[0 0 0],'LineWidth',2)
+    else                  
+        text(1-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC,'color',[0 0 0])
+    end        
 
 
+end
+ 
+set(gca,'YDir','Reverse','Visible','Off');
 
-
-
-
-
-
-
-
+%%
+print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_NRSNSI'])
 
 %% Create Large Australia Coast
 
