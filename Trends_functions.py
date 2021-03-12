@@ -730,6 +730,7 @@ def Ensemble_EMD(TIME,TEMP,figure,s_option):
         imfs = []
         res = []  
         imfs_std = []
+        imfs_to_ave = []
         eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
                     processes=8,include_residue=False,
                     S_number=4) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
