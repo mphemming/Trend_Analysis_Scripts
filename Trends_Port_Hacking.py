@@ -48,22 +48,17 @@ from scipy.io import savemat
 # %% -----------------------------------------------------------------------------------------------
 # Load data
 
-# mooring data
-main_path = "\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\"
-NRSPHB_clim = xr.open_dataset(main_path + 'Data\\Port_Hacking_TEMP_Climatology_1953-2019_BottleCTDMooringSatellite.nc')
-NRSPHB_agg = xr.open_dataset(main_path + 'Data\\Port_Hacking_TEMP_1953-2019_aggregated.nc')
-# PDO data
-PDO = pd.read_csv(main_path + 'Data\\PDO.csv',index_col=0)
-PDO_IND = np.array(PDO.ind)
-PDO_IND_t = np.array(PDO.index)
-c = PDO_IND_t > 1952
-PDO_IND = PDO_IND[c]
-PDO_IND_t = PDO_IND_t[c]
-# SAM data
-SAM = pd.read_csv(main_path + 'Data\\SAM.csv',index_col=0) 
-# need to add code here to sort out SAM
+system = 0; # for windows (1), linux (0)
 
-del c, main_path
+if system == 1:
+    # mooring data
+    main_path = "\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\"
+    NRSPHB_clim = xr.open_dataset(main_path + 'Data\\PortHacking_100m_TEMP_Climatology_1953-2020_BottleCTDMooringSatellite.nc')
+    NRSPHB_agg = xr.open_dataset(main_path + 'Data\\PortHacking_100m_TEMP_1953-2020_aggregated.nc')
+    del main_path
+else:
+    NRSPHB_clim = xr.open_dataset('PortHacking_100m_TEMP_Climatology_1953-2020_BottleCTDMooringSatellite.nc')
+    NRSPHB_agg = xr.open_dataset('PortHacking_100m_TEMP_1953-2020_aggregated.nc')
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -270,8 +265,6 @@ for n in r:
     plt.ylim(bottom=-4, top=4)
 
 
-
-
 # %% -----------------------------------------------------------------------------------------------
 # KPSS test to check for stationarity
 # If the result = 'Not stationary', a deterministc trend / linear regression is not suitable
@@ -314,7 +307,7 @@ EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     tt = tbin_m[n]; TT = Tbin_m[n];
-    t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res = TF.Ensemble_EMD(tt,TT,0,1)
+    t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res = TF.Ensemble_EMD(tt,TT,0,0)
     EEMD_t.append(t)
     EEMD_T.append(T)
     EEMD_trend.append(trend)
@@ -325,23 +318,23 @@ for n in range(len(depths)):
     yr, mn, dy, hr, yday = TF.datevec(tt)
     # Summer
     c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
-    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_summer],TT[c_summer],0,0)
+    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+        tt[c_summer],TT[c_summer],0,1)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC); 
     # Autumn
     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
-    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_autumn],TT[c_autumn],0,0)
+    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+        tt[c_autumn],TT[c_autumn],0,1)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
     # Winter
     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
-    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_winter],TT[c_winter],0,0)
+    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+        tt[c_winter],TT[c_winter],0,1)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
     # Spring
     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
-    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_spring],TT[c_spring],0,0)
+    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+        tt[c_spring],TT[c_spring],0,1)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC); 
 
 
@@ -519,11 +512,16 @@ Data_dict = {'tbin': tbin_m_str,
 'clims': clim,
 'NRSPHB_agg': NRSPHB_agg}
 
-savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
-        "NRSPHB_trends.mat", Trend_dict)
+system = 0; # for windows (1), linux (0)
 
-savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
-        "NRSPHB_data.mat", Data_dict)
+if system == 1:
+    savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+            "NRSPHB_trends.mat", Trend_dict)
+    savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+            "NRSPHB_data.mat", Data_dict)
+else:
+    savemat("NRSPHB_trends_server.mat", Trend_dict)
+    savemat("NRSPHB_data_server.mat", Data_dict)   
 
 
 
