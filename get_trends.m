@@ -1,18 +1,37 @@
 function [trends] = get_trends(data_struct, data_struct_server, trend_data_struct,trend_data_struct_server,multiplier)
 
-
+% get number of depths depending on input data
 if iscell(trend_data_struct.EEMD_trend) ~= 1
     n_depths = size(trend_data_struct.EEMD_trend,1);
 else
     n_depths = size(trend_data_struct.EEMD_trend,2);
 end
 
+% Loop to get trends
 for n_depth = 1:n_depths
     
+    % get significance boundaries
     sig = trend_data_struct_server.EEMD_conf_std_limit(1,:);
     sig_EAC = trend_data_struct_server.EEMD_conf_std_limit_EAC(1,:);
     tt_sig = data_struct.t_conv(n_depth).t;
     
+    % if tt_sig time is not sam length get monthly binned version
+    if length(tt_sig) ~= length(sig)
+        % Need to interpolate to get dates
+        min_t = nanmin(tt_sig); min_t =  datestr(min_t); min_t = datenum([num2str(14),min_t(3:end)]);
+        max_t = nanmax(tt_sig); max_t =  datestr(max_t); max_t = datenum([num2str(14),max_t(3:end)]);
+        [y_min,~,~,~,~,~] = datevec(min_t); [y_max,~,~,~,~,~] = datevec(max_t);
+        n_index = 0;
+        for n_yr = y_min:1:y_max
+            for n_mn = 1:12
+                n_index = n_index+1;
+                time(n_index) = datenum(n_yr,n_mn,14,12,00,00);
+            end
+        end
+        tt_sig = time;
+    end
+    
+    % Get the trends 
     if iscell(trend_data_struct.EEMD_trend) ~= 1
         tr = trend_data_struct.EEMD_trend(n_depth,:) / nanstd(trend_data_struct.EEMD_T(n_depth,:)); % normalise trend 
         tr_EAC = trend_data_struct.EEMD_trend_EAC(n_depth,:)  / nanstd(trend_data_struct.EEMD_T(n_depth,:)); % normalise trend
@@ -30,6 +49,13 @@ for n_depth = 1:n_depths
         aa(nt) = convertCharsToStrings(a(nt,:));
     end
     tt = datenum(aa);
+
+    % if significance was done monthly, interpolate onto daily grid
+    if length(tt) ~= length(sig)
+        sig = interp1(tt_sig,sig,tt,'Linear');
+        sig_EAC = interp1(tt_sig,sig_EAC,tt,'Linear');
+    end
+
     % get significance from start of time period of interest
     sig = sig(1:numel(tt));
     sig_EAC = sig_EAC(1:numel(tt));
