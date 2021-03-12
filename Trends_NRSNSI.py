@@ -47,13 +47,21 @@ from scipy.io import savemat
 # %% -----------------------------------------------------------------------------------------------
 # Load data
 
-# mooring data
-main_path = "\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\"
-NRSNSI_agg = xr.open_dataset(main_path + 
-    'Data\\IMOS_ANMN-NRS_TZ_20101213_NRSNSI_FV01_TEMP-aggregated-timeseries_END-20201028_C-20201207.nc')
-# Satellite data
-NRSNSI_sat = xr.open_dataset(main_path + 
-    'Data\\Satellite_NRSNSI.nc')                       
+system = 0; # for windows (1), linux (0)
+
+if system == 1:
+    # mooring data
+    main_path = "\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\"
+    NRSNSI_agg = xr.open_dataset(main_path + 
+        'Data\\IMOS_ANMN-NRS_TZ_20101213_NRSNSI_FV01_TEMP-aggregated-timeseries_END-20201028_C-20201207.nc')
+    # Satellite data
+    NRSNSI_sat = xr.open_dataset(main_path + 
+        'Data\\Satellite_NRSNSI.nc')   
+else:
+    # mooring data
+    NRSNSI_agg = xr.open_dataset('IMOS_ANMN-NRS_TZ_20101213_NRSNSI_FV01_TEMP-aggregated-timeseries_END-20201028_C-20201207.nc')
+    # Satellite data
+    NRSNSI_sat = xr.open_dataset('Satellite_NRSNSI.nc')                       
 
 # %% -----------------------------------------------------------------------------------------------
 # Select satellite data and correct
@@ -372,7 +380,7 @@ EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     tt = tbin[n]; TT = Tbin[n];
-    t, T, trend, trend_EAC, imfs, res = TF.Ensemble_EMD(tt,TT,0)
+    t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res = TF.Ensemble_EMD(tt,TT,0,1)
     EEMD_t.append(t)
     EEMD_T.append(T)
     EEMD_trend.append(trend)
@@ -383,23 +391,23 @@ for n in range(len(depths)):
     yr, mn, dy, hr, yday = TF.datevec(tt)
     # Summer
     c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
-    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_summer],TT[c_summer],0)
+    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+        tt[c_summer],TT[c_summer],0,1)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC); 
     # Autumn
     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
-    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_autumn],TT[c_autumn],0)
+    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+        tt[c_autumn],TT[c_autumn],0,1)
     EEMD_trend_Au.append(trend); EEMD_trend_EAC_Au.append(trend_EAC);     
     # Winter
     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
-    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_winter],TT[c_winter],0)
+    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+        tt[c_winter],TT[c_winter],0,1)
     EEMD_trend_Wi.append(trend); EEMD_trend_EAC_Wi.append(trend_EAC);     
     # Spring
     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
-    _, _, trend, trend_EAC, _, _ = TF.Ensemble_EMD(
-        tt[c_spring],TT[c_spring],0)
+    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+        tt[c_spring],TT[c_spring],0,1)
     EEMD_trend_Sp.append(trend); EEMD_trend_EAC_Sp.append(trend_EAC);     
     
 EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
@@ -439,7 +447,7 @@ for n in range(len(depths)):
     del tt, TT
     tt,TT = TF.bin_monthly(2011,2021,tbin[n],Tbin[n])
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt,TT,ACF_result[n],1)
+           TF.EEMD_significance(tt,TT,ACF_result[n],1000)
     conf_std_limit.append(csl)
     std_array.append(sa)
     trend_sims.append(ts)
@@ -453,25 +461,25 @@ for n in range(len(depths)):
     yr, mn, dy, hr, yday = TF.datevec(tt)
     c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_summer],TT[c_summer],ACF_result[n],1)    
+           TF.EEMD_significance(tt[c_summer],TT[c_summer],ACF_result[n],1000)    
     conf_std_limit_Su.append(csl)
     conf_std_limit_EAC_Su.append(csl_EAC)
     # autumn
     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1)    
+           TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1000)    
     conf_std_limit_Au.append(csl)
     conf_std_limit_EAC_Au.append(csl_EAC)
     # winter
     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1)    
+           TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1000)    
     conf_std_limit_Wi.append(csl)
     conf_std_limit_EAC_Wi.append(csl_EAC)
     # spring
     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1)    
+           TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1000)    
     conf_std_limit_Sp.append(csl)
     conf_std_limit_EAC_Sp.append(csl_EAC)
 
@@ -569,11 +577,16 @@ Data_dict = {'tbin': tbin_str,
 'clims': clim,
 'NRSNSI_agg': NRSNSI_agg}
 
-savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
-        "NRSNSI_trends.mat", Trend_dict)
+system = 0; # for windows (1), linux (0)
 
-savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
-        "NRSNSI_data.mat", Data_dict)
+if system == 1:
+    savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+            "NRSNSI_trends.mat", Trend_dict)
+    savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
+            "NRSNSI_data.mat", Data_dict)
+else:
+    savemat("NRSNSI_trends_server.mat", Trend_dict)
+    savemat("NRSNSI_data_server.mat", Data_dict)   
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
