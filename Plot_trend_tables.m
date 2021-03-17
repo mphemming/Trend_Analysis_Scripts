@@ -5,14 +5,14 @@ options.data_dir = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Data\';
 options.plot_dir = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\';
 
 % NRSPHB
-NRSPHB_data = load([options.data_dir,'NRSPHB_data']);
+% NRSPHB_data = load([options.data_dir,'NRSPHB_data']);
 NRSPHB_data_server = load([options.data_dir,'NRSPHB_data_server']);
-NRSPHB_trends = load([options.data_dir,'NRSPHB_trends']);
+% NRSPHB_trends = load([options.data_dir,'NRSPHB_trends']);
 NRSPHB_trends_server = load([options.data_dir,'NRSPHB_trends_server']);
 % NRSMAI
-NRSMAI_data = load([options.data_dir,'NRSMAI_data']);
+% NRSMAI_data = load([options.data_dir,'NRSMAI_data']);
 NRSMAI_data_server = load([options.data_dir,'NRSMAI_data_server']);
-NRSMAI_trends = load([options.data_dir,'NRSMAI_trends']);
+% NRSMAI_trends = load([options.data_dir,'NRSMAI_trends']);
 NRSMAI_trends_server = load([options.data_dir,'NRSMAI_trends_server']);
 %CH100
 CH100_data = load([options.data_dir,'CH100_data']);
@@ -33,38 +33,38 @@ NRSNSI_trends_server = load([options.data_dir,'NRSNSI_trends_server']);
 %---------------------------------------------------------------------------------------------------------------------
 % NRSPHB
 % time
-nt = size(NRSPHB_data.t,2);
+nt = size(NRSPHB_data_server.t,2);
 for nn = 1:7
     for t = 1:nt
-        a = squeeze(vertcat(NRSPHB_data.t(nn,t,:)))';
-        NRSPHB_data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
+        a = squeeze(vertcat(NRSPHB_data_server.t(nn,t,:)))';
+        NRSPHB_data_server.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
     end
 end
 % EEMD time
 for nn = 1:7
-    a = squeeze(NRSPHB_trends.EEMD_t(nn,:,:));
+    a = NRSPHB_trends_server.EEMD_t{nn};
     for t = 1:size(a,1)
         b = a(t,:);
-        NRSPHB_trends.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
+        NRSPHB_trends_server.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
     end
 end
 
 %---------------------------------------------------------------------------------------------------------------------
 % NRSMAI
 % time
-nt = size(NRSMAI_data.t,2);
+nt = size(NRSMAI_data_server.t,2);
 for nn = 1:3
     for t = 1:nt
-        a = squeeze(vertcat(NRSMAI_data.t(nn,t,:)))';
-        NRSMAI_data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
+        a = squeeze(vertcat(NRSMAI_data_server.t(nn,t,:)))';
+        NRSMAI_data_server.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
     end
 end
 % EEMD time
 for nn = 1:3
-    a = squeeze(NRSMAI_trends.EEMD_t(nn,:,:));
+    a = squeeze(NRSMAI_trends_server.EEMD_t(nn,:,:));
     for t = 1:size(a,1)
         b = a(t,:);
-        NRSMAI_trends.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
+        NRSMAI_trends_server.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
     end
 end
 
@@ -136,8 +136,8 @@ end
 %% calculate average trends
 
 multiplier = 12*10; % 10 years in months
-[trends_PHB] = get_trends(NRSPHB_data, NRSPHB_data_server, NRSPHB_trends,NRSPHB_trends_server,multiplier);
-[trends_MAI] = get_trends(NRSMAI_data, NRSMAI_data_server, NRSMAI_trends,NRSMAI_trends_server,multiplier);
+[trends_PHB] = get_trends(NRSPHB_data_server, NRSPHB_data_server, NRSPHB_trends_server,NRSPHB_trends_server,multiplier);
+[trends_MAI] = get_trends(NRSMAI_data_server, NRSMAI_data_server, NRSMAI_trends_server,NRSMAI_trends_server,multiplier);
 multiplier = 10*365.25; % 10 years in days
 [trends_CH100] = get_trends(CH100_data, CH100_data_server, CH100_trends, CH100_trends_server,multiplier);
 [trends_BMP120] = get_trends(BMP120_data, BMP120_data_server, BMP120_trends, BMP120_trends_server,multiplier);
