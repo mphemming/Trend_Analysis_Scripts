@@ -5,9 +5,9 @@ options.data_dir = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Data\';
 options.plot_dir = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\';
 
 % NRSPHB
-NRSPHB_data = load([options.data_dir,'NRSPHB_data']);
+% NRSPHB_data = load([options.data_dir,'NRSPHB_data']);
 NRSPHB_data_server = load([options.data_dir,'NRSPHB_data_server']);
-NRSPHB_trends = load([options.data_dir,'NRSPHB_trends_for_figure1']);
+% NRSPHB_trends = load([options.data_dir,'NRSPHB_trends_for_figure1']);
 NRSPHB_trends_server = load([options.data_dir,'NRSPHB_trends_server']);
 
 %% Sort out time
