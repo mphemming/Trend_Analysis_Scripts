@@ -306,7 +306,7 @@ EEMD_imfs = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    tt = tbin_m[n]; TT = Tbin_m[n];
+    tt = tbin_m[n]; TT = Tbin_m_deseason[n];
     t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res = TF.Ensemble_EMD(tt,TT,0,0)
     EEMD_t.append(t)
     EEMD_T.append(T)
@@ -325,17 +325,17 @@ for n in range(len(depths)):
     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
     _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
         tt[c_autumn],TT[c_autumn],0,1)
-    EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
+    EEMD_trend_Au.append(trend); EEMD_trend_EAC_Au.append(trend_EAC);     
     # Winter
     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
     _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
         tt[c_winter],TT[c_winter],0,1)
-    EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC);     
+    EEMD_trend_Wi.append(trend); EEMD_trend_EAC_Wi.append(trend_EAC);     
     # Spring
     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
     _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
         tt[c_spring],TT[c_spring],0,1)
-    EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC); 
+    EEMD_trend_Sp.append(trend); EEMD_trend_EAC_Sp.append(trend_EAC); 
 
 
 EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
@@ -405,20 +405,20 @@ for n in range(len(depths)):
     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
            TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1000)    
-    conf_std_limit_Su.append(csl)
-    conf_std_limit_EAC_Su.append(csl_EAC)
+    conf_std_limit_Au.append(csl)
+    conf_std_limit_EAC_Au.append(csl_EAC)
     # winter
     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
            TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1000)    
-    conf_std_limit_Su.append(csl)
-    conf_std_limit_EAC_Su.append(csl_EAC)
+    conf_std_limit_Wi.append(csl)
+    conf_std_limit_EAC_Wi.append(csl_EAC)
     # spring
     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
            TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1000)    
-    conf_std_limit_Su.append(csl)
-    conf_std_limit_EAC_Su.append(csl_EAC)
+    conf_std_limit_Sp.append(csl)
+    conf_std_limit_EAC_Sp.append(csl_EAC)
 
 
 del TT, n, csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs
