@@ -45,6 +45,7 @@ for n_depth = 1:n_depths
         tr_EAC_0 = tr_EAC-tr_EAC(1);  
         a = squeeze(trend_data_struct.EEMD_t{n_depth});
     end
+    clear aa
     for nt = 1:size(a,1)
         aa(nt) = convertCharsToStrings(a(nt,:));
     end
