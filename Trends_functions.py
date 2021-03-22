@@ -733,8 +733,7 @@ def Ensemble_EMD(TIME,TEMP,figure,s_option):
         imfs_std = []
         imfs_to_ave = []
         eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
-                    processes=8,include_residue=False,
-                    S_number=4) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+                    processes=8,include_residue=False) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
         eemd.eemd(T)
         imfs, res = eemd.get_imfs_and_residue()    
       
@@ -762,12 +761,20 @@ def Ensemble_EMD(TIME,TEMP,figure,s_option):
     trend = imfs[n_imfs-1,:]
     trend_EAC = trend + imfs[n_imfs-2,:]
     
-    # Deal with low magnitude trend IMFs
-    if np.abs(trend[-1]-trend[0]) < 0.1:
+    # get number of years for time series to determine trend
+    yrs, _, _, _, _ = datevec(TIME)
+    number_years = np.nanmax(yrs)-np.nanmin(yrs)
+    # Deal with low magnitude trend IMFs for long timeseries
+    if np.abs(trend[-1]-trend[0]) < 0.1 and number_years > 20:
         check = np.diff(imfs[-2]) < 0
         trend = trend+imfs[-2]
         trend_EAC = trend + imfs[-3]  
-            
+    # Deal with low magnitude trend IMFs for short timeseries
+    if np.abs(trend[-1]-trend[0]) < 0.01 and number_years < 20:
+        check = np.diff(imfs[-2]) < 0
+        trend = trend+imfs[-2]
+        trend_EAC = trend + imfs[-3]  
+  
         # if 'datetime64' in str(type(TIME[0])):
         #     first_year = TIME[0].astype(object).year
         #     last_year = TIME[-1].astype(object).year
@@ -1037,10 +1044,10 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
     std_chosen = np.float(tests[np.abs(std_tests) == np.nanmin(np.abs(std_tests))])     
     variability = signalz.brownian_noise(len(TEMP), leak=leakage, start=0, \
                                              std=std_chosen/2, source="gaussian")
-    if np.nanmax(np.abs(variability)) > 0.5:
+    if leakage < 0.05 or std_chosen > 0.5:
         # normalise variability so that always between -0.5 and 0.5
-        variability = ((variability - np.nanmin(variability)) / 
-                      (np.nanmax(variability) - np.nanmin(variability)) -0.5)
+        variability = 2*((variability - np.nanmin(variability)) / 
+                      (np.nanmax(variability) - np.nanmin(variability)))-1
 
     # reconstruct seasonal cycle with varying standard deviation
     # based on std_window length (days or months depending on input)
