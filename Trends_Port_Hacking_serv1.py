@@ -307,7 +307,7 @@ EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     tt = tbin_m[n]; TT = Tbin_m_deseason[n];
-    t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res = TF.Ensemble_EMD(tt,TT,0,0)
+    t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res = TF.Ensemble_EMD(tt,TT,0,1)
     EEMD_t.append(t)
     EEMD_T.append(T)
     EEMD_trend.append(trend)

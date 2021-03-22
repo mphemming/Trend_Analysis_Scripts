@@ -181,11 +181,11 @@ clim = []
 for n in range(len(depths)):
     clim.append(TF.calc_clim_monthly(t[n],T[n]))
 # # get de-seasoned temperatures
-Tbin_deseason = []
-for n in range(len(depths)):
-    Tbin_deseason.append(np.array(TF.deseason(t[n],T[n],clim[n])))
+# Tbin_deseason = []
+# for n in range(len(depths)):
+#     Tbin_deseason.append(np.array(TF.deseason(t[n],T[n],clim[n])))
     
-del n
+# del n
 
 # interpolate climatologies to 365 days
 t_months = [dt.datetime(1,1,1),
