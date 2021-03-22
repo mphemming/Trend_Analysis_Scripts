@@ -2,7 +2,7 @@ function [data, comb_file] = combine_files(site_str,data)
 
 %% load in all available file splits
 
-path = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Data\Split_data_server\';
+path = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Data\Split_data_server_deseason\';
 files = dir([path,site_str,'*trends*.mat']);
 
 for n_file = 1:numel(files)
@@ -44,7 +44,7 @@ if iscell(comb_file.EEMD_t)
     end
     
     nt = size(data.t,2);
-    for nn = 1:7
+    for nn = 1:numel(comb_file.EEMD_trend)
         for t = 1:nt
             a = squeeze(vertcat(data.t(nn,t,:)))';
             data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
