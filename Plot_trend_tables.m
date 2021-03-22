@@ -5,24 +5,20 @@ options.data_dir = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Data\';
 options.plot_dir = 'C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\';
 
 % NRSPHB
-NRSPHB_data = load([options.data_dir,'Split_data_server\NRSPHB_data_server1.mat']);
+NRSPHB_data = load([options.data_dir,'Split_data_server_deseason\NRSPHB_data_server1.mat']);
 [NRSPHB_data, NRSPHB_trends] = combine_files('NRSPHB',NRSPHB_data);
 % NRSMAI
-NRSMAI_data = load([options.data_dir,'Split_data_server\NRSMAI_data_server1.mat']);
+NRSMAI_data = load([options.data_dir,'Split_data_server_deseason\NRSMAI_data_server1.mat']);
 [NRSMAI_data, NRSMAI_trends] = combine_files('NRSMAI',NRSMAI_data);
 %CH100
-CH100_data = load([options.data_dir,'CH100_data']);
-CH100_data_server = load([options.data_dir,'CH100_data_server']);
-CH100_trends = load([options.data_dir,'CH100_trends']);
-CH100_trends_server = load([options.data_dir,'CH100_trends_server']);
+CH100_data = load([options.data_dir,'Split_data_server_deseason\CH100_data_server1.mat']);
+[CH100_data, CH100_trends] = combine_files('CH100',CH100_data);
 %BMP120
-BMP120_data = load([options.data_dir,'BMP120_data']);
-BMP120_data_server = load([options.data_dir,'BMP120_data_server']);
-BMP120_trends = load([options.data_dir,'BMP120_trends']);
-BMP120_trends_server = load([options.data_dir,'BMP120_trends_server']);
+BMP120_data = load([options.data_dir,'Split_data_server_deseason\BMP120_data_server1.mat']);
+[BMP120_data, BMP120_trends] = combine_files('BMP120',BMP120_data);
 % NRSNSI
-NRSNSI_data = load([options.data_dir,'Split_data_server\NRSNSI_data_server1.mat']);
-NRSNSI_trends = combine_files('NRSNSI');
+NRSNSI_data = load([options.data_dir,'Split_data_server_deseason\NRSNSI_data_server1.mat']);
+[NRSNSI_data, NRSNSI_trends] = combine_files('NRSNSI',NRSNSI_data);
 
 %% Sort out time
 
@@ -64,24 +60,6 @@ for nn = 1:7
     end
 end
 
-%---------------------------------------------------------------------------------------------------------------------
-% NRSNSI
-% time
-nt = size(NRSNSI_data_server.t,2);
-for nn = 1:3
-    for t = 1:nt
-        a = squeeze(vertcat(NRSNSI_data_server.t(nn,t,:)))';
-        NRSNSI_data_server.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
-    end
-end
-% EEMD time
-for nn = 1:3
-    a = NRSNSI_trends_server.EEMD_t{nn};
-    for t = 1:size(a,1)
-        b = a(t,:);
-        NRSNSI_trends_server.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
-    end
-end
 
 %% Fixing depths where IMFs not capturing trend properly
 
@@ -109,7 +87,6 @@ yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,6,6);
 ylim_limits = linspace(1,10,6);
 
-%%
 figure('units','normalized','position',[0 0.1000 0.5661 0.8000]);
 ylim([1 8])
 xlim([0 6])
