@@ -303,6 +303,10 @@ EEMD_trend_EAC_Au = []
 EEMD_trend_EAC_Wi = []
 EEMD_trend_EAC_Sp = []
 EEMD_imfs = []
+EEMD_imfs_Su = []
+EEMD_imfs_Au = []
+EEMD_imfs_Wi = []
+EEMD_imfs_Sp = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
@@ -318,24 +322,28 @@ for n in range(len(depths)):
     yr, mn, dy, hr, yday = TF.datevec(tt)
     # Summer
     c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
-    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+    _, _, trend, trend_EAC, imfs, _, _, _ = TF.Ensemble_EMD(
         tt[c_summer],TT[c_summer],0,1)
     EEMD_trend_Su.append(trend); EEMD_trend_EAC_Su.append(trend_EAC); 
+    EEMD_imfs_Su.append(imfs)
     # Autumn
     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
-    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+    _, _, trend, trend_EAC, imfs, _, _, _ = TF.Ensemble_EMD(
         tt[c_autumn],TT[c_autumn],0,1)
-    EEMD_trend_Au.append(trend); EEMD_trend_EAC_Au.append(trend_EAC);     
+    EEMD_trend_Au.append(trend); EEMD_trend_EAC_Au.append(trend_EAC); 
+    EEMD_imfs_Au.append(imfs)    
     # Winter
     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
-    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+    _, _, trend, trend_EAC, imfs, _, _, _ = TF.Ensemble_EMD(
         tt[c_winter],TT[c_winter],0,1)
-    EEMD_trend_Wi.append(trend); EEMD_trend_EAC_Wi.append(trend_EAC);     
+    EEMD_trend_Wi.append(trend); EEMD_trend_EAC_Wi.append(trend_EAC);  
+    EEMD_imfs_Wi.append(imfs)
     # Spring
     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
-    _, _, trend, trend_EAC, _, _, _, _ = TF.Ensemble_EMD(
+    _, _, trend, trend_EAC, imfs, _, _, _ = TF.Ensemble_EMD(
         tt[c_spring],TT[c_spring],0,1)
     EEMD_trend_Sp.append(trend); EEMD_trend_EAC_Sp.append(trend_EAC); 
+    EEMD_imfs_Sp.append(imfs)
 
 
 EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
@@ -345,6 +353,40 @@ EEMD_IMFS = {'IMF_1':EEMD_imfs[0],
              'IMF_5':EEMD_imfs[4], 
              'IMF_6':EEMD_imfs[5], 
              'IMF_7':EEMD_imfs[6]}
+
+EEMD_IMFS_Su = {'IMF_1':EEMD_imfs_Su[0],
+             'IMF_2':EEMD_imfs_Su[1], 
+             'IMF_3':EEMD_imfs_Su[2], 
+             'IMF_4':EEMD_imfs_Su[3], 
+             'IMF_5':EEMD_imfs_Su[4], 
+             'IMF_6':EEMD_imfs_Su[5], 
+             'IMF_7':EEMD_imfs_Su[6]}
+
+EEMD_IMFS_Au = {'IMF_1':EEMD_imfs_Au[0],
+             'IMF_2':EEMD_imfs_Au[1], 
+             'IMF_3':EEMD_imfs_Au[2], 
+             'IMF_4':EEMD_imfs_Au[3], 
+             'IMF_5':EEMD_imfs_Au[4], 
+             'IMF_6':EEMD_imfs_Au[5], 
+             'IMF_7':EEMD_imfs_Au[6]}
+
+EEMD_IMFS_Wi = {'IMF_1':EEMD_imfs_Wi[0],
+             'IMF_2':EEMD_imfs_Wi[1], 
+             'IMF_3':EEMD_imfs_Wi[2], 
+             'IMF_4':EEMD_imfs_Wi[3], 
+             'IMF_5':EEMD_imfs_Wi[4], 
+             'IMF_6':EEMD_imfs_Wi[5], 
+             'IMF_7':EEMD_imfs_Wi[6]}
+
+EEMD_IMFS_Sp = {'IMF_1':EEMD_imfs_Sp[0],
+             'IMF_2':EEMD_imfs_Sp[1], 
+             'IMF_3':EEMD_imfs_Sp[2], 
+             'IMF_4':EEMD_imfs_Sp[3], 
+             'IMF_5':EEMD_imfs_Sp[4], 
+             'IMF_6':EEMD_imfs_Sp[5], 
+             'IMF_7':EEMD_imfs_Sp[6]}
+
+
 
     
 plt.plot(EEMD_t[0],EEMD_trend[0])
@@ -486,6 +528,10 @@ Trend_dict = {'MK_result': mk_result,
 'EEMD_trend_EAC_Wi': EEMD_trend_EAC_Wi,
 'EEMD_trend_EAC_Sp': EEMD_trend_EAC_Sp,
 'EEMD_imfs': EEMD_IMFS,
+'EEMD_imfs_Su': EEMD_IMFS_Su,
+'EEMD_imfs_Au': EEMD_IMFS_Au,
+'EEMD_imfs_Wi': EEMD_IMFS_Wi,
+'EEMD_imfs_Sp': EEMD_IMFS_Sp,
 'EEMD_res': EEMD_res,
 'EEMD_conf_std_limit': conf_std_limit,
 'EEMD_conf_std_limit_Su': conf_std_limit_Su,

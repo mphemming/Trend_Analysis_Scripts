@@ -483,7 +483,7 @@ for n in range(len(depths)):
     TT = TT[np.isfinite(TT)]
     ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
     # significance (using monthly values)
-    tt,TT = TF.bin_monthly(2011,2021,tbin[n],Tbin[n])
+    tt,TT = TF.bin_monthly(2011,2021,tbin[n],Tbin_deseason[n])
     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
             TF.EEMD_significance(tt,TT,ACF_result[n],5)
     conf_std_limit.append(csl)
