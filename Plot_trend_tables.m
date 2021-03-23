@@ -20,54 +20,62 @@ BMP120_data = load([options.data_dir,'Split_data_server_deseason\BMP120_data_ser
 NRSNSI_data = load([options.data_dir,'Split_data_server_deseason\NRSNSI_data_server1.mat']);
 [NRSNSI_data, NRSNSI_trends] = combine_files('NRSNSI',NRSNSI_data);
 
-%% Sort out time
+%% Manually fixing some trends when algorithm did not work correctly
 
-%---------------------------------------------------------------------------------------------------------------------
-% CH100
-% time
-nt = size(CH100_data.t,2);
-for nn = 1:7
-    for t = 1:nt
-        a = squeeze(vertcat(CH100_data.t(nn,t,:)))';
-        CH100_data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
-    end
-end
-% EEMD time
-for nn = 1:7
-    a = CH100_trends.EEMD_t{nn};
-    for t = 1:size(a,1)
-        b = a(t,:);
-        CH100_trends.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
-    end
-end
-
-%---------------------------------------------------------------------------------------------------------------------
-% BMP120
-% time
-nt = size(BMP120_data.t,2);
-for nn = 1:7
-    for t = 1:nt
-        a = squeeze(vertcat(BMP120_data.t(nn,t,:)))';
-        BMP120_data.t_conv(nn).t(t) = datenum(convertCharsToStrings(a));
-    end
-end
-% EEMD time
-for nn = 1:7
-    a = BMP120_trends.EEMD_t{nn};
-    for t = 1:size(a,1)
-        b = a(t,:);
-        BMP120_trends.EEMD_t_conv(nn).t(t) = datenum(convertCharsToStrings(b));
-    end
-end
-
-
-%% Fixing depths where IMFs not capturing trend properly
-
-% It's ok now
-
-% a = NRSMAI_trends.EEMD_imfs.IMF_1;
-% NRSMAI_trends.EEMD_trend{1} = a(end,:) + a(end-1,:);
-% NRSMAI_trends.EEMD_trend_EAC{1} = a(end,:) + a(end-1,:) + a(end-2,:);
+%------------------------------------------------------------------------------------
+% All seasons
+%--------------------
+% NRSMAI depth 3
+a = NRSMAI_trends.EEMD_imfs.IMF_3;
+NRSMAI_trends.EEMD_trend(3,:) = a(end,:)+a(end-1,:);
+NRSMAI_trends.EEMD_trend_EAC(3,:) = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% CH100 depth 2
+a = CH100_trends.EEMD_imfs.IMF_2;
+CH100_trends.EEMD_trend{2} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{2} = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% CH100 depth 3
+a = CH100_trends.EEMD_imfs.IMF_3;
+CH100_trends.EEMD_trend{3} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{3} = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% CH100 depth 4
+a = CH100_trends.EEMD_imfs.IMF_4;
+CH100_trends.EEMD_trend{4} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{4} = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% CH100 depth 5
+a = CH100_trends.EEMD_imfs.IMF_5;
+CH100_trends.EEMD_trend{5} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{5} = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% CH100 depth 6
+a = CH100_trends.EEMD_imfs.IMF_6;
+CH100_trends.EEMD_trend{6} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{6} = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% CH100 depth 7
+a = CH100_trends.EEMD_imfs.IMF_7;
+CH100_trends.EEMD_trend{7} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{7} = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% CH100 depth 10
+a = CH100_trends.EEMD_imfs.IMF_10;
+CH100_trends.EEMD_trend{10} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{10} = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% CH100 depth 12
+a = CH100_trends.EEMD_imfs.IMF_12;
+CH100_trends.EEMD_trend{12} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{12} = a(end,:)+a(end-1,:)+a(end-2,:);
+%--------------------
+% BMP120 all depths
+% for n = 1:13
+%     a = eval(['BMP120_trends.EEMD_imfs.IMF_',num2str(n)]);
+%     BMP120_trends.EEMD_trend{n} = a(end,:)+a(end-1,:);
+%     BMP120_trends.EEMD_trend_EAC{n} = a(end,:)+a(end-1,:)+a(end-2,:);
+% end
 
 %% calculate average trends
 
@@ -75,9 +83,9 @@ multiplier = 12*10; % 10 years in months
 [trends_PHB] = get_trends(NRSPHB_data, NRSPHB_data, NRSPHB_trends,NRSPHB_trends,multiplier);
 [trends_MAI] = get_trends(NRSMAI_data, NRSMAI_data, NRSMAI_trends,NRSMAI_trends,multiplier);
 multiplier = 10*365.25; % 10 years in days
-[trends_CH100] = get_trends(CH100_data, CH100_data_server, CH100_trends, CH100_trends_server,multiplier);
-[trends_BMP120] = get_trends(BMP120_data, BMP120_data_server, BMP120_trends, BMP120_trends_server,multiplier);
-[trends_NRSNSI] = get_trends(NRSNSI_data_server, NRSNSI_data_server, NRSNSI_trends_server, NRSNSI_trends_server,multiplier);
+[trends_CH100] = get_trends(CH100_data, CH100_data, CH100_trends, CH100_trends,multiplier);
+[trends_BMP120] = get_trends(BMP120_data, BMP120_data, BMP120_trends, BMP120_trends,multiplier);
+[trends_NRSNSI] = get_trends(NRSNSI_data, NRSNSI_data, NRSNSI_trends, NRSNSI_trends,multiplier);
 
 %% Figure Port Hacking
 cmap = cmocean('balance',23);
@@ -87,9 +95,9 @@ yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,6,6);
 ylim_limits = linspace(1,10,6);
 
-figure('units','normalized','position',[0 0.1000 0.5661 0.8000]);
+figure('units','normalized','position',[0 0.1000 0.7 0.8000]);
 ylim([1 8])
-xlim([0 6])
+xlim([0 7])
 
 row_n = 0;
 for n_depth = 1:7
@@ -115,7 +123,8 @@ for n_depth = 1:7
         trends_PHB(n_depth).t1990s_EAC_insig_std, trends_PHB(n_depth).t2000s_EAC_insig_std, trends_PHB(n_depth).t2010s_EAC_insig_std];    
 
     row_n = row_n+1;
-    
+    %---------------------------------------------------------------------------------------------------
+    % EEMD trends
     for n = 1:numel(trs_sig)-1
         % determine value used
         if isfinite(trs_sig(n))
@@ -195,10 +204,21 @@ for n_depth = 1:7
             text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC,'color',[0 0 0])
         end        
     end
+    %-------------------------------------------------------------------------------------------------------------------
+    % Adding MK trends at the end for whole time period
+    
+    MK = NRSPHB_trends.MK_trend_per_decade(n_depth);
+    ps = NRSPHB_trends.MK_pval(n_depth);
+    if ps < 0.05
+        text(n+0.2, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
+            'EdgeColor',[0 0 0],'LineWidth',1);
+    else
+        text(n+0.2, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
+    end
 
 end
  
-set(gca,'YDir','Reverse','Visible','Off');
+set(gca,'YDir','Reverse','Visible','Off')
 
 % set(gca,'YDir','Reverse','LineWidth',1,'YTick',1.5:1:9.5,'YTickLabels',[2, 19, 31, 40, 50, 59, 75, 81, 99],...
 %     'XTick',0.5:1:6.5,'XTickLabels',[{'1960s'} {'1970s'} {'1980s'} {'1990s'} {'2000s'} {'2010s'} {'1990-2020'}],'FontSize',16,'Box','On');
@@ -219,7 +239,7 @@ yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,8,6);
 ylim_limits = linspace(1,8,6);
 ylim([1 7])
-xlim([0 7])
+xlim([0 8])
 y_spacing = linspace(1.1,2,6);
 x_spacing = linspace(0,0.2,6);
 
@@ -248,7 +268,8 @@ for n_depth = 1:3
         trends_MAI(n_depth).t1990s_EAC_insig_std, trends_MAI(n_depth).t2000s_EAC_insig_std, trends_MAI(n_depth).t2010s_EAC_insig_std];    
 
     row_n = row_n+1;
-    
+    %-------------------------------------------------------------------------------------------------------------------
+    % Adding trend  boxes    
     for n = 1:numel(trs_sig)-1
         % determine value used
         if isfinite(trs_sig(n))
@@ -328,7 +349,16 @@ for n_depth = 1:3
             text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,'  '],'BackgroundColor',color_EAC,'color',[0 0 0])
         end        
     end
-
+    %-------------------------------------------------------------------------------------------------------------------
+    % Adding MK trends at the end for whole time period
+    MK = NRSMAI_trends.MK_trend_per_decade(n_depth);
+    ps = NRSMAI_trends.MK_pval(n_depth);
+    if ps < 0.05
+        text(n+0.4, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
+            'EdgeColor',[0 0 0],'LineWidth',1);
+    else
+        text(n+0.4, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
+    end
 end
  
 set(gca,'YDir','Reverse','Visible','Off');
@@ -336,7 +366,7 @@ set(gca,'YDir','Reverse','Visible','Off');
 %%
 print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_MariaIsland'])
 
-%% CH100
+%% Figure CH100
 
 figure('units','normalized','position',[0 0.1000 0.7 0.8000]);
 
@@ -346,8 +376,120 @@ xaxis_limits = linspace(0.06,0.9,6);
 yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,8,6);
 ylim_limits = linspace(1,8,6);
-ylim([1 7])
+ylim([1 12])
 xlim([0 7])
+
+row_n = 0;
+for n_depth = 1:12
+
+    % organise trends over time
+    % trends
+    trs_sig = [trends_CH100(n_depth).t2010s_sig];
+    trs_insig = [trends_CH100(n_depth).t2010s_insig];
+    trs_EAC_sig = [trends_CH100(n_depth).t2010s_EAC_sig];    
+    trs_EAC_insig = [trends_CH100(n_depth).t2010s_EAC_insig];    
+    % stds
+    trs_sig_std = [trends_CH100(n_depth).t2010s_sig_std];
+    trs_insig_std = [trends_CH100(n_depth).t2010s_insig_std];
+    trs_EAC_sig_std = [trends_CH100(n_depth).t2010s_EAC_sig_std];    
+    trs_EAC_insig_std = [trends_CH100(n_depth).t2010s_EAC_insig_std];    
+
+    row_n = row_n+1;
+    
+    % determine value used
+    if isfinite(trs_sig)
+        val = trs_sig;
+        std = trs_sig_std;
+        sig_indicator = 1;
+    else
+        val = trs_insig;
+        std = trs_insig_std;
+        sig_indicator = 0;
+    end
+    if isfinite(trs_EAC_sig)
+        val_EAC = trs_EAC_sig;
+        std_EAC = trs_EAC_sig_std;
+        sig_indicator_EAC = 1;
+    else
+        val_EAC = trs_EAC_insig;
+        std_EAC = trs_EAC_insig_std;
+        sig_indicator_EAC = 0;
+    end                     
+
+    c(1) = interp1(cmap_limits,cmap(:,1),val_EAC);
+    c(2) = interp1(cmap_limits,cmap(:,2),val_EAC);
+    c(3) = interp1(cmap_limits,cmap(:,3),val_EAC);
+    color_EAC = [c(1) c(2) c(3)];        
+    c(1) = interp1(cmap_limits,cmap(:,1),val);
+    c(2) = interp1(cmap_limits,cmap(:,2),val);
+    c(3) = interp1(cmap_limits,cmap(:,3),val);
+    color = [c(1) c(2) c(3)];              
+
+    if isnan(val)
+        val = 0;
+        std = ' ';
+    end
+    if isnan(val_EAC)
+        val_EAC = 0;
+        std_EAC = ' ';
+    end
+    val_str = num2str(round(val,6));
+    val_EAC_str = num2str(round(val_EAC,6));
+    std_str = num2str(round(std,6));
+    std_EAC_str = num2str(round(std_EAC,6));        
+    % ensure value is same size
+
+
+    if isempty(strfind(val_str,'-')) 
+        val_str = val_str(1:4);
+    else
+        val_str = val_str(1:5);
+    end
+    std_str = std_str(1:4);
+    if isempty(strfind(val_EAC_str,'-')) 
+        val_EAC_str = val_EAC_str(1:4);
+    else
+        val_EAC_str = val_EAC_str(1:5);
+    end
+    std_EAC_str = std_EAC_str(1:4);
+
+    if ~isempty(strfind(std_str,'e'))
+        std_str = '0.00';
+    end
+    if ~isempty(strfind(std_EAC_str,'e'))
+        std_EAC_str = '0.00';
+    end
+
+    if sig_indicator == 1      
+        text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color, ...
+            'EdgeColor',[0 0 0],'LineWidth',1)
+    else      
+        text(1-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color,'color',[0 0 0])
+    end
+
+    if sig_indicator_EAC == 1             
+        text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''], ...
+            'BackgroundColor',color_EAC,'EdgeColor',[0 0 0],'LineWidth',2)
+    else                  
+        text(1-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC,'color',[0 0 0])
+    end        
+    %-------------------------------------------------------------------------------------------------------------------
+    % Adding MK trends at the end for whole time period
+    MK = CH100_trends.MK_trend_per_decade(n_depth);
+    ps = CH100_trends.MK_pval(n_depth);
+    if ps < 0.05
+        text(n-10.8, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
+            'EdgeColor',[0 0 0],'LineWidth',1);
+    else
+        text(n-10.8, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
+    end
+
+end
+ 
+set(gca,'YDir','Reverse','Visible','Off');
+
+%%
+print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_CH100'])
 
 
 %% Figure NRSNSI
@@ -358,10 +500,9 @@ yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,6,6);
 ylim_limits = linspace(1,10,6);
 
-%%
 figure('units','normalized','position',[0 0.1000 0.5661 0.8000]);
 ylim([1 8])
-xlim([0 6])
+xlim([0 7])
 
 row_n = 0;
 for n_depth = 1:3
@@ -457,7 +598,16 @@ for n_depth = 1:3
     else                  
         text(1-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC,'color',[0 0 0])
     end        
-
+    %-------------------------------------------------------------------------------------------------------------------
+    % Adding MK trends at the end for whole time period
+    MK = NRSNSI_trends.MK_trend_per_decade(n_depth);
+    ps = NRSNSI_trends.MK_pval(n_depth);
+    if ps < 0.05
+        text(n-5.6, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
+            'EdgeColor',[0 0 0],'LineWidth',1);
+    else
+        text(n-5.6, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
+    end
 
 end
  
