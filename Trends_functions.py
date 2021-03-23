@@ -733,7 +733,7 @@ def Ensemble_EMD(TIME,TEMP,figure,s_option):
         imfs_std = []
         imfs_to_ave = []
         eemd = EEMD(noise_width = 0.2, trials=1000, parallel=True, 
-                    processes=8,include_residue=False) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
+                    processes=5,include_residue=False) # same parameters as GMSL trends Chen et al. paper and almost same as Wu et al nature trends paper
         eemd.eemd(T)
         imfs, res = eemd.get_imfs_and_residue()    
       
@@ -765,12 +765,12 @@ def Ensemble_EMD(TIME,TEMP,figure,s_option):
     yrs, _, _, _, _ = datevec(TIME)
     number_years = np.nanmax(yrs)-np.nanmin(yrs)
     # Deal with low magnitude trend IMFs for long timeseries
-    if np.abs(trend[-1]-trend[0]) < 0.1 and number_years > 20:
+    if np.abs(trend[-1]-trend[0]) < 0.2 and number_years > 20:
         check = np.diff(imfs[-2]) < 0
         trend = trend+imfs[-2]
         trend_EAC = trend + imfs[-3]  
     # Deal with low magnitude trend IMFs for short timeseries
-    if np.abs(trend[-1]-trend[0]) < 0.01 and number_years < 20:
+    if np.abs(trend[-1]-trend[0]) < 0.05 and number_years < 20:
         check = np.diff(imfs[-2]) < 0
         trend = trend+imfs[-2]
         trend_EAC = trend + imfs[-3]  
