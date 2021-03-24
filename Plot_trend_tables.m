@@ -30,45 +30,35 @@ a = NRSMAI_trends.EEMD_imfs.IMF_3;
 NRSMAI_trends.EEMD_trend(3,:) = a(end,:)+a(end-1,:);
 NRSMAI_trends.EEMD_trend_EAC(3,:) = a(end,:)+a(end-1,:)+a(end-2,:);
 %--------------------
-% CH100 depth 2
-a = CH100_trends.EEMD_imfs.IMF_2;
-CH100_trends.EEMD_trend{2} = a(end,:)+a(end-1,:);
-CH100_trends.EEMD_trend_EAC{2} = a(end,:)+a(end-1,:)+a(end-2,:);
-%--------------------
-% CH100 depth 3
-a = CH100_trends.EEMD_imfs.IMF_3;
-CH100_trends.EEMD_trend{3} = a(end,:)+a(end-1,:);
-CH100_trends.EEMD_trend_EAC{3} = a(end,:)+a(end-1,:)+a(end-2,:);
+% CH100 depth 1
+a = CH100_trends.EEMD_imfs.IMF_1;
+CH100_trends.EEMD_trend{1} = a(end,:);
+CH100_trends.EEMD_trend_EAC{1} = a(end,:)+a(end-1,:);
 %--------------------
 % CH100 depth 4
 a = CH100_trends.EEMD_imfs.IMF_4;
-CH100_trends.EEMD_trend{4} = a(end,:)+a(end-1,:);
-CH100_trends.EEMD_trend_EAC{4} = a(end,:)+a(end-1,:)+a(end-2,:);
+CH100_trends.EEMD_trend{4} = a(end,:);
+CH100_trends.EEMD_trend_EAC{4} = a(end,:)+a(end-1,:);
 %--------------------
-% CH100 depth 5
-a = CH100_trends.EEMD_imfs.IMF_5;
-CH100_trends.EEMD_trend{5} = a(end,:)+a(end-1,:);
-CH100_trends.EEMD_trend_EAC{5} = a(end,:)+a(end-1,:)+a(end-2,:);
+% CH100 depth 3
+a = CH100_trends.EEMD_imfs.IMF_3;
+CH100_trends.EEMD_trend{3} = a(end,:);
+CH100_trends.EEMD_trend_EAC{3} = a(end,:)+a(end-1,:);
 %--------------------
-% CH100 depth 6
-a = CH100_trends.EEMD_imfs.IMF_6;
-CH100_trends.EEMD_trend{6} = a(end,:)+a(end-1,:);
-CH100_trends.EEMD_trend_EAC{6} = a(end,:)+a(end-1,:)+a(end-2,:);
+% CH100 depth 8
+a = CH100_trends.EEMD_imfs.IMF_8;
+CH100_trends.EEMD_trend{8} = a(end,:);
+CH100_trends.EEMD_trend_EAC{8} = a(end,:)+a(end-1,:);
 %--------------------
-% CH100 depth 7
-a = CH100_trends.EEMD_imfs.IMF_7;
-CH100_trends.EEMD_trend{7} = a(end,:)+a(end-1,:);
-CH100_trends.EEMD_trend_EAC{7} = a(end,:)+a(end-1,:)+a(end-2,:);
+% CH100 depth 9
+a = CH100_trends.EEMD_imfs.IMF_9;
+CH100_trends.EEMD_trend{9} = a(end,:)+a(end-1,:);
+CH100_trends.EEMD_trend_EAC{9} = a(end,:)+a(end-1,:)+a(end-2,:);
 %--------------------
-% CH100 depth 10
-a = CH100_trends.EEMD_imfs.IMF_10;
-CH100_trends.EEMD_trend{10} = a(end,:)+a(end-1,:);
-CH100_trends.EEMD_trend_EAC{10} = a(end,:)+a(end-1,:)+a(end-2,:);
-%--------------------
-% CH100 depth 12
-a = CH100_trends.EEMD_imfs.IMF_12;
-CH100_trends.EEMD_trend{12} = a(end,:)+a(end-1,:);
-CH100_trends.EEMD_trend_EAC{12} = a(end,:)+a(end-1,:)+a(end-2,:);
+% CH100 depth 11
+a = CH100_trends.EEMD_imfs.IMF_11;
+CH100_trends.EEMD_trend{11} = a(end,:);
+CH100_trends.EEMD_trend_EAC{11} = a(end,:)+a(end-1,:);
 %--------------------
 % BMP120 all depths
 % for n = 1:13
@@ -76,6 +66,13 @@ CH100_trends.EEMD_trend_EAC{12} = a(end,:)+a(end-1,:)+a(end-2,:);
 %     BMP120_trends.EEMD_trend{n} = a(end,:)+a(end-1,:);
 %     BMP120_trends.EEMD_trend_EAC{n} = a(end,:)+a(end-1,:)+a(end-2,:);
 % end
+%--------------------
+% BMP120 depth 3
+a = BMP120_trends.EEMD_imfs.IMF_3;
+BMP120_trends.EEMD_trend{3} = a(end,:)+a(end-1,:);
+BMP120_trends.EEMD_trend_EAC{3} = a(end,:)+a(end-1,:)+a(end-2,:);
+
+
 
 %% calculate average trends
 
@@ -95,8 +92,8 @@ yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,6,6);
 ylim_limits = linspace(1,10,6);
 
-figure('units','normalized','position',[0 0.1000 0.7 0.8000]);
-ylim([1 8])
+figure('units','normalized','position',[0 -.4 0.7 1.4]);
+ylim([1 12])
 xlim([0 7])
 
 row_n = 0;
@@ -209,6 +206,11 @@ for n_depth = 1:7
     
     MK = NRSPHB_trends.MK_trend_per_decade(n_depth);
     ps = NRSPHB_trends.MK_pval(n_depth);
+    % get MK color
+    c(1) = interp1(cmap_limits,cmap(:,1),MK);
+    c(2) = interp1(cmap_limits,cmap(:,2),MK);
+    c(3) = interp1(cmap_limits,cmap(:,3),MK);
+    color = [c(1) c(2) c(3)];      
     if ps < 0.05
         text(n+0.2, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
             'EdgeColor',[0 0 0],'LineWidth',1);
@@ -227,18 +229,19 @@ set(gca,'YDir','Reverse','Visible','Off')
 
 %%
 print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_PortHacking'])
+close all
 
 %% Figure Maria Island
 
-figure('units','normalized','position',[0 0.1000 0.7 0.8000]);
+figure('units','normalized','position',[0 -.4 0.7 1.4]);
 
 cmap = cmocean('balance',23);
-cmap_limits = linspace(-1,1,23);
+cmap_limits = linspace(-1.5,1.5,23);
 xaxis_limits = linspace(0.06,0.9,6);
 yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,8,6);
 ylim_limits = linspace(1,8,6);
-ylim([1 7])
+ylim([1 12])
 xlim([0 8])
 y_spacing = linspace(1.1,2,6);
 x_spacing = linspace(0,0.2,6);
@@ -321,6 +324,9 @@ for n_depth = 1:3
             val_str = val_str(1:5);
         end
         std_str = std_str(1:4);
+        if numel(val_EAC_str) < 4
+            val_EAC_str = [val_EAC_str,'0'];
+        end
         if isempty(strfind(val_EAC_str,'-')) 
             val_EAC_str = val_EAC_str(1:4);
         else
@@ -353,6 +359,11 @@ for n_depth = 1:3
     % Adding MK trends at the end for whole time period
     MK = NRSMAI_trends.MK_trend_per_decade(n_depth);
     ps = NRSMAI_trends.MK_pval(n_depth);
+    % get MK color
+    c(1) = interp1(cmap_limits,cmap(:,1),MK);
+    c(2) = interp1(cmap_limits,cmap(:,2),MK);
+    c(3) = interp1(cmap_limits,cmap(:,3),MK);
+    color = [c(1) c(2) c(3)];      
     if ps < 0.05
         text(n+0.4, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
             'EdgeColor',[0 0 0],'LineWidth',1);
@@ -363,15 +374,18 @@ end
  
 set(gca,'YDir','Reverse','Visible','Off');
 
+clearvars -except *_data *_trends options trends_* n
+
 %%
 print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_MariaIsland'])
+close all
 
 %% Figure CH100
 
-figure('units','normalized','position',[0 0.1000 0.7 0.8000]);
+figure('units','normalized','position',[0 -.4 0.7 1.4]);
 
 cmap = cmocean('balance',23);
-cmap_limits = linspace(-1,1,23);
+cmap_limits = linspace(-1.5,1.5,23);
 xaxis_limits = linspace(0.06,0.9,6);
 yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,8,6);
@@ -380,6 +394,7 @@ ylim([1 12])
 xlim([0 7])
 
 row_n = 0;
+n = 7;
 for n_depth = 1:12
 
     % organise trends over time
@@ -477,34 +492,176 @@ for n_depth = 1:12
     % Adding MK trends at the end for whole time period
     MK = CH100_trends.MK_trend_per_decade(n_depth);
     ps = CH100_trends.MK_pval(n_depth);
+    % get MK color
+    c(1) = interp1(cmap_limits,cmap(:,1),MK);
+    c(2) = interp1(cmap_limits,cmap(:,2),MK);
+    c(3) = interp1(cmap_limits,cmap(:,3),MK);    
+    color = [c(1) c(2) c(3)];      
     if ps < 0.05
-        text(n-10.8, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
+        text(n-5.8, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
             'EdgeColor',[0 0 0],'LineWidth',1);
     else
-        text(n-10.8, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
+        text(n-5.8, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
     end
 
 end
  
 set(gca,'YDir','Reverse','Visible','Off');
 
+clearvars -except *_data *_trends options trends_* n 
+
 %%
 print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_CH100'])
+close all
 
+%% Figure BMP120
+
+figure('units','normalized','position',[0 -.4 0.7 1.4]);
+
+cmap = cmocean('balance',23);
+cmap_limits = linspace(-1.5,1.5,23);
+xaxis_limits = linspace(0.06,0.9,6);
+yaxis_limits = linspace(0.11,0.93,6);
+xlim_limits = linspace(0,8,6);
+ylim_limits = linspace(1,8,6);
+ylim([0 13])
+xlim([0 7])
+
+row_n = 0;
+n = 7;
+for n_depth = 1:13
+
+    % organise trends over time
+    % trends
+    trs_sig = [trends_BMP120(n_depth).t2010s_sig];
+    trs_insig = [trends_BMP120(n_depth).t2010s_insig];
+    trs_EAC_sig = [trends_BMP120(n_depth).t2010s_EAC_sig];    
+    trs_EAC_insig = [trends_BMP120(n_depth).t2010s_EAC_insig];    
+    % stds
+    trs_sig_std = [trends_BMP120(n_depth).t2010s_sig_std];
+    trs_insig_std = [trends_BMP120(n_depth).t2010s_insig_std];
+    trs_EAC_sig_std = [trends_BMP120(n_depth).t2010s_EAC_sig_std];    
+    trs_EAC_insig_std = [trends_BMP120(n_depth).t2010s_EAC_insig_std];    
+
+    row_n = row_n+1;
+    
+    % determine value used
+    if isfinite(trs_sig)
+        val = trs_sig;
+        std = trs_sig_std;
+        sig_indicator = 1;
+    else
+        val = trs_insig;
+        std = trs_insig_std;
+        sig_indicator = 0;
+    end
+    if isfinite(trs_EAC_sig)
+        val_EAC = trs_EAC_sig;
+        std_EAC = trs_EAC_sig_std;
+        sig_indicator_EAC = 1;
+    else
+        val_EAC = trs_EAC_insig;
+        std_EAC = trs_EAC_insig_std;
+        sig_indicator_EAC = 0;
+    end                     
+
+    c(1) = interp1(cmap_limits,cmap(:,1),val_EAC);
+    c(2) = interp1(cmap_limits,cmap(:,2),val_EAC);
+    c(3) = interp1(cmap_limits,cmap(:,3),val_EAC);
+    color_EAC = [c(1) c(2) c(3)];        
+    c(1) = interp1(cmap_limits,cmap(:,1),val);
+    c(2) = interp1(cmap_limits,cmap(:,2),val);
+    c(3) = interp1(cmap_limits,cmap(:,3),val);
+    color = [c(1) c(2) c(3)];              
+
+    if isnan(val)
+        val = 0;
+        std = ' ';
+    end
+    if isnan(val_EAC)
+        val_EAC = 0;
+        std_EAC = ' ';
+    end
+    val_str = num2str(round(val,6));
+    val_EAC_str = num2str(round(val_EAC,6));
+    std_str = num2str(round(std,6));
+    std_EAC_str = num2str(round(std_EAC,6));        
+    % ensure value is same size
+
+
+    if isempty(strfind(val_str,'-')) 
+        val_str = val_str(1:4);
+    else
+        val_str = val_str(1:5);
+    end
+    std_str = std_str(1:4);
+    if isempty(strfind(val_EAC_str,'-')) 
+        val_EAC_str = val_EAC_str(1:4);
+    else
+        val_EAC_str = val_EAC_str(1:5);
+    end
+    std_EAC_str = std_EAC_str(1:4);
+
+    if ~isempty(strfind(std_str,'e'))
+        std_str = '0.00';
+    end
+    if ~isempty(strfind(std_EAC_str,'e'))
+        std_EAC_str = '0.00';
+    end
+
+    if sig_indicator == 1      
+        text(n-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color, ...
+            'EdgeColor',[0 0 0],'LineWidth',1)
+    else      
+        text(1-0.7, row_n+0.7, [val_str,' \pm ',std_str,''],'BackgroundColor',color,'color',[0 0 0])
+    end
+
+    if sig_indicator_EAC == 1             
+        text(n-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''], ...
+            'BackgroundColor',color_EAC,'EdgeColor',[0 0 0],'LineWidth',2)
+    else                  
+        text(1-0.7, row_n+0.3, ['\bf',val_EAC_str,' \pm ',std_EAC_str,''],'BackgroundColor',color_EAC,'color',[0 0 0])
+    end        
+    %-------------------------------------------------------------------------------------------------------------------
+    % Adding MK trends at the end for whole time period
+    MK = BMP120_trends.MK_trend_per_decade(n_depth);
+    ps = BMP120_trends.MK_pval(n_depth);
+    % get MK color
+    c(1) = interp1(cmap_limits,cmap(:,1),MK);
+    c(2) = interp1(cmap_limits,cmap(:,2),MK);
+    c(3) = interp1(cmap_limits,cmap(:,3),MK);    
+    color = [c(1) c(2) c(3)];      
+    if ps < 0.05
+        text(n+0.2, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
+            'EdgeColor',[0 0 0],'LineWidth',1);
+    else
+        text(n+0.2, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
+    end
+
+end
+ 
+set(gca,'YDir','Reverse','Visible','Off');
+
+clearvars -except *_data *_trends options trends_* n
+
+%%
+print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_BMP120'])
+close all
 
 %% Figure NRSNSI
 cmap = cmocean('balance',23);
-cmap_limits = linspace(-0.9,0.9,23);
+cmap_limits = linspace(-1.5,1.5,23);
 xaxis_limits = linspace(0.1,0.9,6);
 yaxis_limits = linspace(0.11,0.93,6);
 xlim_limits = linspace(0,6,6);
 ylim_limits = linspace(1,10,6);
-
-figure('units','normalized','position',[0 0.1000 0.5661 0.8000]);
-ylim([1 8])
+    `   
+figure('units','normalized','position',[0 -.4 0.7 1.4]);
+ylim([1 12])
 xlim([0 7])
 
 row_n = 0;
+n = 7;
 for n_depth = 1:3
 
     % organise trends over time
@@ -602,19 +759,27 @@ for n_depth = 1:3
     % Adding MK trends at the end for whole time period
     MK = NRSNSI_trends.MK_trend_per_decade(n_depth);
     ps = NRSNSI_trends.MK_pval(n_depth);
+    % get MK color
+    c(1) = interp1(cmap_limits,cmap(:,1),MK);
+    c(2) = interp1(cmap_limits,cmap(:,2),MK);
+    c(3) = interp1(cmap_limits,cmap(:,3),MK);    
+    color = [c(1) c(2) c(3)];          
     if ps < 0.05
-        text(n-5.6, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
+        text(n-5.8, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color, ...
             'EdgeColor',[0 0 0],'LineWidth',1);
     else
-        text(n-5.6, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
+        text(n-5.8, row_n+0.5, [num2str(round(MK,2))],'BackgroundColor',color);        
     end
 
 end
  
 set(gca,'YDir','Reverse','Visible','Off');
 
+clearvars -except *_data *_trends options trends_*
+
 %%
 print(gcf, '-dpng','-r400', [options.plot_dir,'EEMD_trends_NRSNSI'])
+close all
 
 %% Create Large Australia Coast
 
