@@ -1121,6 +1121,62 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
 #             out[i] = np.nanmean(ts_seas) * lr
 #     return out
 
+# %% bin profile function
+
+# function to bin TEMP over depth, get standard deviation
+
+def bin_profile(TEMP,DEPTH,BINS,BIN_M):
+    
+    DEPTH = np.array(DEPTH); 
+    TEMP = np.array(TEMP)
+    
+    
+    bin_mean = []
+    bin_std = []
+    bin_median = []
+    bin_D = []
+    bin_n = []
+    bin_T = []
+    bin_T_D = []
+    
+    for n_b in range(len(BINS)):
+        c = [(DEPTH >= BINS[n_b] - BIN_M) & 
+             (DEPTH < BINS[n_b] + BIN_M)]
+        bin_mean.append(np.nanmean(TEMP[c]))
+        bin_median.append(np.nanmedian(TEMP[c]))
+        bin_D.append(BINS[n_b])
+        bin_std.append(np.nanstd(TEMP[c]))
+        bin_n.append(np.size(TEMP[c]))
+        bin_T.append(TEMP[c])
+        bin_T_D.append(np.ones((1,len(TEMP[c])),dtype=float) * BINS[n_b])
+    bin_mean = np.array(bin_mean)
+    bin_median = np.array(bin_median)
+    bin_std = np.array(bin_std)
+    bin_n = np.array(bin_n)
+    bin_D = np.array(bin_D)
+    bin_T = np.array(bin_T)
+    bin_T_D = np.array(bin_T_D)
+    
+    # Function to convert list into matrix - to covert bin_T, 
+    # and bin_T_D to use in violin plot
+
+    
+    return bin_mean, bin_median, bin_std, bin_D, bin_n
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
