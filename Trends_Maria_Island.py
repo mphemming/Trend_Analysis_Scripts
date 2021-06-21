@@ -53,8 +53,8 @@ system = 0; # for windows (1), linux (0)
 if system == 1:
     # mooring data
     main_path = "\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\"
-    NRSMAI_clim = xr.open_dataset(main_path + 'Data\\MariaIsland_TEMP_Climatology_1944-2020_BottleCTDMooringSatellite.nc')
-    NRSMAI_agg = xr.open_dataset(main_path + 'Data\\MariaIsland_TEMP_1944-2020_aggregated.nc')
+    NRSMAI_clim = xr.open_dataset(main_path + 'Data\\MAI090_TEMP_1944-2020_BottleCTDMooringSatellite_climatology_v1.nc')
+    NRSMAI_agg = xr.open_dataset(main_path + 'Data\\MAI090_TEMP_1944-2020_aggregated_v1.nc')
     del main_path
 else:
   # mooring data
