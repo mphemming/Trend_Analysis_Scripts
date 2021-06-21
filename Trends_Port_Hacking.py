@@ -26,6 +26,8 @@ from sklearn import linear_model
 import scipy as sp
 # Import functions from script
 import Trends_functions as TF
+# Import plot functions from script
+import Trends_plot_functions as TP
 # KPSS test
 from statsmodels.tsa.stattools import kpss
 # autocorrelation
@@ -48,13 +50,13 @@ from scipy.io import savemat
 # %% -----------------------------------------------------------------------------------------------
 # Load data
 
-system = 0; # for windows (1), linux (0)
+system = 1; # for windows (1), linux (0)
 
 if system == 1:
     # mooring data
     main_path = "\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\"
-    NRSPHB_clim = xr.open_dataset(main_path + 'Data\\PortHacking_100m_TEMP_Climatology_1953-2020_BottleCTDMooringSatellite.nc')
-    NRSPHB_agg = xr.open_dataset(main_path + 'Data\\PortHacking_100m_TEMP_1953-2020_aggregated.nc')
+    NRSPHB_clim = xr.open_dataset(main_path + 'Data\\PH100_TEMP_1953-2020_BottleCTDMooringSatellite_climatology_v1.nc')
+    NRSPHB_agg = xr.open_dataset(main_path + 'Data\\PH100_TEMP_1953-2020_aggregated_v1.nc')
     del main_path
 else:
     NRSPHB_clim = xr.open_dataset('PortHacking_100m_TEMP_Climatology_1953-2020_BottleCTDMooringSatellite.nc')
@@ -76,20 +78,17 @@ T = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # index check
-    c = [(NRSPHB_agg.DEPTH >= depths[n] - 3) & (NRSPHB_agg.DEPTH <= depths[n] + 3)]
+    c = [(NRSPHB_agg.DEPTH_AGG >= depths[n] - 3) & (NRSPHB_agg.DEPTH_AGG <= depths[n] + 3)]
     # Depth
-    d = np.array(NRSPHB_agg.DEPTH);
+    d = np.array(NRSPHB_agg.DEPTH_AGG);
     D.append(d[c])
     # time
     tt = np.array(NRSPHB_agg.TIME);
     t.append(tt[c])    
     # Temp
-    TT = np.array(NRSPHB_agg.TEMP);
+    TT = np.array(NRSPHB_agg.TEMP_AGG);
     T.append(TT[c])       
 
-# plt.plot(t[0],T[0])
-# plt.plot(t[10],T[10])
-# plt.show()
 
 del c, d, tt, TT
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -99,16 +98,13 @@ del c, d, tt, TT
 # %% -----------------------------------------------------------------------------------------------
 # Get climatology at same depths
 
+# Use climatology for filling in data
 
 clim = np.ones((365,7),dtype=float)
 for day in range(0,365):
-    day_temps = NRSPHB_clim.TEMP_AVE[day,:] 
-    day_std = NRSPHB_clim.TEMP_STD[day,:] 
+    day_temps = NRSPHB_clim.TEMP_AVE[:,day] 
+    day_std = NRSPHB_clim.TEMP_STD[:,day] 
     clim[day,:] = np.interp(depths,NRSPHB_clim.DEPTH,day_temps)
-
-# plt.plot(NRSPHB_clim.TEMP_AVE[:,1],'k')
-# plt.plot(np.arange(0,364,1),clim[:,1],'r')
-# plt.plot(NRSPHB_clim.TEMP_AVE[:,2],'k')
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -131,12 +127,14 @@ for n in range(len(depths)):
 # %% -----------------------------------------------------------------------------------------------
 # De-season data
 
+# Don't de-season anymore!
+
 # print('Removing the season')
 
 # #get de-seasoned temperatures
 # Tbin_deseason = []
 # for n in range(len(depths)):
-#     cl = clim[:,n]
+#     cl = clim[:,n]S
 #     Tbin_deseason.append(np.array(TF.deseason(tbin[n],Tbin[n],cl)))
     
 # del n, cl
@@ -147,9 +145,10 @@ for n in range(len(depths)):
 # %% -----------------------------------------------------------------------------------------------
 # Get monthly averages and gap-fill
 
-# Using de-seasoned timeseries
+# Not using de-seasoned timeseries
 tbin_m = []
 Tbin_m = []
+Dbin_m = []
 Tbin_m_NG = []
 Tbin_m_deseason = []
 Tbin_m_deseason_nofill = []
@@ -162,7 +161,8 @@ for n in range(len(depths)):
     tbin_m.append(tt)
     Tbin_m.append(TTnoDS)
     Tbin_m_deseason.append(TT)
-    # _,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
+    Dbin_m.append(np.ones(np.size(TT))*depths[n])
+    _,TT = TF.bin_daily(2011,2021,t[n],np.float64(T[n]))
     # Tbin_no_deseason.append(TT)
     
 del tt, TT, n  
@@ -306,7 +306,7 @@ EEMD_imfs = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    tt = tbin_m[n]; TT = Tbin_m_deseason[n];
+    tt = tbin_m[n]; TT = Tbin_m[n]-np.nanmean(Tbin_m[n]);
     t, T, trend, trend_EAC, imfs, imfs_std, imfs_to_ave, res = TF.Ensemble_EMD(tt,TT,0,0)
     EEMD_t.append(t)
     EEMD_T.append(T)
@@ -527,6 +527,7 @@ else:
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 
 
 
