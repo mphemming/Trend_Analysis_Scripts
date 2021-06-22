@@ -1121,6 +1121,28 @@ def fill_gaps(TIME,TEMP,CLIM,std_window):
 #             out[i] = np.nanmean(ts_seas) * lr
 #     return out
 
+# %% function to convert stacked list into a matrix 
+# works only if stacked list has same number of element per stack
+
+def list2mat(list_var):
+    
+    dim_list = len(list_var)
+    numb_elements = []
+    # Ensure all rows same size by filling with NaNs
+    for n_dims in range(dim_list):
+        numb_elements.append(len(list_var[n_dims]))
+    max_numb = np.nanmax(numb_elements)
+    mat = np.empty((dim_list,max_numb,)); mat[:] = np.nan
+    for n_dims in range(dim_list):
+            mat[n_dims,0:numb_elements[n_dims]] = list_var[n_dims]        
+        
+    return mat
+
+    
+        
+    
+    
+
 # %% bin profile function
 
 # function to bin TEMP over depth, get standard deviation
@@ -1154,14 +1176,9 @@ def bin_profile(TEMP,DEPTH,BINS,BIN_M):
     bin_std = np.array(bin_std)
     bin_n = np.array(bin_n)
     bin_D = np.array(bin_D)
-    bin_T = np.array(bin_T)
-    bin_T_D = np.array(bin_T_D)
-    
-    # Function to convert list into matrix - to covert bin_T, 
-    # and bin_T_D to use in violin plot
+    bin_T = list2mat(bin_T)
 
-    
-    return bin_mean, bin_median, bin_std, bin_D, bin_n
+    return bin_mean, bin_median, bin_std, bin_D, bin_n, bin_T, bin_T_D
     
     
 
