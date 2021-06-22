@@ -124,7 +124,7 @@ for n in range(np.size(std_MAI,1)):
 
 depth_PHB_for_MAI = [2, 20, 50]
 
-bin_mean_PHB, _, bin_std_PHB, bin_D_PHB, bin_n_PHB = TF.bin_profile(
+bin_mean_PHB, _, bin_std_PHB, bin_D_PHB, bin_n_PHB, bin_T_PHB, bin_T_D_PHB = TF.bin_profile(
     NRSPHB_agg.TEMP_AGG,NRSPHB_agg.DEPTH_AGG,depth_PHB_for_MAI,2)
 bin_mean_MAI, _, bin_std_MAI, bin_D_MAI, bin_n_MAI = TF.bin_profile(
                 NRSMAI_agg.TEMP_AGG,NRSMAI_agg.DEPTH_AGG,depths_MAI,2)
@@ -143,8 +143,7 @@ d = rs.normal(0, 2, (n, p))
 d += np.log(np.arange(1, p + 1)) * -5 + 10
 
 # Show each distribution with both violins and points
-sns.violinplot(data=d, palette="light:g", inner="points", orient="h")
-
+sns.violinplot(data=bin_T_PHB,palette="light:g", inner="points", orient="h")
 
 
 
