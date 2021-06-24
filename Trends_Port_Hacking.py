@@ -375,53 +375,53 @@ std_array_EAC = []
 trend_sims = []
 trend_sims_EAC = []
 x_sims = []
-for n in range(len(depths)):
-    print(str(depths[n]) + ' m') 
-    TT = Tbin_m[n]
-    tt = tbin_m[n]
-    TT = TT[np.isfinite(TT)]
-    ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
-    # significance (using monthly values)
-    tt,TT = TF.bin_monthly(1953,2021,tbin_m[n],Tbin_m[n])
-    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt,TT,ACF_result[n],1000)
-    conf_std_limit.append(csl)
-    std_array.append(sa)
-    trend_sims.append(ts)
-    conf_std_limit_EAC.append(csl_EAC)
-    std_array_EAC.append(sa_EAC)
-    trend_sims_EAC.append(ts_EAC)    
-    x_sims.append(xs)
-    # For the seasons, changing std only for each season
-    # Using same ACF result as whole time series
-    # Summer
-    yr, mn, dy, hr, yday = TF.datevec(tt)
-    c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
-    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_summer],TT[c_summer],ACF_result[n],1000)    
-    conf_std_limit_Su.append(csl)
-    conf_std_limit_EAC_Su.append(csl_EAC)
-    # autumn
-    c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
-    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1000)    
-    conf_std_limit_Au.append(csl)
-    conf_std_limit_EAC_Au.append(csl_EAC)
-    # winter
-    c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
-    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1000)    
-    conf_std_limit_Wi.append(csl)
-    conf_std_limit_EAC_Wi.append(csl_EAC)
-    # spring
-    c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
-    csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
-           TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1000)    
-    conf_std_limit_Sp.append(csl)
-    conf_std_limit_EAC_Sp.append(csl_EAC)
+# for n in range(len(depths)):
+#     print(str(depths[n]) + ' m') 
+#     TT = Tbin_m[n]
+#     tt = tbin_m[n]
+#     TT = TT[np.isfinite(TT)]
+#     ACF_result.append(np.array(pd.Series(sm.tsa.acf(TT, nlags=10))))
+#     # significance (using monthly values)
+#     tt,TT = TF.bin_monthly(1953,2021,tbin_m[n],Tbin_m[n])
+#     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+#            TF.EEMD_significance(tt,TT,ACF_result[n],1000)
+#     conf_std_limit.append(csl)
+#     std_array.append(sa)
+#     trend_sims.append(ts)
+#     conf_std_limit_EAC.append(csl_EAC)
+#     std_array_EAC.append(sa_EAC)
+#     trend_sims_EAC.append(ts_EAC)    
+#     x_sims.append(xs)
+#     # For the seasons, changing std only for each season
+#     # Using same ACF result as whole time series
+#     # Summer
+#     yr, mn, dy, hr, yday = TF.datevec(tt)
+#     c_summer = np.squeeze(np.logical_or([mn == 12],[mn <= 2]))
+#     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+#            TF.EEMD_significance(tt[c_summer],TT[c_summer],ACF_result[n],1000)    
+#     conf_std_limit_Su.append(csl)
+#     conf_std_limit_EAC_Su.append(csl_EAC)
+#     # autumn
+#     c_autumn = np.squeeze(np.logical_and([mn > 2],[mn <= 5]))
+#     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+#            TF.EEMD_significance(tt[c_autumn],TT[c_autumn],ACF_result[n],1000)    
+#     conf_std_limit_Au.append(csl)
+#     conf_std_limit_EAC_Au.append(csl_EAC)
+#     # winter
+#     c_winter = np.squeeze(np.logical_and([mn > 5],[mn <= 8]))
+#     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+#            TF.EEMD_significance(tt[c_winter],TT[c_winter],ACF_result[n],1000)    
+#     conf_std_limit_Wi.append(csl)
+#     conf_std_limit_EAC_Wi.append(csl_EAC)
+#     # spring
+#     c_spring = np.squeeze(np.logical_and([mn > 8],[mn <= 11]))
+#     csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs = \
+#            TF.EEMD_significance(tt[c_spring],TT[c_spring],ACF_result[n],1000)    
+#     conf_std_limit_Sp.append(csl)
+#     conf_std_limit_EAC_Sp.append(csl_EAC)
 
 
-del TT, n, csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs
+# del TT, n, csl, csl_EAC, sa, sa_EAC, ts, ts_EAC, xs
 
 
 # %% -----------------------------------------------------------------------------------------------
@@ -512,7 +512,7 @@ Data_dict = {'tbin': tbin_m_str,
 'clims': clim,
 'NRSPHB_agg': NRSPHB_agg}
 
-system = 0; # for windows (1), linux (0)
+system = 1; # for windows (1), linux (0)
 
 if system == 1:
     savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
