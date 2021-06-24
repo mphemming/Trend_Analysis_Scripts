@@ -55,17 +55,17 @@ for n_t = 1:numel(t_grid)
     MAI_bins(n_t).profile = bin_variable_profile(NRSMAI_agg.TEMP_AGG(c),NRSMAI_agg.DEPTH_AGG(c),D_MAI,1);    
 end
 
-%% NRSPHB figure
+%% NRSPHB figure Mean profiles
     
 figure('units','normalized','position',[.1 .1 .7 .8]);  
  
 % Create axes
 axes('Parent',gcf,'Position',[0.13 0.11 0.386183035714286 0.815]);
 
-cmap = cmocean('thermal',5);
+cmap = cmocean('thermal',7);
 nn = 0;
 hold on
-for n = [1:4,7]
+for n = 1:7
     nn = nn+1;
     plot(PHB_bins(n).profile.mean_var_int,PHB_bins(n).profile.vertical,'LineWidth',4,'Color','k');
     p(n) = plot(PHB_bins(n).profile.mean_var_int,PHB_bins(n).profile.vertical,'LineWidth',2,'Color',cmap(nn,:));
@@ -74,7 +74,7 @@ end
 
 set(gca,'YDir','Reverse','LineWidth',2,'FontSize',16,'Box','On');
 grid on;
-leg = legend([p(1:4),p(7)],'1950s','1960s','1970s','1980','2010s')
+leg = legend(p,'1950s','1960s','1970s','1980','1990s','2000s','2010s')
 set(leg,'Location','NorthWest','Box','Off')
 title('Mean Profiles'); ylabel('Depth [m]'); xlabel('Temperature [^\circC]');
     
@@ -82,10 +82,10 @@ title('Mean Profiles'); ylabel('Depth [m]'); xlabel('Temperature [^\circC]');
 axes('Parent',gcf,...
     'Position',[0.537760416666667 0.11 0.367239583333333 0.815]);
 
-cmap = cmocean('thermal',5);
+cmap = cmocean('thermal',7);
 nn = 0;
 hold on
-for n = [1:4,7]
+for n = 1:7
     nn = nn+1;
     plot(PHB_bins(n).profile.mean_var_int-PHB_bins(1).profile.mean_var_int,PHB_bins(n).profile.vertical,'LineWidth',4,'Color','k');
     p(n) = plot(PHB_bins(n).profile.mean_var_int-PHB_bins(1).profile.mean_var_int,PHB_bins(n).profile.vertical,'LineWidth',2,'Color',cmap(nn,:));
@@ -98,6 +98,52 @@ title('Temperature change since 1950s'); xlabel('Temperature [^\circC]');
 
 print(gcf, '-dpng','-r400', ['C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\','PHB_mean_profs'])
 close all
+
+
+%% NRSPHB figure std profiles
+    
+figure('units','normalized','position',[.1 .1 .7 .8]);  
+ 
+% Create axes
+axes('Parent',gcf,'Position',[0.13 0.11 0.386183035714286 0.815]);
+
+cmap = cmocean('thermal',7);
+nn = 0;
+hold on
+for n = 1:7
+    nn = nn+1;
+    plot(PHB_bins(n).profile.stdev_var_int,PHB_bins(n).profile.vertical,'LineWidth',4,'Color','k');
+    p(n) = plot(PHB_bins(n).profile.stdev_var_int,PHB_bins(n).profile.vertical,'LineWidth',2,'Color',cmap(nn,:));
+    scatter(PHB_bins(n).profile.stdev_var,PHB_bins(n).profile.vertical,'MarkerFaceColor',cmap(nn,:),'MarkerEdgeColor','k')
+end
+
+set(gca,'YDir','Reverse','LineWidth',2,'FontSize',16,'Box','On','XLim',[0.5 2.5]);
+grid on;
+leg = legend(p,'1950s','1960s','1970s','1980','1990s','2000s','2010s')
+set(leg,'Location','NorthWest','Box','Off')
+title('SD Profiles'); ylabel('Depth [m]'); xlabel('Temperature [^\circC]');
+    
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.537760416666667 0.11 0.367239583333333 0.815]);
+
+cmap = cmocean('thermal',7);
+nn = 0;
+hold on
+for n = 1:7
+    nn = nn+1;
+    plot(PHB_bins(n).profile.stdev_var_int-PHB_bins(1).profile.stdev_var_int,PHB_bins(n).profile.vertical,'LineWidth',4,'Color','k');
+    p(n) = plot(PHB_bins(n).profile.stdev_var_int-PHB_bins(1).profile.stdev_var_int,PHB_bins(n).profile.vertical,'LineWidth',2,'Color',cmap(nn,:));
+    scatter(PHB_bins(n).profile.stdev_var-PHB_bins(1).profile.stdev_var_int,PHB_bins(n).profile.vertical,'MarkerFaceColor',cmap(nn,:),'MarkerEdgeColor','k')
+end
+
+set(gca,'YDir','Reverse','LineWidth',2,'FontSize',16,'Box','On','YTickLabels','');
+grid on;
+title('Temperature SD change since 1950s'); xlabel('Temperature [^\circC]');
+
+print(gcf, '-dpng','-r400', ['C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\','PHB_std_profs'])
+close all
+
 
 %% NRSMAI figure
     
@@ -144,19 +190,67 @@ title('Temperature change since 1950s'); xlabel('Temperature [^\circC]');
 print(gcf, '-dpng','-r400', ['C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\','MAI_mean_profs'])
 close all
 
+%% NRSMAI figure std profiles
+    
+figure('units','normalized','position',[.1 .1 .7 .8]);  
+ 
+% Create axes
+axes('Parent',gcf,'Position',[0.13 0.11 0.386183035714286 0.815]);
+
+cmap = cmocean('thermal',7);
+nn = 0;
+hold on
+for n = 1:7
+    nn = nn+1;
+    plot(MAI_bins(n).profile.stdev_var_int,MAI_bins(n).profile.vertical,'LineWidth',4,'Color','k');
+    p(n) = plot(MAI_bins(n).profile.stdev_var_int,MAI_bins(n).profile.vertical,'LineWidth',2,'Color',cmap(nn,:));
+    scatter(MAI_bins(n).profile.stdev_var,MAI_bins(n).profile.vertical,'MarkerFaceColor',cmap(nn,:),'MarkerEdgeColor','k')
+end
+
+set(gca,'YDir','Reverse','LineWidth',2,'FontSize',16,'Box','On','XLim',[0.5 2.5]);
+grid on;
+leg = legend(p,'1950s','1960s','1970s','1980','1990s','2000s','2010s')
+set(leg,'Location','NorthWest','Box','Off')
+title('SD Profiles'); ylabel('Depth [m]'); xlabel('Temperature [^\circC]');
+    
+% Create axes
+axes('Parent',gcf,...
+    'Position',[0.537760416666667 0.11 0.367239583333333 0.815]);
+
+cmap = cmocean('thermal',7);
+nn = 0;
+hold on
+for n = 1:7
+    nn = nn+1;
+    plot(MAI_bins(n).profile.stdev_var_int-MAI_bins(1).profile.stdev_var_int,MAI_bins(n).profile.vertical,'LineWidth',4,'Color','k');
+    p(n) = plot(MAI_bins(n).profile.stdev_var_int-MAI_bins(1).profile.stdev_var_int,MAI_bins(n).profile.vertical,'LineWidth',2,'Color',cmap(nn,:));
+    scatter(MAI_bins(n).profile.stdev_var-MAI_bins(1).profile.stdev_var_int,MAI_bins(n).profile.vertical,'MarkerFaceColor',cmap(nn,:),'MarkerEdgeColor','k')
+end
+
+set(gca,'YDir','Reverse','LineWidth',2,'FontSize',16,'Box','On','YTickLabels','');
+grid on;
+title('Temperature SD change since 1950s'); xlabel('Temperature [^\circC]');
+
+print(gcf, '-dpng','-r400', ['C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\','MAI_std_profs'])
+close all
+
+
+
 %% Mixed gradients
 
 % PHB
 % get unique dates
 [yr,mn,dy] = datevec(NRSPHB_agg.TIME);
 PHB_results.dates = datenum(yr,mn,dy);
-PHB_results.un_dates = unique(PHB_results.dates);
+PHB_results.un_dates = unique(PHB_results.dates((NRSPHB_agg.TEMP_DATA_PLATFORM_AGG == 1 | NRSPHB_agg.TEMP_DATA_PLATFORM_AGG == 2)));
 mooring_first_date = nanmin(PHB_results.dates(NRSPHB_agg.TEMP_DATA_PLATFORM_AGG == 3 | NRSPHB_agg.TEMP_DATA_PLATFORM_AGG == 4));
 % get dates where satellite for randomising profiles below
 PHB_results.sat_dates = unique(PHB_results.dates(NRSPHB_agg.TEMP_DATA_PLATFORM_AGG == 4));
+% get dates where surface buoy
+PHB_results.surf_buoy_dates = unique(PHB_results.dates(NRSPHB_agg.TEMP_DATA_PLATFORM_AGG == 3 & round(NRSPHB_agg.DEPTH_AGG,2) == 0.6));
 % randomise mooring dates for similar resolution with bottles and CTDs
 PHB_results.un_dates_mooring = PHB_results.un_dates(PHB_results.un_dates >= mooring_first_date);
-PHB_results.un_dates = [PHB_results.un_dates(PHB_results.un_dates < mooring_first_date)' PHB_results.sat_dates(1:3:end)'];
+% PHB_results.un_dates = unique([PHB_results.un_dates(PHB_results.un_dates < mooring_first_date)' PHB_results.surf_buoy_dates(1:3:end)' PHB_results.sat_dates(1:3:end)']);
 % get gradient between surface and 20m for each unique date
 for n_date = 1:numel(PHB_results.un_dates)
     c_surf = PHB_results.dates == PHB_results.un_dates(n_date) & NRSPHB_agg.DEPTH_AGG < 4;
@@ -180,7 +274,7 @@ for n_date = 1:numel(PHB_results.un_dates)
 end
 % for each year proportion of data mixed
 % NRSPHB
-[yr,mn,dy] = datevec(PHB_results.un_dates);
+[yr,mn,dy] = datevec(PHB_results.un_dates');
 n = 0;
 for yr_n= 1950:10:2010
     n=n+1;
@@ -198,21 +292,21 @@ for yr_n= 1950:10:2010
     PHB_results.mean_Tdiff(n) = nanmean(PHB_results.Tdiff(c));
     PHB_results.std_Tdiff(n) = nanstd(PHB_results.Tdiff(c));
     
-    % some QC (if biased towards one season, if not enough data)
-    % zeros in Tdiff seem legit (checked)
-    if (PHB_results.prop_n_summer(n)/PHB_results.prop_n(n) <0.1 | ...
-            PHB_results.prop_n_winter(n)/PHB_results.prop_n(n) <0.1 | ...
-                PHB_results.prop_n_autumn(n)/PHB_results.prop_n(n) <0.1 | ...
-                    PHB_results.prop_n_spring(n)/PHB_results.prop_n(n) <0.1) | ...
-                        PHB_results.prop_n(n) < 150
-        PHB_results.prop_mixed(n) = NaN;
-        PHB_results.prop_mixed_summer(n) = NaN;
-        PHB_results.prop_mixed_autumn(n) = NaN;
-        PHB_results.prop_mixed_winter(n) = NaN;
-        PHB_results.prop_mixed_spring(n) = NaN;
-        PHB_results.mean_Tdiff(n) = NaN;
-        PHB_results.std_Tdiff(n) = NaN;
-    end
+%     % some QC (if biased towards one season, if not enough data)
+%     % zeros in Tdiff seem legit (checked)
+%     if (PHB_results.prop_n_summer(n)/PHB_results.prop_n(n) <0.1 | ...
+%             PHB_results.prop_n_winter(n)/PHB_results.prop_n(n) <0.1 | ...
+%                 PHB_results.prop_n_autumn(n)/PHB_results.prop_n(n) <0.1 | ...
+%                     PHB_results.prop_n_spring(n)/PHB_results.prop_n(n) <0.1) | ...
+%                         PHB_results.prop_n(n) < 150
+%         PHB_results.prop_mixed(n) = NaN;
+%         PHB_results.prop_mixed_summer(n) = NaN;
+%         PHB_results.prop_mixed_autumn(n) = NaN;
+%         PHB_results.prop_mixed_winter(n) = NaN;
+%         PHB_results.prop_mixed_spring(n) = NaN;
+%         PHB_results.mean_Tdiff(n) = NaN;
+%         PHB_results.std_Tdiff(n) = NaN;
+%     end
 
 end
 
@@ -222,20 +316,22 @@ end
 % get unique dates
 [yr,mn,dy] = datevec(NRSMAI_agg.TIME);
 MAI_results.dates = datenum(yr,mn,dy);
-MAI_results.un_dates = unique(MAI_results.dates);
+MAI_results.un_dates = unique(MAI_results.dates(NRSMAI_agg.TEMP_DATA_PLATFORM_AGG == 1 | NRSMAI_agg.TEMP_DATA_PLATFORM_AGG == 2));
 mooring_first_date = nanmin(MAI_results.dates(NRSMAI_agg.TEMP_DATA_PLATFORM_AGG == 3 | NRSMAI_agg.TEMP_DATA_PLATFORM_AGG == 4));
 % get dates where satellite for randomising profiles below
 MAI_results.sat_dates = unique(MAI_results.dates(NRSMAI_agg.TEMP_DATA_PLATFORM_AGG == 4));
+% get dates where surface buoy
+MAI_results.surf_buoy_dates = unique(MAI_results.dates(NRSMAI_agg.TEMP_DATA_PLATFORM_AGG == 3 & round(NRSMAI_agg.DEPTH_AGG,2) == 0.6));
 % randomise mooring dates for similar resolution with bottles and CTDs
 MAI_results.un_dates_mooring = MAI_results.un_dates(MAI_results.un_dates >= mooring_first_date);
-MAI_results.un_dates = [MAI_results.un_dates(MAI_results.un_dates < mooring_first_date)' MAI_results.sat_dates(1:1:end)'];
+% MAI_results.un_dates = unique([MAI_results.un_dates(MAI_results.un_dates < mooring_first_date)' MAI_results.surf_buoy_dates(1:10:end)' MAI_results.sat_dates(1:10:end)']);
 % get gradient between surface and 20m for each unique date
 for n_date = 1:numel(MAI_results.un_dates)
     c_surf = MAI_results.dates == MAI_results.un_dates(n_date) & NRSMAI_agg.DEPTH_AGG < 4;
-    c_31 = MAI_results.dates == MAI_results.un_dates(n_date) & NRSMAI_agg.DEPTH_AGG >= 29 & NRSMAI_agg.DEPTH_AGG < 33;
-    if sum(c_surf) ~= 0 & sum(c_31) ~= 0
-        MAI_results.Tdiff(n_date) = abs(nanmedian(NRSMAI_agg.TEMP_AGG(c_surf))-nanmedian(NRSMAI_agg.TEMP_AGG(c_31)));
-        MAI_results.DOY(n_date) = datenum(0,unique(mn(c_surf)),unique(dy(c_31)));
+    c_21 = MAI_results.dates == MAI_results.un_dates(n_date) & NRSMAI_agg.DEPTH_AGG >= 19 & NRSMAI_agg.DEPTH_AGG < 23;
+    if sum(c_surf) ~= 0 & sum(c_21) ~= 0
+        MAI_results.Tdiff(n_date) = abs(nanmedian(NRSMAI_agg.TEMP_AGG(c_surf))-nanmedian(NRSMAI_agg.TEMP_AGG(c_21)));
+        MAI_results.DOY(n_date) = datenum(0,unique(mn(c_surf)),unique(dy(c_21)));
         if MAI_results.Tdiff(n_date) <0.2 
 %             if MAI_results.Tdiff(n_date) == 0 
 %                 disp(n_date)
@@ -252,7 +348,7 @@ for n_date = 1:numel(MAI_results.un_dates)
 end
 % for each year proportion of data mixed
 % NRSMAI
-[yr,mn,dy] = datevec(MAI_results.un_dates);
+[yr,mn,dy] = datevec(MAI_results.un_dates');
 n = 0;
 for yr_n= 1950:10:2010
     n=n+1;
@@ -270,20 +366,20 @@ for yr_n= 1950:10:2010
     MAI_results.mean_Tdiff(n) = nanmean(MAI_results.Tdiff(c));
     MAI_results.std_Tdiff(n) = nanstd(MAI_results.Tdiff(c));
     
-    % some QC (if biased towards one season, if not enough data)
-    % zeros in Tdiff seem legit (checked)
-    if (MAI_results.prop_n_summer(n)/MAI_results.prop_n(n) <0.1 | ...
-            MAI_results.prop_n_winter(n)/MAI_results.prop_n(n) <0.1 | ...
-                MAI_results.prop_n_autumn(n)/MAI_results.prop_n(n) <0.1 | ...
-                    MAI_results.prop_n_spring(n)/MAI_results.prop_n(n) <0.1)
-        MAI_results.prop_mixed(n) = NaN;
-        MAI_results.prop_mixed_summer(n) = NaN;
-        MAI_results.prop_mixed_autumn(n) = NaN;
-        MAI_results.prop_mixed_winter(n) = NaN;
-        MAI_results.prop_mixed_spring(n) = NaN;
-        MAI_results.mean_Tdiff(n) = NaN;
-        MAI_results.std_Tdiff(n) = NaN;
-    end
+%     % some QC (if biased towards one season, if not enough data)
+%     % zeros in Tdiff seem legit (checked)
+%     if (MAI_results.prop_n_summer(n)/MAI_results.prop_n(n) <0.1 | ...
+%             MAI_results.prop_n_winter(n)/MAI_results.prop_n(n) <0.1 | ...
+%                 MAI_results.prop_n_autumn(n)/MAI_results.prop_n(n) <0.1 | ...
+%                     MAI_results.prop_n_spring(n)/MAI_results.prop_n(n) <0.1)
+%         MAI_results.prop_mixed(n) = NaN;
+%         MAI_results.prop_mixed_summer(n) = NaN;
+%         MAI_results.prop_mixed_autumn(n) = NaN;
+%         MAI_results.prop_mixed_winter(n) = NaN;
+%         MAI_results.prop_mixed_spring(n) = NaN;
+%         MAI_results.mean_Tdiff(n) = NaN;
+%         MAI_results.std_Tdiff(n) = NaN;
+%     end
 
 end
 
@@ -404,5 +500,55 @@ set(gca,'YLim',[nanmin(MAI_results.prop_n)-10 nanmax(MAI_results.prop_n)+10],'Fo
 
 print(gcf, '-dpng','-r400', ['C:\Users\mphem\Documents\Work\UNSW\Trends\Plots\','MAI_prop_mean_std_change_time'])
 close all
+
+
+%% compare seasons
+
+
+% prop mixed
+figure('units','normalized','position',[.1 .1 .6 .6]);
+hold on;
+% PHB
+
+p1 = plot(1:7,PHB_results.prop_n_summer./PHB_results.prop_n*100, 'LineWidth',2, 'Color',[.9 .7 0]);
+scatter(1:7,PHB_results.prop_n_summer./PHB_results.prop_n*100, 'MarkerFaceColor',[.9 .7 0], 'MarkerEdgeColor',[.9 .7 0]);
+
+p2 = plot(1:7,PHB_results.prop_n_autumn./PHB_results.prop_n*100, 'LineWidth',2, 'Color',[.6 .4 .4]);
+scatter(1:7,PHB_results.prop_n_autumn./PHB_results.prop_n*100, 'MarkerFaceColor',[.6 .4 .4], 'MarkerEdgeColor',[.6 .4 .4]);
+
+p3 = plot(1:7,PHB_results.prop_n_winter./PHB_results.prop_n*100, 'LineWidth',2, 'Color',[.4 .6 .6]);
+scatter(1:7,PHB_results.prop_n_winter./PHB_results.prop_n*100, 'MarkerFaceColor',[.4 .6 .6], 'MarkerEdgeColor',[.4 .6 .6]);
+
+p4 = plot(1:7,PHB_results.prop_n_spring./PHB_results.prop_n*100, 'LineWidth',2, 'Color',[0 .8 .5]);
+scatter(1:7,PHB_results.prop_n_spring./PHB_results.prop_n*100, 'MarkerFaceColor',[0 .8 .5], 'MarkerEdgeColor',[0 .8 .5]);
+
+% Tdiff mean
+figure('units','normalized','position',[.1 .1 .6 .6]);
+hold on;
+% PHB
+
+p1 = plot(1:7,PHB_results.mean_Tdiff, 'LineWidth',2, 'Color',[.9 .7 0]);
+scatter(1:7,PHB_results.prop_n_summer./PHB_results.prop_n*100, 'MarkerFaceColor',[.9 .7 0], 'MarkerEdgeColor',[.9 .7 0]);
+
+p2 = plot(1:7,PHB_results.prop_n_autumn./PHB_results.prop_n*100, 'LineWidth',2, 'Color',[.6 .4 .4]);
+scatter(1:7,PHB_results.prop_n_autumn./PHB_results.prop_n*100, 'MarkerFaceColor',[.6 .4 .4], 'MarkerEdgeColor',[.6 .4 .4]);
+
+p3 = plot(1:7,PHB_results.prop_n_winter./PHB_results.prop_n*100, 'LineWidth',2, 'Color',[.4 .6 .6]);
+scatter(1:7,PHB_results.prop_n_winter./PHB_results.prop_n*100, 'MarkerFaceColor',[.4 .6 .6], 'MarkerEdgeColor',[.4 .6 .6]);
+
+p4 = plot(1:7,PHB_results.prop_n_spring./PHB_results.prop_n*100, 'LineWidth',2, 'Color',[0 .8 .5]);
+scatter(1:7,PHB_results.prop_n_spring./PHB_results.prop_n*100, 'MarkerFaceColor',[0 .8 .5], 'MarkerEdgeColor',[0 .8 .5]);
+
+
+
+
+
+
+% MAI
+p3 = plot(1:7,MAI_results.prop_n_winter./MAI_results.prop_n*100, 'LineWidth',2, 'Color',[.466 .674 .188]);
+scatter(1:7,MAI_results.prop_n_winter./MAI_results.prop_n*100, 'MarkerFaceColor',[.466 .674 .188], 'MarkerEdgeColor',[.466 .674 .188]);
+
+
+
 
 
