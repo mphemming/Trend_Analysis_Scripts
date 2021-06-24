@@ -48,17 +48,17 @@ from scipy.io import savemat
 # %% -----------------------------------------------------------------------------------------------
 # Load data
 
-system = 0; # for windows (1), linux (0)
+system = 1; # for windows (1), linux (0)
 
 if system == 1:
     # mooring data
     main_path = "\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\"
-    NRSMAI_clim = xr.open_dataset(main_path + 'Data\\MAI090_TEMP_1944-2020_BottleCTDMooringSatellite_climatology_v1.nc')
+    NRSMAI_clim = xr.open_dataset(main_path + 'Data\\MAI090_TEMP_1944-2020_BottleCTD_climatology_v1.nc')
     NRSMAI_agg = xr.open_dataset(main_path + 'Data\\MAI090_TEMP_1944-2020_aggregated_v1.nc')
     del main_path
 else:
   # mooring data
-    NRSMAI_clim = xr.open_dataset('MariaIsland_TEMP_Climatology_1944-2020_BottleCTDMooringSatellite.nc')
+    NRSMAI_clim = xr.open_dataset('MariaIsland_TEMP_Climatology_1944-2020_BottleCTD.nc')
     NRSMAI_agg = xr.open_dataset('MariaIsland_TEMP_1944-2020_aggregated.nc')
 
 
@@ -78,15 +78,16 @@ T = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
     # index check
-    c = [(NRSMAI_agg.DEPTH >= depths[n] - 2) & (NRSMAI_agg.DEPTH <= depths[n] + 2)]
+    c = [(NRSMAI_agg.DEPTH_AGG >= depths[n] - 2) & 
+         (NRSMAI_agg.DEPTH_AGG <= depths[n] + 2)]
     # Depth
-    d = np.array(NRSMAI_agg.DEPTH);
+    d = np.array(NRSMAI_agg.DEPTH_AGG);
     D.append(d[c])
     # time
     tt = np.array(NRSMAI_agg.TIME);
     t.append(tt[c])    
     # Temp
-    TT = np.array(NRSMAI_agg.TEMP);
+    TT = np.array(NRSMAI_agg.TEMP_AGG);
     T.append(TT[c])       
 
 # plt.plot(t[0],T[0])
@@ -108,10 +109,18 @@ del c, d, tt, TT
 #     clim[day,:] = np.interp(depths,NRSMAI_clim.DEPTH,day_temps)
   
 # calculate simple climatology for now
-clim = np.ones((12,7),dtype=float) 
-for n in range(len(depths)):
-    c = TF.calc_clim_monthly(t[n],T[n])  
-    clim[:,n] = c
+# clim = np.ones((12,7),dtype=float) 
+# for n in range(len(depths)):
+#     c = TF.calc_clim_monthly(t[n],T[n])  
+#     clim[:,n] = c
+ 
+    
+clim = np.ones((365,3),dtype=float)
+for day in range(0,365):
+    day_temps = NRSMAI_clim.TEMP_AVE[:,day] 
+    day_std = NRSMAI_clim.TEMP_STD[:,day] 
+    clim[day,:] = np.array([day_temps[0], day_temps[2], day_temps[5]])
+  
 
 # plt.plot(NRSMAI_clim.TEMP_AVE[:,1],'k')
 # plt.plot(np.arange(0,364,1),clim[:,1],'r')
@@ -178,7 +187,6 @@ for n in range(len(depths)):
     
 del tt, TT, n  
         
-
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
