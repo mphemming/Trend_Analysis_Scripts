@@ -339,7 +339,7 @@ EEMD_imfs = []
 EEMD_res = []
 for n in range(len(depths)):
     print(str(depths[n]) + ' m')
-    tt = tbin_m[n]; TT = Tbin_m[n];
+    tt = tbin_m[n]; TT = Tbin_m[n]-np.nanmean(Tbin_m[n]);
     TTT = []
     for nn in range(len(TT)):
         TTT.append(TT[nn])
@@ -551,7 +551,7 @@ Data_dict = {'tbin': tbin_m_str,
 'NRSMAI_agg': NRSMAI_agg}
 
 
-system = 0; # for windows (1), linux (0)
+system = 1; # for windows (1), linux (0)
 
 if system == 1:
     savemat("C:\\Users\\mphem\\Documents\\Work\\UNSW\\Trends\\Data\\" + 
