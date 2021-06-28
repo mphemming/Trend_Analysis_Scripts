@@ -540,13 +540,33 @@ p4 = plot(1:7,PHB_results.prop_n_spring./PHB_results.prop_n*100, 'LineWidth',2, 
 scatter(1:7,PHB_results.prop_n_spring./PHB_results.prop_n*100, 'MarkerFaceColor',[0 .8 .5], 'MarkerEdgeColor',[0 .8 .5]);
 
 
-
-
-
-
 % MAI
 p3 = plot(1:7,MAI_results.prop_n_winter./MAI_results.prop_n*100, 'LineWidth',2, 'Color',[.466 .674 .188]);
 scatter(1:7,MAI_results.prop_n_winter./MAI_results.prop_n*100, 'MarkerFaceColor',[.466 .674 .188], 'MarkerEdgeColor',[.466 .674 .188]);
+
+
+%% DOY Tdiff climatology
+
+[yr,mn,d,hr,~,~] = datevec(PHB_results.un_dates');
+
+n = 0;
+for yr_n= 1950:10:2010
+    n=n+1;
+    for n_mn = 1:12
+        c = yr >= yr_n & yr < yr_n+10 & mn == n_mn;
+        clim(n,n_mn) = nanmean(PHB_results.Tdiff(c))
+    end
+end
+
+% changes in diurnal cycle in summer (NOT GOOD DATA FOR THIS)
+% n = 0;
+% for yr_n= 1950:10:2010
+%     n=n+1;
+%     for hr_n = 1:24
+%             c = hr == hr_n & (mn == 11 | mn == 12 | mn == 1) & yr >= yr_n & yr < yr_n+10
+%             diurnal_summer(n,n_mn) = nanmean(PHB_results.Tdiff(c))
+%     end
+% end
 
 
 
