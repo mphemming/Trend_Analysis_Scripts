@@ -88,9 +88,9 @@ SYDAIR_YR, _, _, _, SYDAIR_DOY = TF.datevec(SYDAIR_TIME)
 
 # grab wind data
 SYDAIR_WIND = np.array(SYDAIR['Wind speed measured in km/h'])
-SYDAIR_WIND[SYDAIR_WIND == 0] = np.nan
+# SYDAIR_WIND[SYDAIR_WIND == 0] = np.nan
 SYDAIR_DIR = np.array(SYDAIR['Wind direction measured in degrees'])
-SYDAIR_DIR[SYDAIR_DIR == 0] = np.nan
+# SYDAIR_DIR[SYDAIR_DIR == 0] = np.nan
 # convert to m/s
 SYDAIR_WIND = (SYDAIR_WIND*1000)/3600
 
@@ -136,9 +136,9 @@ MAI_YR, _, _, _, MAI_DOY = TF.datevec(MAI_TIME)
 
 # grab wind data
 MAI_WIND = np.array(MAI['Wind speed measured in km/h'])
-MAI_WIND[MAI_WIND == 0] = np.nan
+# MAI_WIND[MAI_WIND == 0] = np.nan
 MAI_DIR = np.array(MAI['Wind direction measured in degrees'])
-MAI_DIR[MAI_DIR == 0] = np.nan
+# MAI_DIR[MAI_DIR == 0] = np.nan
 # convert to m/s
 MAI_WIND = (MAI_WIND*1000)/3600
 
