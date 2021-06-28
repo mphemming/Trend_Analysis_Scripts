@@ -664,6 +664,10 @@ def Ensemble_EMD(TIME,TEMP,figure,s_option):
     check_nans = np.isfinite(TEMP)
     T = TEMP[check_nans]
     t = TIME[check_nans]
+    # Ensure that they are anomalies
+    if np.nanmean(T) > 1:
+        T = T - np.nanmean(T)
+
     # perform EEMD
     # average of 10 different stoppages
     if s_option == 1:
@@ -863,6 +867,7 @@ def Ensemble_EMD_quick(TIME,TEMP):
 
 def EEMD_significance(TIME,TEMP,ACF_result,numb_sims):
 
+    ACF_result = np.squeeze(ACF_result)
     # determine leakage to get closest matching brownian noise signal to TEMP
     tests = np.arange(0,1,0.02)
     ACF_tests = []
