@@ -141,19 +141,27 @@ del cl
 
 # gappy timeseres, also with chunks at beginning, middle, and end
 c = np.array(tbin) < np.datetime64('1965-01-01')
-g_start = copy.copy(np.array(Tbin_deseason)); g_start[c] = np.nan;
+g_start = copy.copy(np.array(Tbin)); g_start[c] = np.nan;
 c = np.squeeze(np.logical_and([np.array(tbin) > np.datetime64('1980-01-01')],
                    [np.array(tbin) < np.datetime64('1990-01-01')]))
-g_mid = copy.copy(np.array(Tbin_deseason)); g_mid[c] = np.nan; 
+g_mid = copy.copy(np.array(Tbin)); g_mid[c] = np.nan; 
 c = np.array(tbin) > np.datetime64('2010-01-01')
-g_end = copy.copy(np.array(Tbin_deseason)); g_end[c] = np.nan;
+g_end = copy.copy(np.array(Tbin)); g_end[c] = np.nan;
 # Different resolutions
-tt = tbin; TT = Tbin_deseason
+tt = tbin; TT = Tbin
 tt_m,TT_m = TF.bin_monthly(1953,2021,tt,TT)
 tt_a,TT_a = TF.bin_annually(1953,2021,tt,TT)
 # Filled timeseries
-_,TT_filled_m,_ = TF.fill_gaps(tt_m,TT_m,np.squeeze(clim[:,0]),30*12);
-_,TT_filled_a,_ = TF.fill_gaps(tt_a,TT_a,np.squeeze(clim[:,0]),30);
+_,TT_filled_m,_,_ = TF.fill_gaps(tt_m,TT_m,np.squeeze(clim[:,0]),30*12);
+_,TT_filled_a,_,_ = TF.fill_gaps(tt_a,TT_a,np.squeeze(clim[:,0]),30);
+# monthly gaps
+c = np.array(tt_m) < dt.datetime(1965,1,1)
+g_start_monthly = copy.copy(np.array(TT_filled_m)); g_start_monthly[c] = np.nan;
+c = np.squeeze(np.logical_and([np.array(tt_m) > dt.datetime(1980,1,1)],
+                   [np.array(tt_m) < dt.datetime(1990,1,1)]))
+g_mid_monthly = copy.copy(np.array(TT_filled_m)); g_mid_monthly[c] = np.nan; 
+c = np.array(tt_m) > dt.datetime(2010,1,1)
+g_end_monthly = copy.copy(np.array(TT_filled_m)); g_end_monthly[c] = np.nan;
 # with random missing data different percentages
 r_10 = random.sample(range(1, len(TT_filled_m)), np.int64(len(TT_filled_m)*0.9))
 r_25 = random.sample(range(1, len(TT_filled_m)), np.int64(len(TT_filled_m)*0.75))
@@ -170,11 +178,14 @@ tt_m_50, TT_filled_m_50 = TF.bin_monthly(1953,2021,tt_m[r_50],TT_filled_m[r_50])
 
 # save as a class
 class data:
-    gaps = np.array(Tbin_deseason)
+    gaps = np.array(Tbin)
     gaps_t = np.array(tbin)    
     gaps_start = np.array(g_start)
     gaps_middle = np.array(g_mid)
     gaps_end = np.array(g_end)
+    gaps_start_monthly = np.array(g_start_monthly)
+    gaps_middle_monthly = np.array(g_mid_monthly)
+    gaps_end_monthly = np.array(g_end_monthly)    
     daily = TT
     daily_t = tt
     monthly = TT_m
@@ -203,38 +214,47 @@ EEMD_t = []
 EEMD_T = []
 EEMD_trend = []
 EEMD_imfs = []
-# gaps
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.gaps_t,data.gaps,0)
+# gaps [0]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.gaps_t,data.gaps,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# gaps_start
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.gaps_t,data.gaps_start,0)
+# gaps_start [1]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.gaps_t,data.gaps_start,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# gaps_middle
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.gaps_t,data.gaps_middle,0)
+# gaps_middle [2]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.gaps_t,data.gaps_middle,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# gaps_end
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.gaps_t,data.gaps_end,0)
+# gaps_end [3]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.gaps_t,data.gaps_end,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# monthly
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.monthly_t,data.monthly,0)
+# monthly [4]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.monthly_t,data.monthly,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# monthly filled
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.monthly_t,data.monthly_filled,0)
+# monthly filled [5]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.monthly_t,data.monthly_filled,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# monthly filled 10% missing
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.monthly_filled_10_t,data.monthly_filled_10,0)
+# monthly filled 10% missing [6]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.monthly_filled_10_t,data.monthly_filled_10,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# monthly filled 25% missing
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.monthly_filled_25_t,data.monthly_filled_25,0)
+# monthly filled 25% missing [7]
+t, T, tr, _, imfs, _ ,_,_= TF.Ensemble_EMD(data.monthly_filled_25_t,data.monthly_filled_25,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# monthly filled 50% missing
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.monthly_filled_50_t,data.monthly_filled_50,0)
+# monthly filled 50% missing [8]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.monthly_filled_50_t,data.monthly_filled_50,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# annually
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.annually_t,data.annually,0)
+# annually [9]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.annually_t,data.annually,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
-# annually filled
-t, T, tr, _, imfs, _ = TF.Ensemble_EMD(data.annually_t,data.annually_filled,0)
+# annually filled [10]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.annually_t,data.annually_filled,0,0)
+EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
+# gaps_start [11]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.monthly_t,data.gaps_start_monthly,0,0)
+EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
+# gaps_middle [12]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.monthly_t,data.gaps_middle_monthly,0,0)
+EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
+# gaps_end [13]
+t, T, tr, _, imfs, _,_,_ = TF.Ensemble_EMD(data.monthly_t,data.gaps_end_monthly,0,0)
 EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs);
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -244,41 +264,33 @@ EEMD_t.append(t); EEMD_T.append(T); EEMD_trend.append(tr), EEMD_imfs.append(imfs
 # Create plot comparisons
 
 # Resolution effect
-a = EEMD_imfs[0]
-plt.plot(EEMD_t[0],a[10]+a[11])
-a = EEMD_imfs[4]
-plt.plot(EEMD_t[4],a[6]+a[7])
-a = EEMD_imfs[9]
-plt.plot(EEMD_t[9],a[3]+a[4])
-# gaps chunks
-a = EEMD_imfs[0]
-plt.plot(EEMD_t[0],a[10]+a[11])
-plt.plot(EEMD_t[1],EEMD_trend[1])
-a = EEMD_imfs[2]
-plt.plot(EEMD_t[2],a[10]+a[11])
-a = EEMD_imfs[3]
-plt.plot(EEMD_t[3],a[10]+a[9])
+plt.plot(EEMD_t[4],EEMD_trend[4],label='monthly non-filled'); # monthly non-filled
+plt.plot(EEMD_t[5],EEMD_trend[5],label='monthly filled'); # monthly filled
+plt.plot(EEMD_t[9],EEMD_trend[9],label='Annual non-filled'); # annual non-filled
+plt.plot(EEMD_t[10],EEMD_trend[10],label='Annual filled'); # annual filled
+plt.legend()
+# gaps chunks (daily data)
+plt.title('Using Daily data')
+plt.plot(EEMD_t[0],EEMD_trend[0],label='real gaps');
+plt.plot(EEMD_t[1],EEMD_trend[1],label='gap at start');
+plt.plot(EEMD_t[2],EEMD_trend[2],label='gap in middle');
+plt.plot(EEMD_t[3],EEMD_trend[3],label='gap at end');
+plt.legend()
+# gaps chunks (monthly data)
+plt.title('Using Monthly data')
+plt.plot(EEMD_t[5],EEMD_trend[5],label='filled');
+plt.plot(EEMD_t[11],EEMD_trend[11],label='gap at start');
+plt.plot(EEMD_t[12],EEMD_trend[12],label='gap in middle');
+plt.plot(EEMD_t[13],EEMD_trend[13],label='gap at end');
+plt.legend()
 # gaps random
-a = EEMD_imfs[5]
-plt.plot(EEMD_t[5],a[8]+a[7]+a[6])
-a = EEMD_imfs[6]
-plt.plot(EEMD_t[6],a[6]+a[7])
-a = EEMD_imfs[7]
-plt.plot(EEMD_t[7],a[6]+a[7])
-a = EEMD_imfs[8]
-plt.plot(EEMD_t[8],a[6]+a[7])
-# gap filling (Monthly)
-# plt.plot(tbin,Tbin_deseason,'.')
-a = EEMD_imfs[4]
-plt.plot(EEMD_t[4],a[6]+a[7])
-a = EEMD_imfs[5]
-plt.plot(EEMD_t[5],a[8]+a[7]+a[6])
-# gap filling (Annually)
-# plt.plot(tbin,Tbin_deseason,'.')
-a = EEMD_imfs[6]
-plt.plot(EEMD_t[6],a[7]+a[6])
-a = EEMD_imfs[7]
-plt.plot(EEMD_t[7],a[7]+a[6])
+plt.title('Effect of random gaps')
+plt.plot(EEMD_t[5],EEMD_trend[5],label='filled');
+plt.plot(EEMD_t[6],EEMD_trend[6],label='10% missing');
+plt.plot(EEMD_t[7],EEMD_trend[7],label='25% missing');
+plt.plot(EEMD_t[8],EEMD_trend[8],label='50% missing');
+plt.legend()
+
 
 # take homes from these experiments:
     # Annual measurements should not be used for this anlysis
@@ -288,7 +300,7 @@ plt.plot(EEMD_t[7],a[7]+a[6])
     # Gaps in the middle have the least effect than start and end, 
     # timeseries missing data at the beginning or end should not be used!
     # Chunk gaps have more of an effect than random gaps, anything more
-    # than 25% not great!
+    # than 25% not great! NEW result - 50% missing is best out of 10% and 25%
     
 # %%-----------------------------------------------------------------------------
 # Explore changes in trend when changing number of ensembles
